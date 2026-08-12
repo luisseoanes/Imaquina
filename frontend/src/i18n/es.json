@@ -1,0 +1,25 @@
+{
+  "app": { "name": "Imaquina Robótica" },
+  "auth": {
+    "login": "Iniciar sesión",
+    "email": "Correo",
+    "password": "Contraseña",
+    "invalid": "Correo o contraseña incorrectos",
+    "licenseExpired": "La licencia de tu institución no está vigente",
+    "logout": "Cerrar sesión"
+  },
+  "moments": {
+    "intro": "Introducción",
+    "inquiry": "Indagación",
+    "design": "Diseño",
+    "build": "Construcción",
+    "communicate": "Comunicación",
+    "assess": "Evaluación"
+  },
+  "projects": { "title": "Proyectos", "grade": "Grado", "empty": "Aún no hay proyectos publicados" },
+  "teacher": { "guide": "Guía del docente", "showGuide": "Ver guía didáctica", "results": "Resultados", "export": "Exportar a Excel" },
+  "chat": { "title": "Consultor técnico", "placeholder": "Pregúntame sobre tu proyecto…", "send": "Enviar", "thinking": "Pensando…" },
+  "assessment": { "submit": "Enviar evaluación", "score": "Puntaje", "attempt": "Intento" },
+  "studio": { "title": "Content Studio", "draft": "Borrador", "published": "Publicado", "publish": "Publicar", "preview": "Vista previa", "missingTranslation": "Falta traducir" },
+  "common": { "save": "Guardar", "cancel": "Cancelar", "loading": "Cargando…", "error": "Ocurrió un error" }
+}

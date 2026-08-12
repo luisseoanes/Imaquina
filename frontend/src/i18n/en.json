@@ -1,0 +1,25 @@
+{
+  "app": { "name": "Imaquina Robotics" },
+  "auth": {
+    "login": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "invalid": "Incorrect email or password",
+    "licenseExpired": "Your institution's license is not active",
+    "logout": "Sign out"
+  },
+  "moments": {
+    "intro": "Introduction",
+    "inquiry": "Inquiry",
+    "design": "Design",
+    "build": "Build",
+    "communicate": "Communicate",
+    "assess": "Assessment"
+  },
+  "projects": { "title": "Projects", "grade": "Grade", "empty": "No published projects yet" },
+  "teacher": { "guide": "Teacher guide", "showGuide": "Show teaching guide", "results": "Results", "export": "Export to Excel" },
+  "chat": { "title": "Technical advisor", "placeholder": "Ask me about your project…", "send": "Send", "thinking": "Thinking…" },
+  "assessment": { "submit": "Submit assessment", "score": "Score", "attempt": "Attempt" },
+  "studio": { "title": "Content Studio", "draft": "Draft", "published": "Published", "publish": "Publish", "preview": "Preview", "missingTranslation": "Translation missing" },
+  "common": { "save": "Save", "cancel": "Cancel", "loading": "Loading…", "error": "Something went wrong" }
+}
