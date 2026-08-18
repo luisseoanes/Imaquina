@@ -1,0 +1,55 @@
+# Release automatico por versionado semantico.
+#
+# Lee los prefijos de los commits que hay desde el ultimo tag y decide el salto
+# de version: `feat` sube minor, `fix` sube patch, y un `!` o un pie
+# `BREAKING CHANGE:` sube major. El resto de tipos (docs, chore, refactor, test,
+# ci, build, style, perf, revert) NO publican nada: aqui se empujan commits
+# sueltos a la rama, y con ellos publicando saldria una release por commit.
+# Igual salen en las notas de la release que acabe cortando un feat o un fix.
+#
+# Luego crea el tag y la release de GitHub con las notas generadas.
+#
+# Las reglas viven en .releaserc.json. NO genera CHANGELOG.md: las notas van en
+# el cuerpo de la release de GitHub y no se commitea nada de vuelta al repo.
+
+name: Release
+
+on:
+  push:
+    branches: [master]
+
+# Sin esto el GITHUB_TOKEN no puede crear tags ni releases.
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+# Dos pushes seguidos a main no pueden publicar a la vez: el segundo espera.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # semantic-release necesita el historial completo y los tags para
+          # saber desde donde analizar.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      # Versiones fijas: que un major nuevo de semantic-release no cambie el
+      # comportamiento de la release sin que nadie lo haya decidido.
+      - name: Instala semantic-release
+        run: npm install --no-save semantic-release@24 conventional-changelog-conventionalcommits@8
+
+      - name: Publica
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
