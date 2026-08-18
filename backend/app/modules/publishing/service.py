@@ -1,7 +1,7 @@
 """Publicación: valida, versiona y dispara el reindexado.
 
 El snapshot que se genera aquí es la fuente de lectura de los estudiantes
-(ARQUITECTURA.md 3.1) y el punto de rollback (3.x). Un solo trabajo, dos usos.
+(arquitectura.md 3.1) y el punto de rollback (3.x). Un solo trabajo, dos usos.
 """
 
 import uuid

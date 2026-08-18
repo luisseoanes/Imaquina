@@ -17,7 +17,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // El Content Studio va en bundle aparte: los estudiantes son el 95%
-        // del trafico y no deben descargar el editor (ARQUITECTURA.md 6).
+        // del trafico y no deben descargar el editor (arquitectura.md 6).
         manualChunks(id) {
           if (id.includes("/features/studio/")) return "studio";
           if (id.includes("node_modules")) return "vendor";

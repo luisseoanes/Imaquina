@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     MAX_UPLOAD_MB: int = 512
 
     # --- Claude / asistente --------------------------------------------
-    # Ver docs/ARQUITECTURA.md 4. El modelo es palanca de costo: medir antes de bajar.
+    # Ver docs/arquitectura.md 4. El modelo es palanca de costo: medir antes de bajar.
     ANTHROPIC_API_KEY: str = ""
     ASSISTANT_MODEL: str = "claude-opus-5"
     GUARDRAIL_MODEL: str = "claude-haiku-4-5"

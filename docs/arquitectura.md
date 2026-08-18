@@ -1,6 +1,6 @@
 # Arquitectura de Software — Plataforma Imaquina
 
-> Complementa `SCOPE-MVP.md`. Aquí van las decisiones de *cómo* se construye.
+> Complementa `scope-mvp.md`. Aquí van las decisiones de *cómo* se construye.
 > Stack: FastAPI + React + PostgreSQL. Equipo pequeño (1–3 devs).
 
 ---

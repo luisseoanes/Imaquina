@@ -1,7 +1,7 @@
 """Asistente: contrato del puerto y guardrails (R5, R8, R9).
 
 Todo corre contra StubProvider: cero red, cero costo. Esa es exactamente
-la razón por la que el puerto existe (ARQUITECTURA.md 3.4).
+la razón por la que el puerto existe (arquitectura.md 3.4).
 """
 
 import pytest
@@ -48,7 +48,7 @@ def test_hay_mensaje_de_redireccion_en_ambos_idiomas(lang):
 def test_el_prompt_de_sistema_no_lleva_nada_volatil():
     """El caché es match de prefijo: una fecha o un nombre en el system
     prompt invalida todo lo que venga después y dispara el costo
-    (ARQUITECTURA.md 4). Este test es el que atrapa ese error."""
+    (arquitectura.md 4). Este test es el que atrapa ese error."""
     from app.modules.assistant.provider import SYSTEM_PROMPT
 
     prohibidos = ["{", "}", "%s", "datetime", "now(", "uuid"]

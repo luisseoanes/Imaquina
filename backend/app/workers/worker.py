@@ -44,7 +44,7 @@ async def reindex_project(ctx: dict, project_id: str) -> dict:
                 if not body:
                     continue
                 # TODO: generar embedding real. Placeholder hasta cablear el
-                # modelo de embeddings (ver docs/SCOPE-MVP.md F4).
+                # modelo de embeddings (ver docs/scope-mvp.md F4).
                 db.add(
                     DocumentChunk(
                         project_id=pid,

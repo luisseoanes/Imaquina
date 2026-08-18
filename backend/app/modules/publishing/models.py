@@ -12,7 +12,7 @@ from app.db.base import Base, UUIDMixin
 class ProjectVersion(Base, UUIDMixin):
     """Snapshot inmutable al publicar.
 
-    Doble proposito (ver docs/ARQUITECTURA.md 3.1):
+    Doble proposito (ver docs/arquitectura.md 3.1):
       1. Rollback: si el cliente rompe un proyecto a mitad de semestre.
       2. Camino de lectura: los estudiantes se sirven de este JSONB con
          UNA query cacheable, en vez de joins sobre 5 tablas por request.

@@ -1,6 +1,6 @@
 """Dependencias transversales.
 
-El aislamiento multi-tenant vive aqui. Ver docs/ARQUITECTURA.md 3.2:
+El aislamiento multi-tenant vive aqui. Ver docs/arquitectura.md 3.2:
 toda consulta de datos por institucion DEBE pasar por TenantContext.
 Retrofitear esto luego es un proyecto en si mismo.
 """

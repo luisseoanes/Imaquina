@@ -1,4 +1,4 @@
-"""El único puerto del sistema (ver docs/ARQUITECTURA.md 3.4).
+"""El único puerto del sistema (ver docs/arquitectura.md 3.4).
 
 Existe por dos razones concretas y medibles:
   1. Stubear los tests sin red (sin esto, cada test del chat cuesta dinero).
@@ -57,7 +57,7 @@ class AssistantProvider(Protocol):
 # --- Prompt de sistema -------------------------------------------------------
 # ESTABLE A PROPÓSITO: es el prefijo cacheado. No interpolar aquí fechas,
 # nombres ni IDs — el caché es match de prefijo y cualquier byte volátil
-# invalida todo lo que venga después (ver ARQUITECTURA.md 4).
+# invalida todo lo que venga después (ver arquitectura.md 4).
 
 SYSTEM_PROMPT = """\
 Eres el consultor técnico de Imaquina Robótica, un programa de robótica \
@@ -81,7 +81,7 @@ Responde siempre en el idioma que se te indique.
 
 
 class ClaudeProvider:
-    """Implementación real. Ver docs/ARQUITECTURA.md 4."""
+    """Implementación real. Ver docs/arquitectura.md 4."""
 
     def __init__(self) -> None:
         self._client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)

@@ -10,7 +10,7 @@ class MediaAsset(Base, UUIDMixin, TimestampMixin):
     """Librería reutilizable de media.
 
     El binario NUNCA pasa por FastAPI: el navegador sube directo a S3/R2 con
-    URL prefirmada y aquí sólo se registra la clave (ver ARQUITECTURA.md 7).
+    URL prefirmada y aquí sólo se registra la clave (ver arquitectura.md 7).
     """
 
     __tablename__ = "media_assets"

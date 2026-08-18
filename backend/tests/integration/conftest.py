@@ -1,6 +1,6 @@
 """Fixtures que requieren Postgres real.
 
-Los mocks de base de datos mienten (ARQUITECTURA.md 8), así que aquí se corre
+Los mocks de base de datos mienten (arquitectura.md 8), así que aquí se corre
 contra un Postgres de verdad, con rollback por test. Si la DB no está
 levantada, estos tests se saltan con un mensaje claro en vez de reventar.
 """

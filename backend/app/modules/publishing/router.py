@@ -20,7 +20,7 @@ async def publish(project_id: UUID, author: Author, db: Db, lang: str = "es"):
         db, project_id, published_by=author.user_id, lang=lang
     )
     # El reindexado del RAG va en background y es automatico: nadie se va a
-    # acordar de apretar "reindexar" (ARQUITECTURA.md 7).
+    # acordar de apretar "reindexar" (arquitectura.md 7).
     await enqueue_reindex(project_id)
     return {"version": version.version, "published_at": version.published_at}
 

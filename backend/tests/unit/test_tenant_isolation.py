@@ -1,4 +1,4 @@
-"""Aislamiento multi-tenant (ARQUITECTURA.md 3.2).
+"""Aislamiento multi-tenant (arquitectura.md 3.2).
 
 Son datos de menores de edad: que un docente del Colegio A vea las notas
 del Colegio B no es un bug, es un incidente de proteccion de datos.

@@ -1,6 +1,6 @@
 """Camino de lectura del estudiante.
 
-Sirve desde el snapshot publicado (ARQUITECTURA.md 3.1): UNA query, cacheable,
+Sirve desde el snapshot publicado (arquitectura.md 3.1): UNA query, cacheable,
 en vez de joins sobre 5 tablas en cada request.
 """
 

@@ -1,7 +1,7 @@
 """Subida directa a S3/R2 con URL prefirmada.
 
 Un video de 200 MB NO puede pasar por FastAPI: el navegador sube directo
-al bucket y aqui solo se registra la clave (ARQUITECTURA.md 7).
+al bucket y aqui solo se registra la clave (arquitectura.md 7).
 """
 
 import uuid

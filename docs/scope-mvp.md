@@ -1,6 +1,7 @@
 # Plataforma Imaquina Robótica — Scope MVP
 
-> Documento de trabajo. Base: `PLATAFORMA IMAQUINA ROBÓTICA.pdf` (docs/).
+> Documento de trabajo. Base: [`plataforma-imaquina-robotica.md`](plataforma-imaquina-robotica.md),
+> transcripción del PDF que entregó el cliente.
 > Stack objetivo: **Python + FastAPI** (backend) / **React** (frontend).
 > Fecha: agosto 2026.
 
