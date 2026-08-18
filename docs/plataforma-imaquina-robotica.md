@@ -62,6 +62,11 @@ robótica relacionados: programación, placas controladoras, motores, etc.
 
 ## Hosting contratado
 
+> **DESACTUALIZADO (agosto 2026).** El PO asume la inversión en infraestructura,
+> hosting y servidor. Este análisis se conserva como historia de por qué se llegó
+> ahí, pero **no condiciona ninguna decisión técnica**: da por disponibles
+> Postgres 16 + pgvector, Redis y S3/R2. Ver `CLAUDE.md` § Reparto de trabajo.
+
 **Proveedor: Colombia Hosting.** Se solicitó una actualización del servidor en **enero de
 2026**. El hosting alberga **3 dominios**.
 

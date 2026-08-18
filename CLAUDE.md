@@ -9,6 +9,22 @@ Las decisiones y su porqué están en `docs/arquitectura.md` (léelo antes de to
 fronteras entre módulos, caché de prompts o el camino de lectura). Los códigos `R1`–`R10`
 que aparecen en docstrings y tests son los requisitos de `docs/scope-mvp.md`.
 
+## Frontera del trabajo de modelo
+
+El trabajo de modelo vive **detrás de `AssistantProvider`** (`assistant/provider.py`), y
+sólo ahí: `SYSTEM_PROMPT` con su `cache_control`, `ClaudeProvider`, la estrategia de
+recuperación (chunking, ranking, top-k), los embeddings de `worker.reindex_project`,
+`EMBEDDING_DIM` y el índice pgvector.
+
+Delante del puerto todo es backend normal: `assistant/router.py` (endpoint, SSE, permisos,
+rate limit), `assistant/service.py` (sesiones, historial, persistencia) y el chat en React.
+**Esa mitad se construye y se testea entera contra `StubProvider`**, sin red y sin tocar
+nada de modelo. Para eso existe el puerto.
+
+**Infra, hosting y despliegue no condicionan ninguna decisión técnica.** El PO asume la
+inversión. El análisis de hosting de `docs/scope-mvp.md` §2 y el bloque de hosting del
+brief están **desactualizados**: da por disponibles Postgres 16 + pgvector, Redis y S3/R2.
+
 ## Estado del entorno local
 
 El backend se maneja con **uv**. `backend/uv.lock` va versionado y fija todas las
@@ -25,16 +41,28 @@ imagen de Docker instalan exactamente lo mismo. `pyproject.toml` solo declara ra
 - En la imagen, el venv vive en `/opt/venv`, **fuera de `/app`**: docker-compose monta
   `./backend` en `/app` y taparía un venv que estuviera ahí dentro.
 
-Arranque desde cero: `make sync && make up`.
+Arranque desde cero: `make sync && make up && make migrate && make seed`.
 
-Dos cosas que el README da por hechas y **no existen**:
+`make seed` (`app/db/seeds.py`) crea institución, licencia vigente, un usuario por rol y
+un proyecto publicado. Es idempotente y **se niega a correr si `ENV != local`** (crea
+contraseñas conocidas). Los emails van en `@imaquina.example.com`: `EmailStr` **rechaza**
+`.test` y `.local` por ser special-use, y con esos dominios el login es imposible.
 
-- **No hay migraciones**: `alembic/versions/` está vacío, así que `alembic upgrade head`
-  no crea nada. El esquema real sale hoy de `Base.metadata.create_all` en las fixtures de
-  integración. La primera revisión está por autogenerar.
-- **Frontend sin tooling instalado**: no hay `node_modules` y **no hay config de ESLint**
-  pese al script `npm run lint`; `vitest` y `msw` están en `devDependencies` pero no hay
-  ningún test escrito.
+**Migraciones.** `alembic upgrade head` crea el esquema completo (24 tablas) desde
+`3f4c4a30a463 esquema inicial`. Dos cosas que autogenerate NO resuelve solo:
+
+- El tipo `Vector` se renderiza sin su import. `alembic/env.py` tiene un `render_item` que
+  lo arregla; si se toca ese fichero, comprobar que una migración con `DocumentChunk`
+  sigue saliendo con `import pgvector.sqlalchemy`.
+- `CREATE EXTENSION vector` va a mano. Ya está en la revisión inicial; el `downgrade` no
+  la borra a propósito.
+
+Las fixtures de integración crean el esquema con `Base.metadata.create_all`, no con
+migraciones — es más rápido. Lo que impide que modelos y migraciones deriven es
+`tests/integration/test_migrations.py`: levanta una base desechable con `alembic upgrade
+head` y la compara contra `Base.metadata`. **Si añades un modelo sin migración, ese test
+falla y te dice qué columna falta.**
+
 
 ## Comandos
 
@@ -69,7 +97,10 @@ cero costo. Los tests lo dan por hecho — `tests/conftest.py` fuerza la key vac
 ## Commits y releases
 
 **Los commits siguen Conventional Commits** — `.github/workflows/release.yml` los analiza
-en cada push a `master` y publica tag + release de GitHub sin intervención. Las reglas
+en cada push a `master` y publica tag + release de GitHub sin intervención. Antes de
+publicar corren dos jobs en paralelo, `backend` (ruff + pytest contra un Postgres con
+pgvector) y `frontend` (eslint + vitest + build); el release **sólo arranca si los dos
+pasan**. Usan los mismos targets del Makefile que en local. Las reglas
 están en `.releaserc.json`:
 
 - `feat:` → **minor** · `fix:` → **patch** · `feat!:` o pie `BREAKING CHANGE:` → **major**
@@ -142,14 +173,33 @@ capa de repositorio** y no debe añadirse. Modelos nuevos deben quedar alcanzabl
   de tenant, vigencia de licencia, validación de publicación, guardrails). Corren siempre.
 - `tests/integration/` — endpoints contra Postgres real, transacción revertida por test.
   `tests/integration/conftest.py` comprueba la conexión y **se salta con mensaje claro**
-  si no hay DB; no cambies eso por un fallo duro.
+  si no hay DB — en local eso es lo correcto, no lo conviertas en fallo duro. **Con
+  `CI=true` sí falla duro** a propósito: si se saltaran en CI, la suite pasaría en verde
+  sin haber probado nada y el gate del release no gatearía.
+- `test_migrations.py` (integración) es el guard de deriva modelos↔migraciones: usa una
+  base propia (`imaquina_paridad`), que crea y borra él mismo.
 - `test_tenant_isolation.py` incluye un guard estructural parametrizado: si un modelo con
   datos de alumnos (`Progress`, `Attempt`, `ChatSession`, `Course`, `License`) pierde
   `institution_id`, el test falla. Añade ahí los modelos nuevos que lleven datos por
   institución.
-- `asyncio_mode = "auto"`: los tests async no llevan decorador.
+- `asyncio_mode = "auto"`: los tests async no llevan decorador. `fixture_loop_scope` y
+  `test_loop_scope` están **los dos** en `session` a propósito: el engine de integración
+  es de sesión y sus conexiones asyncpg quedan atadas al loop que las creó; si se
+  desalinean, todo test que use la fixture `db` peta con "attached to a different loop".
+- **Los tests unitarios de servicios mienten sobre el ORM async**: construyen los objetos
+  en memoria, así que las relaciones ya están cargadas y nunca ejercitan el lazy loading.
+  Todo servicio que serialice relaciones necesita además un test de integración.
 
 ## Frontend
+
+`package-lock.json` va versionado: `npm ci` instala exactamente eso. ESLint 10 con flat
+config en `eslint.config.js` (`npm run lint`, o `make web-lint`); tests con vitest + jsdom
+y **MSW en `onUnhandledRequest: "error"`** — una petición que ningún handler simule hace
+fallar el test en vez de salir a la red. Los handlers por defecto están en
+`src/test/handlers.ts`; sobrescribe con `server.use(...)` en el test que lo necesite.
+
+`tsc -b` type-chequea también los `*.test.ts(x)`, así que un test mal tipado rompe
+`npm run build`.
 
 Feature-sliced en `src/features/` (auth · projects · moment · chat · studio). El **Content
 Studio va en chunk aparte** con `lazy()` y `manualChunks` en `vite.config.ts`: los

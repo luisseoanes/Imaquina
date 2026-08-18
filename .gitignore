@@ -24,3 +24,10 @@ frontend/src/api/generated/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Notas locales de Claude Code (personales, no del proyecto)
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Artefacto de `tsc -b`
+*.tsbuildinfo

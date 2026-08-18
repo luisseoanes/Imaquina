@@ -37,6 +37,11 @@ Plataforma web de robótica educativa para colegios, con dos perfiles (docente /
 
 ## 2. El problema serio: el hosting actual no sirve
 
+> **DESACTUALIZADO (agosto 2026).** El PO asume la inversión en infraestructura,
+> hosting y servidor. Este análisis se conserva como historia de por qué se llegó
+> ahí, pero **no condiciona ninguna decisión técnica**: da por disponibles
+> Postgres 16 + pgvector, Redis y S3/R2. Ver `CLAUDE.md` § Reparto de trabajo.
+
 El PDF documenta un **hosting compartido cPanel de Colombia Hosting** (MariaDB, PHP 8.4, migrado en enero 2026 para "soportar Node.js"). Sobre eso hay que ser directo:
 
 - Es hosting compartido con **2 GB de RAM, 100 procesos, 1 core**. Un backend Python + un modelo de embeddings + Postgres no caben ahí con garantías.
