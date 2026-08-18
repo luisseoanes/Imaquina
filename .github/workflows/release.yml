@@ -1,16 +1,20 @@
-# Release automatico por versionado semantico.
+# Verificacion + release automatico por versionado semantico.
 #
-# Lee los prefijos de los commits que hay desde el ultimo tag y decide el salto
-# de version: `feat` sube minor, `fix` sube patch, y un `!` o un pie
-# `BREAKING CHANGE:` sube major. El resto de tipos (docs, chore, refactor, test,
-# ci, build, style, perf, revert) NO publican nada: aqui se empujan commits
-# sueltos a la rama, y con ellos publicando saldria una release por commit.
-# Igual salen en las notas de la release que acabe cortando un feat o un fix.
+# Dos jobs de verificacion (backend y frontend) corren en paralelo, y el job de
+# release solo arranca si ambos pasan: publicar una version rota es peor que no
+# publicar. Los mismos comandos que en local, via Makefile — si `make test`
+# pasa en tu maquina, pasa aqui.
 #
-# Luego crea el tag y la release de GitHub con las notas generadas.
+# El release lee los prefijos de los commits desde el ultimo tag y decide el
+# salto de version: `feat` sube minor, `fix` sube patch, y un `!` o un pie
+# `BREAKING CHANGE:` sube major. El resto de tipos (docs, chore, refactor,
+# test, ci, build, style, perf, revert) NO publican nada: aqui se empujan
+# commits sueltos a la rama, y con ellos publicando saldria una release por
+# commit. Igual salen en las notas de la release que acabe cortando un feat o
+# un fix.
 #
 # Las reglas viven en .releaserc.json. NO genera CHANGELOG.md: las notas van en
-# el cuerpo de la release de GitHub y no se commitea nada de vuelta al repo.
+# el cuerpo de la release y no se commitea nada de vuelta al repo.
 
 name: Release
 
@@ -18,20 +22,95 @@ on:
   push:
     branches: [master]
 
-# Sin esto el GITHUB_TOKEN no puede crear tags ni releases.
 permissions:
   contents: write
   issues: write
   pull-requests: write
 
-# Dos pushes seguidos a main no pueden publicar a la vez: el segundo espera.
 concurrency:
   group: release
   cancel-in-progress: false
 
 jobs:
-  release:
+  backend:
+    name: Backend (ruff + pytest)
     runs-on: ubuntu-latest
+
+    # Los tests de integracion corren contra Postgres de verdad: los mocks de
+    # base de datos mienten, y ademas aqui vive el guard de deriva entre
+    # modelos y migraciones. Misma imagen que docker-compose.
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: imaquina
+          POSTGRES_PASSWORD: imaquina
+          POSTGRES_DB: imaquina_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U imaquina"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://imaquina:imaquina@localhost:5432/imaquina_test
+      SECRET_KEY: clave-solo-para-ci
+      ANTHROPIC_API_KEY: ""
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # Instalador oficial en vez de una action: no hay que acertar con la
+      # version de la action y `uv.lock` ya fija todo lo que importa.
+      - name: Instala uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Sincroniza el entorno
+        run: cd backend && uv sync --locked
+
+      - name: Lint
+        run: make lint
+
+      # Sin `-k`, sin `--maxfail`: si los de integracion se saltaran por no
+      # haber base, esto pasaria en verde sin haber probado nada.
+      - name: Tests
+        run: make test
+
+  frontend:
+    name: Frontend (eslint + vitest + build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instala dependencias
+        run: make web-install
+
+      - name: Lint
+        run: make web-lint
+
+      - name: Tests
+        run: make web-test
+
+      # `tsc -b` type-chequea tambien los tests, asi que el build es el que
+      # atrapa un test mal tipado.
+      - name: Build
+        run: make web-build
+
+  release:
+    name: Publica
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v5
         with:

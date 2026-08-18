@@ -34,6 +34,16 @@ async def _database_reachable() -> bool:
 @pytest_asyncio.fixture(scope="session")
 async def engine():
     if not await _database_reachable():
+        # En local saltar es lo correcto: no todo el mundo tiene la BD arriba.
+        # En CI seria un agujero — la suite pasaria en verde sin haber probado
+        # nada. GitHub Actions exporta CI=true.
+        if os.getenv("CI"):
+            pytest.fail(
+                f"Postgres no disponible en CI ({DB_URL}). Los tests de "
+                "integracion NO pueden saltarse aqui: revisa el service "
+                "container del workflow.",
+                pytrace=False,
+            )
         pytest.skip(
             "Postgres no disponible. Levantar con `make up` y crear la base "
             "`imaquina_test`.",
