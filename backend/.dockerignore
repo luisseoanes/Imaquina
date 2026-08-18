@@ -1,0 +1,11 @@
+# El venv del host NO entra en la imagen: es de otro SO/arquitectura y ademas
+# lo tapa el bind mount de docker-compose.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.env

@@ -28,7 +28,9 @@ dependencies = [
     "python-multipart>=0.0.12",
 ]
 
-[project.optional-dependencies]
+# PEP 735: `uv sync` lo instala por defecto; `uv sync --no-dev` lo excluye
+# (asi la imagen de produccion no arrastra pytest ni mypy).
+[dependency-groups]
 dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",

@@ -2,8 +2,9 @@
 
 Plataforma de robótica educativa: 36 proyectos por grado (Transición → 11°), seis momentos metodológicos por proyecto, chatbot consultor técnico y evaluación exportable. Bilingüe ES/EN.
 
-- **Alcance y fases:** [`docs/SCOPE-MVP.md`](docs/SCOPE-MVP.md)
-- **Decisiones de arquitectura:** [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md)
+- **Alcance y fases:** [`docs/scope-mvp.md`](docs/scope-mvp.md)
+- **Decisiones de arquitectura:** [`docs/arquitectura.md`](docs/arquitectura.md)
+- **Brief original del cliente:** [`docs/plataforma-imaquina-robotica.md`](docs/plataforma-imaquina-robotica.md)
 
 ## Stack
 
@@ -18,7 +19,8 @@ Plataforma de robótica educativa: 36 proyectos por grado (Transición → 11°)
 
 ## Arrancar en local
 
-Requisitos: Docker, Python 3.12+, Node 20+.
+Requisitos: Docker, [uv](https://docs.astral.sh/uv/getting-started/installation/), Node 20+.
+(uv se encarga de Python: `uv sync` instala el 3.12 si no lo tienes.)
 
 ```bash
 # 1. Infraestructura
@@ -27,12 +29,12 @@ make up                       # Postgres (pgvector) + Redis
 # 2. Backend
 cd backend
 cp .env.example .env          # dejar ANTHROPIC_API_KEY vacío → StubProvider
-pip install -e ".[dev]"
-alembic upgrade head
-uvicorn app.main:app --reload # http://localhost:8000/docs
+uv sync                       # crea .venv exactamente segun uv.lock
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload   # http://localhost:8000/docs
 
 # 3. Worker (otra terminal)
-cd backend && arq app.workers.worker.WorkerSettings
+cd backend && uv run arq app.workers.worker.WorkerSettings
 
 # 4. Frontend (otra terminal)
 cd frontend && npm install && npm run dev   # http://localhost:5173
@@ -64,7 +66,7 @@ frontend/src/
 
 ## Las reglas que no se rompen
 
-Son las decisiones de `docs/ARQUITECTURA.md` convertidas en invariantes revisables:
+Son las decisiones de `docs/arquitectura.md` convertidas en invariantes revisables:
 
 1. **Un módulo no importa modelos ni queries de otro módulo.** Sólo su capa de servicio.
 2. **Toda consulta de datos por institución pasa por `TenantContext`.** Son datos de menores; el cruce entre colegios es un incidente, no un bug.
@@ -103,14 +105,24 @@ Los de integración usan Postgres real porque **los mocks de base de datos mient
 ## Comandos
 
 ```bash
+make             # lista todos los targets
+make sync        # instala backend/.venv segun uv.lock
 make up          # Postgres + Redis
 make api         # backend
 make web         # frontend
 make worker      # cola de background
 make migrate     # alembic upgrade head
 make revision m="añade tabla X"
+make lock        # sube dependencias y reescribe uv.lock (cambio deliberado)
 ```
+
+Las versiones las fija `backend/uv.lock`, que **va versionado**: los dos entornos de
+desarrollo y la imagen de Docker instalan exactamente lo mismo. `pyproject.toml` solo
+declara rangos; el lock es lo que manda. Tras un `git pull` que lo toque, `make sync`.
+
+El `Makefile` detecta el intérprete por `uv run`, así que funciona igual en Linux y en
+Windows — pero en Windows hay que llamarlo desde Git Bash o WSL.
 
 ## Estado
 
-Esqueleto ejecutable con la arquitectura ya cableada. Falta, según el cronograma de `SCOPE-MVP.md`: el editor del Content Studio (F2), el módulo de evaluación completo (F3), y los embeddings reales del RAG (F4 — hoy hay un placeholder en `workers/worker.py`).
+Esqueleto ejecutable con la arquitectura ya cableada. Falta, según el cronograma de `scope-mvp.md`: el editor del Content Studio (F2), el módulo de evaluación completo (F3), y los embeddings reales del RAG (F4 — hoy hay un placeholder en `workers/worker.py`).
