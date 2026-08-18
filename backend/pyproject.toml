@@ -52,6 +52,11 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
+# Tiene que coincidir con el de las fixtures: el engine de integracion es de
+# sesion y sus conexiones asyncpg quedan atadas al loop que las creo. Con el
+# default ("function") cualquier test que use la fixture `db` falla con
+# "attached to a different loop".
+asyncio_default_test_loop_scope = "session"
 testpaths = ["tests"]
 markers = [
     "integration: requiere Postgres levantado (make up)",

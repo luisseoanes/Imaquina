@@ -14,6 +14,7 @@ from sqlalchemy.orm import selectinload
 from app.core.errors import NotFound, ValidationFailed
 from app.modules.catalog.models import (
     MOMENT_ORDER,
+    ContentBlock,
     Moment,
     Project,
     ProjectStatus,
@@ -29,8 +30,11 @@ async def _load_full(db: AsyncSession, project_id: uuid.UUID) -> Project:
         .where(Project.id == project_id)
         .options(
             selectinload(Project.translations),
+            # La cadena llega hasta las traducciones del BLOQUE: build_snapshot
+            # las lee, y en async un lazy load aqui revienta con MissingGreenlet.
             selectinload(Project.moments)
-            .selectinload(Moment.blocks),
+            .selectinload(Moment.blocks)
+            .selectinload(ContentBlock.translations),
             selectinload(Project.moments).selectinload(Moment.translations),
         )
     )
