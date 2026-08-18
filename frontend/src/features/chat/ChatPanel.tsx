@@ -22,13 +22,14 @@ export default function ChatPanel({
   const [streaming, setStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
-  // R8: la conversación puede iniciarla el bot con la pregunta detonante
-  // del momento. Es contenido curado en el CMS, no texto generado.
-  useEffect(() => {
-    if (openingPrompt) {
-      setMessages([{ role: "assistant", content: openingPrompt }]);
-    }
-  }, [openingPrompt]);
+  // R8: la conversación puede iniciarla el bot con la pregunta detonante del
+  // momento. Es contenido curado en el CMS, no texto generado, así que se
+  // DERIVA en el render en vez de guardarse en `messages`: metiéndolo por un
+  // efecto, cada cambio de `openingPrompt` (llega async con el momento)
+  // reseteaba el estado y borraba la conversación en curso.
+  const visibles: Msg[] = openingPrompt
+    ? [{ role: "assistant", content: openingPrompt }, ...messages]
+    : messages;
 
   const start = useMutation({
     mutationFn: () =>
@@ -76,7 +77,7 @@ export default function ChatPanel({
       <header className="border-b px-4 py-2 font-medium">{t("chat.title")}</header>
 
       <div className="max-h-80 space-y-3 overflow-y-auto p-4">
-        {messages.map((m, i) => (
+        {visibles.map((m, i) => (
           <div key={i} className={m.role === "user" ? "text-right" : ""}>
             <span
               className={`inline-block rounded px-3 py-2 text-sm ${
