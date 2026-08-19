@@ -60,11 +60,11 @@ export default function LoginPage() {
             className="mt-1 w-full rounded border px-3 py-2"
           />
         </div>
-        {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+        {serverError && <p className="text-sm text-danger">{serverError}</p>}
         <button
           type="submit"
           disabled={formState.isSubmitting}
-          className="w-full rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+          className="w-full rounded bg-brand px-4 py-2 text-brand-content disabled:opacity-50"
         >
           {t("auth.login")}
         </button>

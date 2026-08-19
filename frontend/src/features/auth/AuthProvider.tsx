@@ -1,23 +1,16 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { http, setAccessToken } from "@/lib/http";
 
-export type Role = "student" | "teacher" | "editor" | "admin";
+import { clearTokens, http, setAccessToken, setRefreshToken } from "@/lib/http";
+import { AuthCtx } from "./useAuth";
+import type { AuthValue, Role, Session } from "./useAuth";
 
-export interface Session {
+interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
   role: Role;
   lang: "es" | "en";
 }
-
-interface AuthValue {
-  session: Session | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  isStaff: boolean;
-  canAuthor: boolean;
-}
-
-const Ctx = createContext<AuthValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(() => {
@@ -26,20 +19,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const login = useCallback(async (email: string, password: string) => {
-    const res = await http<{
-      access_token: string;
-      role: Role;
-      lang: "es" | "en";
-    }>({ url: "/auth/login", method: "POST", data: { email, password } });
+    const res = await http<LoginResponse>({
+      url: "/auth/login",
+      method: "POST",
+      data: { email, password },
+    });
 
+    // El refresh token hay que GUARDARLO: el access dura 15 minutos y sin
+    // esto la sesion se moria sin posibilidad de renovarla.
     setAccessToken(res.access_token);
+    setRefreshToken(res.refresh_token);
+
     const next = { role: res.role, lang: res.lang };
     localStorage.setItem("session", JSON.stringify(next));
     setSession(next);
   }, []);
 
   const logout = useCallback(() => {
-    setAccessToken(null);
+    clearTokens();
     localStorage.removeItem("session");
     setSession(null);
   }, []);
@@ -57,11 +54,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [session, login, logout],
   );
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
-}
-
-export function useAuth(): AuthValue {
-  const ctx = useContext(Ctx);
-  if (!ctx) throw new Error("useAuth debe usarse dentro de AuthProvider");
-  return ctx;
+  return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }

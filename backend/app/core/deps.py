@@ -13,7 +13,7 @@ from uuid import UUID
 from fastapi import Depends, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import PermissionDenied
+from app.core.errors import PermissionDenied, Unauthenticated
 from app.core.security import decode_token
 from app.db.session import get_db
 
@@ -54,11 +54,11 @@ async def get_tenant(
     authorization: Annotated[str | None, Header()] = None,
 ) -> TenantContext:
     if not authorization or not authorization.lower().startswith("bearer "):
-        raise PermissionDenied("Falta el token de acceso")
+        raise Unauthenticated("Falta el token de acceso")
 
     payload = decode_token(authorization.split(" ", 1)[1])
     if payload is None or payload.get("type") != "access":
-        raise PermissionDenied("Token invalido o expirado")
+        raise Unauthenticated("Token invalido o expirado")
 
     inst = payload.get("inst")
     return TenantContext(

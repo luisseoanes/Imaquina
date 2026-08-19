@@ -5,7 +5,8 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 
-import { AuthProvider, useAuth } from "./useAuth";
+import { AuthProvider } from "./AuthProvider";
+import { useAuth } from "./useAuth";
 
 const wrapper = ({ children }: { children: ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
@@ -43,6 +44,17 @@ describe("useAuth", () => {
     expect(result.current.canAuthor).toBe(false);
   });
 
+  it("el login GUARDA el refresh token: sin él la sesión muere a los 15 min", async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await act(async () => {
+      await result.current.login("docente@colegio.edu", "secreta");
+    });
+
+    await waitFor(() => expect(result.current.session).not.toBeNull());
+    expect(localStorage.getItem("refresh_token")).toBe("token-de-refresco");
+  });
+
   it("el logout borra sesión y token", async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await act(async () => {
@@ -54,6 +66,7 @@ describe("useAuth", () => {
 
     expect(result.current.session).toBeNull();
     expect(localStorage.getItem("access_token")).toBeNull();
+    expect(localStorage.getItem("refresh_token")).toBeNull();
     expect(localStorage.getItem("session")).toBeNull();
   });
 });

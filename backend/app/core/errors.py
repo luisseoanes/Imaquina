@@ -20,7 +20,21 @@ class NotFound(DomainError):
     code = "not_found"
 
 
+class Unauthenticated(DomainError):
+    """No sabemos quien eres: falta el token, es invalido o ha expirado.
+
+    Distinto de PermissionDenied a proposito. El cliente necesita saber si
+    tiene que RENOVAR el acceso (401) o si simplemente no le corresponde
+    (403); con un unico codigo no puede decidir y acaba echando al usuario.
+    """
+
+    status_code = 401
+    code = "unauthenticated"
+
+
 class PermissionDenied(DomainError):
+    """Sabemos quien eres, pero esto no te toca."""
+
     status_code = 403
     code = "permission_denied"
 
