@@ -30,7 +30,7 @@ export default function ProjectsPage() {
             <Link to={`/projects/${p.id}`} className="font-medium hover:underline">
               {p.title}
             </Link>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-content-subtle">
               {t("projects.grade")} {p.grade}
             </p>
           </li>

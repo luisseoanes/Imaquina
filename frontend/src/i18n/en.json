@@ -1,5 +1,7 @@
 {
-  "app": { "name": "Imaquina Robotics" },
+  "app": {
+    "name": "Imaquina Robotics"
+  },
   "auth": {
     "login": "Sign in",
     "email": "Email",
@@ -16,10 +18,59 @@
     "communicate": "Communicate",
     "assess": "Assessment"
   },
-  "projects": { "title": "Projects", "grade": "Grade", "empty": "No published projects yet" },
-  "teacher": { "guide": "Teacher guide", "showGuide": "Show teaching guide", "results": "Results", "export": "Export to Excel" },
-  "chat": { "title": "Technical advisor", "placeholder": "Ask me about your project…", "send": "Send", "thinking": "Thinking…" },
-  "assessment": { "submit": "Submit assessment", "score": "Score", "attempt": "Attempt" },
-  "studio": { "title": "Content Studio", "draft": "Draft", "published": "Published", "publish": "Publish", "preview": "Preview", "missingTranslation": "Translation missing" },
-  "common": { "save": "Save", "cancel": "Cancel", "loading": "Loading…", "error": "Something went wrong" }
+  "projects": {
+    "title": "Projects",
+    "grade": "Grade",
+    "empty": "No published projects yet",
+    "moments": "Moments",
+    "back": "Back to projects",
+    "backToProject": "Back to project",
+    "momentEmpty": "No content yet"
+  },
+  "teacher": {
+    "guide": "Teacher guide",
+    "showGuide": "Show teaching guide",
+    "results": "Results",
+    "export": "Export to Excel"
+  },
+  "chat": {
+    "title": "Technical advisor",
+    "placeholder": "Ask me about your project…",
+    "send": "Send",
+    "thinking": "Thinking…"
+  },
+  "assessment": {
+    "submit": "Submit assessment",
+    "score": "Score",
+    "attempt": "Attempt"
+  },
+  "studio": {
+    "title": "Content Studio",
+    "draft": "Draft",
+    "published": "Published",
+    "publish": "Publish",
+    "preview": "Preview",
+    "missingTranslation": "Translation missing",
+    "projects": "Projects",
+    "newProject": "New project",
+    "slug": "Identifier",
+    "grade": "Grade",
+    "kit": "Kit",
+    "projectTitle": "Title",
+    "create": "Create",
+    "creating": "Creating…",
+    "noProjects": "No projects yet. Create the first one.",
+    "moments": "Moments",
+    "blocks": "blocks",
+    "untitled": "(untitled)",
+    "back": "Back to projects",
+    "editorPending": "The block editor lands in S13.",
+    "slugHint": "Used in the URL. Generated from the title, you can change it."
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading…",
+    "error": "Something went wrong"
+  }
 }

@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "@/features/auth/LoginPage";
 import { useAuth } from "@/features/auth/useAuth";
 import MomentPage from "@/features/moment/MomentPage";
+import ProjectPage from "@/features/projects/ProjectPage";
 import ProjectsPage from "@/features/projects/ProjectsPage";
 
 // El Content Studio nunca llega al bundle del estudiante.
@@ -26,6 +27,13 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<RequireAuth><ProjectsPage /></RequireAuth>} />
+        {/* La vista del proyecto es el eslabon que faltaba: el listado
+            enlazaba aqui y no habia ruta, asi que el comodin de abajo
+            devolvia al usuario al principio. */}
+        <Route
+          path="/projects/:projectId"
+          element={<RequireAuth><ProjectPage /></RequireAuth>}
+        />
         <Route
           path="/projects/:projectId/moments/:momentType"
           element={<RequireAuth><MomentPage /></RequireAuth>}

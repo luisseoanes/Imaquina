@@ -1,5 +1,7 @@
 {
-  "app": { "name": "Imaquina Robótica" },
+  "app": {
+    "name": "Imaquina Robótica"
+  },
   "auth": {
     "login": "Iniciar sesión",
     "email": "Correo",
@@ -16,10 +18,59 @@
     "communicate": "Comunicación",
     "assess": "Evaluación"
   },
-  "projects": { "title": "Proyectos", "grade": "Grado", "empty": "Aún no hay proyectos publicados" },
-  "teacher": { "guide": "Guía del docente", "showGuide": "Ver guía didáctica", "results": "Resultados", "export": "Exportar a Excel" },
-  "chat": { "title": "Consultor técnico", "placeholder": "Pregúntame sobre tu proyecto…", "send": "Enviar", "thinking": "Pensando…" },
-  "assessment": { "submit": "Enviar evaluación", "score": "Puntaje", "attempt": "Intento" },
-  "studio": { "title": "Content Studio", "draft": "Borrador", "published": "Publicado", "publish": "Publicar", "preview": "Vista previa", "missingTranslation": "Falta traducir" },
-  "common": { "save": "Guardar", "cancel": "Cancelar", "loading": "Cargando…", "error": "Ocurrió un error" }
+  "projects": {
+    "title": "Proyectos",
+    "grade": "Grado",
+    "empty": "Aún no hay proyectos publicados",
+    "moments": "Momentos",
+    "back": "Volver a proyectos",
+    "backToProject": "Volver al proyecto",
+    "momentEmpty": "Sin contenido todavía"
+  },
+  "teacher": {
+    "guide": "Guía del docente",
+    "showGuide": "Ver guía didáctica",
+    "results": "Resultados",
+    "export": "Exportar a Excel"
+  },
+  "chat": {
+    "title": "Consultor técnico",
+    "placeholder": "Pregúntame sobre tu proyecto…",
+    "send": "Enviar",
+    "thinking": "Pensando…"
+  },
+  "assessment": {
+    "submit": "Enviar evaluación",
+    "score": "Puntaje",
+    "attempt": "Intento"
+  },
+  "studio": {
+    "title": "Content Studio",
+    "draft": "Borrador",
+    "published": "Publicado",
+    "publish": "Publicar",
+    "preview": "Vista previa",
+    "missingTranslation": "Falta traducir",
+    "projects": "Proyectos",
+    "newProject": "Nuevo proyecto",
+    "slug": "Identificador",
+    "grade": "Grado",
+    "kit": "Kit",
+    "projectTitle": "Título",
+    "create": "Crear",
+    "creating": "Creando…",
+    "noProjects": "Todavía no hay proyectos. Crea el primero.",
+    "moments": "Momentos",
+    "blocks": "bloques",
+    "untitled": "(sin título)",
+    "back": "Volver a proyectos",
+    "editorPending": "El editor de bloques llega en S13.",
+    "slugHint": "Se usa en la URL. Se genera del título, puedes cambiarlo."
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "loading": "Cargando…",
+    "error": "Ocurrió un error"
+  }
 }

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import ChatPanel from "@/features/chat/ChatPanel";
 import { useAuth } from "@/features/auth/useAuth";
 import { http } from "@/lib/http";
@@ -42,15 +42,22 @@ export default function MomentPage() {
 
   return (
     <main className="mx-auto max-w-3xl p-4 sm:p-6">
-      <h1 className="text-xl font-bold sm:text-2xl">{data.title}</h1>
+      <Link
+        to={`/projects/${projectId}`}
+        className="text-sm text-content-subtle hover:underline"
+      >
+        ← {t("projects.backToProject")}
+      </Link>
+
+      <h1 className="mt-2 text-xl font-bold sm:text-2xl">{data.title}</h1>
 
       {/* R4: el boton del docente. `teacher_note` sólo viene si el backend
           decidio mandarlo — aqui no ocultamos nada, simplemente no llega. */}
       {isStaff && data.teacher_note && (
-        <section className="my-4 rounded border border-amber-300 bg-amber-50 p-3">
+        <section className="my-4 rounded border border-note-line bg-note p-3">
           <button
             onClick={() => setShowGuide((v) => !v)}
-            className="text-sm font-medium text-amber-900"
+            className="text-sm font-medium text-note-content"
           >
             {t("teacher.showGuide")}
           </button>
