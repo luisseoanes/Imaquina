@@ -8,12 +8,13 @@ import uuid
 from datetime import UTC, datetime
 
 import boto3
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
 from app.core.deps import Author, Db
 from app.core.errors import ValidationFailed
+from app.modules.media import service
 from app.modules.media.models import MediaAsset
 
 router = APIRouter(prefix="/studio/media", tags=["studio"])
@@ -86,3 +87,27 @@ async def register(payload: RegisterIn, author: Author, db: Db):
     db.add(asset)
     await db.flush()
     return {"id": str(asset.id), "s3_key": asset.s3_key}
+
+
+@router.get("/assets")
+async def list_assets(
+    author: Author,
+    db: Db,
+    familia: str | None = None,
+    buscar: str | None = None,
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+):
+    """La librería reutilizable. `familia` filtra por image/audio/video/application."""
+    if familia and familia not in service.FAMILIAS:
+        raise ValidationFailed(
+            f"Familia no válida: {familia}. Opciones: {', '.join(service.FAMILIAS)}"
+        )
+    return await service.listar(
+        db, familia=familia, buscar=buscar, limit=limit, offset=offset
+    )
+
+
+@router.delete("/assets/{asset_id}", status_code=204)
+async def delete_asset(asset_id: uuid.UUID, author: Author, db: Db) -> None:
+    await service.borrar(db, asset_id)
