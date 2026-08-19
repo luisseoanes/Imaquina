@@ -48,14 +48,22 @@ def _proyecto():
 
 
 def test_snapshot_incluye_los_bloques_y_el_prompt_de_apertura():
-    snap = build_snapshot(_proyecto(), "es")
-    assert snap["title"] == "Seguidor de linea"
-    momento = snap["moments"][0]
+    es = build_snapshot(_proyecto())["content"]["es"]
+    assert es["title"] == "Seguidor de linea"
+    momento = es["moments"][0]
     assert momento["blocks"][0]["body"] == "Arma el chasis"
     assert momento["chatbot_opening_prompt"]
 
 
 def test_snapshot_guarda_la_guia_docente():
     """El snapshot es la verdad completa; el filtro por rol ocurre al servir."""
-    snap = build_snapshot(_proyecto(), "es")
-    assert snap["moments"][0]["teacher_note"] == "Equipos de 4"
+    es = build_snapshot(_proyecto())["content"]["es"]
+    assert es["moments"][0]["teacher_note"] == "Equipos de 4"
+
+
+def test_solo_entran_los_idiomas_traducidos():
+    """Publicar solo en ES es un caso normal, no un error (R6)."""
+    snap = build_snapshot(_proyecto())
+
+    assert snap["langs"] == ["es"]
+    assert "en" not in snap["content"]

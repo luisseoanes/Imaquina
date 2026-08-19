@@ -37,24 +37,28 @@ async def reindex_project(ctx: dict, project_id: str) -> dict:
             await db.commit()
             return {"project_id": project_id, "chunks": 0, "reason": "sin publicar"}
 
+        # Un chunk por idioma: el snapshot lleva todas las traducciones y el
+        # chat responde en el idioma del estudiante. Indexar solo uno dejaba
+        # al que pregunta en ingles recuperando contexto en español.
         count = 0
-        for moment in snapshot["moments"]:
-            for block in moment["blocks"]:
-                body = (block.get("body") or "").strip()
-                if not body:
-                    continue
-                # TODO: generar embedding real. Placeholder hasta cablear el
-                # modelo de embeddings (ver docs/scope-mvp.md F4).
-                db.add(
-                    DocumentChunk(
-                        project_id=pid,
-                        moment_id=uuid.UUID(moment["id"]),
-                        lang=snapshot["lang"],
-                        content=body,
-                        embedding=[0.0] * settings.EMBEDDING_DIM,
+        for lang in snapshot.get("langs", []):
+            for moment in snapshot["content"][lang]["moments"]:
+                for block in moment["blocks"]:
+                    body = (block.get("body") or "").strip()
+                    if not body:
+                        continue
+                    # TODO: generar embedding real. Placeholder hasta cablear
+                    # el modelo de embeddings (ver docs/scope-mvp.md F4).
+                    db.add(
+                        DocumentChunk(
+                            project_id=pid,
+                            moment_id=uuid.UUID(moment["id"]),
+                            lang=lang,
+                            content=body,
+                            embedding=[0.0] * settings.EMBEDDING_DIM,
+                        )
                     )
-                )
-                count += 1
+                    count += 1
 
         await db.commit()
     return {"project_id": project_id, "chunks": count}
