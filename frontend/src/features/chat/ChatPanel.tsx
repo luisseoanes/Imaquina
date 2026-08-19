@@ -81,7 +81,7 @@ export default function ChatPanel({
           <div key={i} className={m.role === "user" ? "text-right" : ""}>
             <span
               className={`inline-block rounded px-3 py-2 text-sm ${
-                m.role === "user" ? "bg-black text-white" : "bg-gray-100"
+                m.role === "user" ? "bg-brand text-brand-content" : "bg-surface-muted"
               }`}
             >
               {m.content || (streaming && t("chat.thinking"))}
@@ -101,7 +101,7 @@ export default function ChatPanel({
         <button
           onClick={() => void send()}
           disabled={streaming || !sessionId}
-          className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
+          className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:opacity-50"
         >
           {t("chat.send")}
         </button>
