@@ -31,3 +31,8 @@ CLAUDE.local.md
 
 # Artefacto de `tsc -b`
 *.tsbuildinfo
+
+# Exportaciones de la paleta: se regeneran desde docs/marca/paleta-imaquina.html
+# (receta en CLAUDE.md). Versionar cada revisión serían megas en el historial.
+docs/marca/paleta-imaquina-oscuro.pdf
+docs/marca/paleta-imaquina-completa*.png

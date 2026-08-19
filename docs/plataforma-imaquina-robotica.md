@@ -1,6 +1,6 @@
 # Plataforma Imaquina Robótica — brief del cliente
 
-> Transcripción de [`plataforma-imaquina-robotica.pdf`](plataforma-imaquina-robotica.pdf)
+> Transcripción de [`marca/plataforma-imaquina-robotica.pdf`](marca/plataforma-imaquina-robotica.pdf)
 > (Jason Castro Parra, 29 de julio de 2026, 4 páginas). El PDF original se conserva:
 > las páginas 2–4 son capturas de pantalla y esto es su contenido en texto.
 >

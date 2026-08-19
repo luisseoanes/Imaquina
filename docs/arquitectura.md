@@ -52,7 +52,9 @@ Si algún día el chatbot necesita escalar aparte, un módulo bien delimitado se
 | `assistant` | Chat, RAG, guardrails |
 | `shared` | Config, seguridad, sesión de DB, errores, dependencias comunes |
 
-**La regla que hace que esto funcione:** un módulo puede importar de `shared` y llamar a la **capa de servicio** de otro módulo, pero **nunca importa los modelos ni las queries de otro módulo directamente**. Es simple, se revisa en code review y es lo que mantiene las fronteras vivas. Sin ella, en tres meses tienes un monolito de barro donde `assessment` hace joins contra tablas de `catalog` y ya no puedes tocar nada.
+**La regla que hace que esto funcione:** un módulo puede importar de `shared` y llamar a la **capa de servicio** de otro módulo, pero **nunca ESCRIBE sobre los modelos de otro**.
+
+> *Revisada en agosto 2026.* La regla original decía "nunca importa los modelos de otro módulo" y acumulaba tres excepciones documentadas sobre siete módulos —`publishing`→`catalog`, `learning`→`catalog`+`publishing`, `assistant`→`identity`—, dos de ellas estructurales: serializar `catalog` exige conocer su forma. Una regla con tres excepciones no se defiende en code review. El riesgo real es el acoplamiento de **escritura**, dos módulos mutando las mismas tablas; leer modelos ajenos es incómodo pero no rompe nada. Esta versión sí es aplicable. Es simple, se revisa en code review y es lo que mantiene las fronteras vivas. Sin ella, en tres meses tienes un monolito de barro donde `assessment` hace joins contra tablas de `catalog` y ya no puedes tocar nada.
 
 Dentro de cada módulo: `router` (HTTP) → `service` (lógica) → SQLAlchemy.
 
@@ -72,6 +74,15 @@ Es la decisión con más impacto en rendimiento y la más fácil de pasar por al
 **Al publicar, se serializa el proyecto completo a un snapshot JSONB** (`ProjectVersion.snapshot`, que ya está en el modelo de datos por versionado). Los estudiantes se sirven de ese snapshot: **una query, un índice, cacheable**. Los editores siguen trabajando contra las tablas normalizadas.
 
 Es CQRS-lite y sale casi gratis porque el snapshot ya existía para el rollback. Dos beneficios por el mismo trabajo.
+
+**Un snapshot lleva TODOS los idiomas, no uno por idioma.** *(corregido en agosto 2026)* La primera versión serializaba un solo idioma y lo estampaba en `snapshot["lang"]`. Como solo puede haber una versión `is_current`, publicar en inglés **sustituía** a la española: la plataforma bilingüe (R6) quedaba servida en un único idioma, y el reindexado del RAG heredaba el problema indexando chunks de ese idioma nada más.
+
+La forma correcta es `snapshot["content"][lang]`, con `snapshot["langs"]` listando los que están completos. Una versión = una publicación del proyecto entero:
+
+- Publicar solo en español sigue siendo un caso normal: falta la clave `en` y ya está.
+- Un idioma entra solo si su traducción está completa; media traducción serviría contenido a medias.
+- El rollback sigue siendo coherente: reviertes el proyecto, no el proyecto-en-un-idioma.
+- Si el estudiante pide un idioma que no está, se sirve el que haya y la respuesta indica cuál (`"lang"`), en vez de un 404. Mejor ver el momento en español que no verlo.
 
 ### 3.2. Multi-tenancy: aislar por institución desde el día 1
 

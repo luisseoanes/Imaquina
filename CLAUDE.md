@@ -40,6 +40,10 @@ imagen de Docker instalan exactamente lo mismo. `pyproject.toml` solo declara ra
   (cmd.exe no resuelve rutas de ejecutable con barras normales).
 - En la imagen, el venv vive en `/opt/venv`, **fuera de `/app`**: docker-compose monta
   `./backend` en `/app` y taparía un venv que estuviera ahí dentro.
+- **Si mueves o renombras el directorio del repo**, el venv conserva la ruta vieja y
+  `uv run` deja de encontrar `pytest`: `rm -rf backend/.venv && make sync`. Los
+  contenedores cuelgan del nombre del directorio, así que `make up` crea unos nuevos y
+  hay que rehacer `make testdb && make migrate && make seed`.
 
 Arranque desde cero: `make sync && make up && make migrate && make seed`.
 
@@ -72,11 +76,19 @@ make sync          # backend/.venv exactamente segun uv.lock
 make lock          # sube dependencias y reescribe el lock (cambio deliberado)
 make up            # Postgres (pgvector) + Redis
 make testdb        # crea la base imaquina_test (requiere make up)
+make migrate       # alembic upgrade head
+make seed          # datos de desarrollo: 4 roles + un proyecto publicado
 make api           # uvicorn --reload en :8000
 make worker        # worker ARQ de background
 make test-unit     # sin infraestructura, siempre corre
 make test-int      # requiere Postgres; si no está, se salta solo
 make lint / fix    # ruff
+
+# frontend, mismos comandos que usa CI
+make web-install   # npm ci, exactamente segun package-lock.json
+make web-lint      # eslint
+make web-test      # vitest
+make web-build     # tsc -b && vite build && guarda de chunks
 
 # un test suelto: no hay target
 cd backend && uv run pytest tests/unit/test_security.py::test_nombre -q
@@ -119,7 +131,11 @@ commitea nada de vuelta al repo. No lo añadas sin que sea una decisión explíc
 ## Arquitectura: lo que hay que respetar
 
 **Camino de lectura ≠ camino de escritura.** Al publicar, `publishing/service.build_snapshot`
-serializa el proyecto entero a `ProjectVersion.snapshot` (JSONB). Los estudiantes se
+serializa el proyecto entero a `ProjectVersion.snapshot` (JSONB), **con todos los idiomas
+dentro**: `snapshot["content"][lang]`, y `snapshot["langs"]` lista los completos. Un
+snapshot por idioma no vale — solo hay una versión `is_current`, así que publicar en
+inglés sustituiría a la española y R6 se rompe. Para leerlo, `publishing.service.contenido_en`,
+que cae al idioma disponible si el pedido no está. Los estudiantes se
 sirven **sólo** de ese snapshot (`learning/service`), nunca de las tablas normalizadas;
 el Content Studio escribe contra las tablas. No añadas queries de estudiante que hagan
 joins sobre `catalog`.
@@ -153,15 +169,20 @@ cliente HTTP del frontend ya parsea.
 **La licencia recorta la vigencia del token** (`core/security.create_token`): el `exp`
 nunca supera `license_valid_to`.
 
-### Regla de dependencia entre módulos (y sus excepciones actuales)
+### Regla de dependencia entre módulos
 
-La regla de `docs/arquitectura.md` §2: un módulo llama a la **capa de servicio** de otro,
-nunca importa sus modelos. Hoy hay tres importaciones que la incumplen — tenlas presentes
-antes de añadir una cuarta "porque ya se hace":
+`docs/arquitectura.md` §2, revisada en agosto 2026: un módulo puede **leer** modelos de
+otro, pero **nunca escribe** sobre ellos. La versión anterior ("nunca importa sus
+modelos") acumulaba tres excepciones permanentes y no se defendía en code review.
 
-- `publishing/service.py` → `catalog.models` (intrínseco: publishing serializa catalog)
-- `learning/service.py` → `catalog.models`, `publishing.models`
-- `assistant/router.py` → `identity.models.User`
+Leer está bien y se hace en cuatro sitios (`publishing`→`catalog`, `learning`→`catalog` y
+`→publishing`, `assistant/router`→`identity`). Cuando puedas, prefiere llamar al
+**servicio** del otro módulo: ya lo hacen `media`↔`catalog`, `learning`→`publishing` y
+`catalog`→`publishing`.
+
+**La única escritura cruzada es `publishing/service.py`** (`project.status = PUBLISHED` al
+publicar). Es intrínseca —publishing posee la transición borrador→publicado— pero es la
+que hay que vigilar: no añadas una segunda sin discutirlo.
 
 Dentro de cada módulo: `router` (HTTP) → `service` (lógica) → SQLAlchemy directo. **No hay
 capa de repositorio** y no debe añadirse. Modelos nuevos deben quedar alcanzables desde
@@ -186,9 +207,21 @@ capa de repositorio** y no debe añadirse. Modelos nuevos deben quedar alcanzabl
   `test_loop_scope` están **los dos** en `session` a propósito: el engine de integración
   es de sesión y sus conexiones asyncpg quedan atadas al loop que las creó; si se
   desalinean, todo test que use la fixture `db` peta con "attached to a different loop".
+- **Dos trampas del ORM async que ya han mordido tres veces.** (1) Tocar una relación que
+  no venga cargada con `selectinload` revienta con `MissingGreenlet`; si acabas de crear
+  el objeto, relee por el camino que sí la carga en vez de parchear el acceso. (2) Si la
+  entidad ya está en el identity map con su colección cargada, un `select` posterior
+  devuelve **la vieja**: hace falta `.execution_options(populate_existing=True)`, o añadir
+  un hijo y volver a listar no lo muestra. Lo llevan ya `catalog._get_moment`,
+  `catalog._get_block` y `publishing._load_full` — este último es el crítico: sin él,
+  publicar justo después de editar serializaría un snapshot desactualizado.
 - **Los tests unitarios de servicios mienten sobre el ORM async**: construyen los objetos
   en memoria, así que las relaciones ya están cargadas y nunca ejercitan el lazy loading.
   Todo servicio que serialice relaciones necesita además un test de integración.
+- **Los tests de componente aislado no ven la navegación.** `ProjectsPage` enlazaba a una
+  ruta que no existía y el comodín devolvía al listado; ningún test lo detectó.
+  `features/projects/navegacion.test.tsx` renderiza `<App>` y navega de verdad: los
+  enlaces entre pantallas se prueban ahí, no en el componente.
 
 ## Frontend
 
@@ -198,12 +231,41 @@ y **MSW en `onUnhandledRequest: "error"`** — una petición que ningún handler
 fallar el test en vez de salir a la red. Los handlers por defecto están en
 `src/test/handlers.ts`; sobrescribe con `server.use(...)` en el test que lo necesite.
 
+`src/test/setup.ts` inicializa i18next de verdad, no un mock: los tests afirman sobre el
+texto que ve el usuario, así que una clave que falte en `es.json` sale como fallo.
+
 `tsc -b` type-chequea también los `*.test.ts(x)`, así que un test mal tipado rompe
 `npm run build`.
 
+**Mobile-first y color por tokens, siempre.** Los estudiantes entran desde el móvil y en
+el aula de robótica no hay un PC por cabeza: el estilo base es el de móvil y `sm:`/`md:`
+amplían, nunca al revés. Y **ningún color crudo en los componentes** — nada de
+`bg-gray-100` ni `text-red-600`. Se usan los tokens semánticos de `src/index.css`
+(`surface`, `content`, `content-muted`, `content-subtle`, `brand`, `note`, `success`,
+`danger`), que nombran la intención y no el color.
+
+> Los valores actuales son un **neutro provisional**: la paleta de marca la define el PO y
+> está pendiente. Cuando llegue se cambia el bloque `:root` de `src/index.css` y nada más.
+> Mínimo de contraste AA para texto: 4.5:1 — `content-subtle` es el suelo, con 4.8:1.
+
 Feature-sliced en `src/features/` (auth · projects · moment · chat · studio). El **Content
-Studio va en chunk aparte** con `lazy()` y `manualChunks` en `vite.config.ts`: los
-estudiantes son el 95% del tráfico y no deben descargar el editor. Estado de servidor con
+Studio va en chunk aparte** con `lazy()` en `App.tsx`: los estudiantes son el 95% del
+tráfico y no deben descargar el editor. **Sin `manualChunks`** — la config heredada de
+Rollup convertía "studio" en el chunk común bajo rolldown y el entry acababa
+importándolo. `scripts/check-chunks.mjs` corre en `npm run build` y falla si el bundle de
+entrada vuelve a importar el chunk del Studio.
+
+Los datos del Studio se piden con hooks a mano sobre `http()` (`features/studio/api.ts`),
+no con el cliente de orval: el generado está gitignored y `api:gen` necesita el backend,
+así que importarlo rompería el build en CI y en un clon recién hecho. Estado de servidor con
 TanStack Query, sin Redux. Alias `@/` → `src/`. El chat consume SSE con `streamChat()` de
 `src/lib/http.ts` (no pasa por orval). Texto de UI siempre vía i18next (`es.json`/`en.json`),
 nunca literales en los componentes.
+
+## Exportar un doc HTML a PDF o imagen
+
+`docs/marca/paleta-imaquina.html` se exporta con `google-chrome --headless=new`. Dos cosas sin
+las que sale mal: **`print-color-adjust: exact`** —si no, el navegador descarta los fondos
+al imprimir y un diseño oscuro queda ilegible— y **`@page { margin: 0 }`** con el aire por
+dentro, o el fondo no llega al borde y queda un marco blanco. El tema se fuerza con
+`<html data-theme="dark">` en un envoltorio temporal; el fichero de `docs/` no se toca.

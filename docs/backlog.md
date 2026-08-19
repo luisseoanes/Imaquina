@@ -28,8 +28,8 @@ Van primero porque bloquean secciones enteras, no ítems sueltos.
 - [x] **B2 · Tooling del frontend.** ✅ `package-lock.json` versionado, ESLint 10 con flat
       config, vitest + jsdom + MSW, y 8 tests reales (`http.ts` y `useAuth`). Targets
       `make web-install|web-lint|web-test|web-build`. De paso: 12 vulnerabilidades → 0.
-      *Queda 1 warning de `react-refresh` en `useAuth.tsx` (exporta componente + hook);
-      se resuelve partiendo el fichero cuando N8 lo toque.*
+      El warning de `react-refresh` se resolvió en N8 partiendo el fichero: eslint sale
+      sin advertencias.
 - [x] **B3 · Semillas de desarrollo.** ✅ `make seed` → institución, licencia vigente, un
       usuario por rol y un proyecto publicado con sus 6 momentos. Idempotente y bloqueado
       fuera de `ENV=local`. Verificado end-to-end contra la API: login de los 4 roles y
@@ -43,16 +43,11 @@ Van primero porque bloquean secciones enteras, no ítems sueltos.
       `needs: [backend, frontend]`. Los tests de integración **fallan duro con `CI=true`**
       en vez de saltarse, que si no el gate pasaría en verde sin probar nada.
 
-### Excepción de orden: N1 y N8 se adelantan
+### Excepción de orden: N1 y N8 ya están hechos
 
-**Antes de tocar §2, haz `N1` y `N8` de §3** (endpoint de refresh + guardarlo en el
-cliente). No son parte del núcleo "para después": el access token dura 15 minutos y hoy
-no hay forma de renovarlo, así que en cuanto empieces a editar en el Studio te va a echar
-la sesión cada cuarto de hora — a ti mientras desarrollas y al cliente mientras carga
-contenido. Y el autoguardado (`S9`) llega tarde en la sección, así que ese logout se lleva
-trabajo por delante.
-
-Son dos ítems. El resto de §3 sí puede esperar a después del Studio.
+Se adelantaron a §2 a propósito y **ya están cerrados**: el access token dura 15 minutos y
+sin renovación el Studio te echaba la sesión cada cuarto de hora, a ti desarrollando y al
+cliente cargando contenido. El resto de §3 sí puede esperar a después del Studio.
 
 ---
 
@@ -64,32 +59,71 @@ líneas de placeholder.
 
 ### Backend ⇠ B1
 
-- [ ] **S1 · `catalog/service.py` + `catalog/router.py`** bajo `/studio`, con guard
-      `Author` (editor/admin). CRUD de `Project`: crear, editar, ordenar, grado, kit.
-- [ ] **S8 · Registrar el router en `app/api.py`.** ⇠ S1. *Va aquí y no al final: sin
-      esto nada del Studio existe para el frontend.*
-- [ ] **S2 · Los 6 momentos se crean solos** al crear el proyecto, con tipo fijo y orden
-      de `MOMENT_ORDER`. El editor los llena, no los inventa (R7). ⇠ S1.
-- [ ] **S3 · CRUD de `ContentBlock`**: añadir, editar, reordenar, borrar. ⇠ S2.
-- [ ] **S4 · Traducciones ES/EN** de proyecto, momento y bloque, con indicador de "falta
-      traducir". El proyecto puede publicarse sólo en ES (R6). ⇠ S3.
-- [ ] **S5 · Guía docente y prompt de apertura** por momento e idioma
-      (`MomentTranslation.teacher_note`, `chatbot_opening_prompt`) — R4 y R8. ⇠ S4.
-- [ ] **S10 · Librería de media.** Hoy `media/router.py` sólo tiene `presign` y
-      `register`: falta listar y borrar assets.
+- [x] **S1 · `catalog/service.py` + `catalog/router.py`** ✅ bajo `/studio/catalog`, con
+      guard `Author`. CRUD de `Project` con PATCH parcial y traducción por idioma. Dos
+      guardarraíles: slug repetido devuelve 409 en vez de un IntegrityError crudo, y
+      **borrar un proyecto publicado devuelve 409** — `project_versions` cuelga con
+      CASCADE y se llevaría el snapshot de los estudiantes. `status` no es editable aquí:
+      publicar es de `publishing`. 10 tests de integración.
+- [x] **S8 · Registrar el router en `app/api.py`.** ✅ Verificado en el esquema OpenAPI:
+      `GET,POST /api/v1/studio/catalog/projects` y `DELETE,GET,PATCH .../{project_id}`.
+- [x] **S2 · Los 6 momentos se crean solos** ✅ al crear el proyecto, con tipo fijo y el
+      orden de `MOMENT_ORDER` (R7). Nacen vacíos: el editor los rellena. El **detalle**
+      los devuelve y el **listado** no —serían seis joins por fila para una tabla que no
+      los muestra—, y crear relee por el camino del detalle, así que crear y consultar
+      devuelven exactamente la misma forma.
+- [x] **S3 · CRUD de `ContentBlock`** ✅ añadir (al final), editar parcial, borrar y
+      **reordenar mandando el orden completo** — es lo que envía un drag & drop y evita
+      el estado intermedio de ir subiendo bloques de uno en uno. Un reordenamiento
+      incompleto o con duplicados se rechaza con 422. Nuevo `media/service.asset_existe`
+      para que un `media_asset_id` inexistente dé 422 y no un IntegrityError 500.
+- [x] **S4 · Traducciones ES/EN** ✅ proyecto, momento y bloque aceptan `lang` y devuelven
+      `langs`. `GET /projects/{id}/translations` dice **qué** falta en cada idioma, no un
+      booleano, y usa el mismo criterio que decide si un idioma entra al snapshot.
+      Destapó que la validación por idioma **no miraba los bloques**: un idioma con los
+      títulos puestos entraba al snapshot con todos los cuerpos vacíos. Ahora un bloque de
+      texto exige `body` y una imagen exige `alt_text` (accesibilidad), y un título en
+      blanco no cuenta como traducido.
+- [x] **S5 · Guía docente y prompt de apertura** ✅ `GET,PATCH /studio/catalog/moments/{id}`,
+      parcial y por idioma. **Sin POST ni DELETE**: son seis y fijos (R7). En el Studio la
+      guía docente NO se oculta —quien entra es editor—; el filtro por rol es del camino
+      de lectura.
+- [x] **S10 · Librería de media.** ✅ `GET /studio/media/assets` (paginado, filtro por
+      familia MIME y búsqueda por nombre) y `DELETE /assets/{id}`. **No se borra un asset
+      en uso**: el FK es `ON DELETE SET NULL`, así que borrarlo dejaría los bloques
+      apuntando a nada sin aviso y quizá en un proyecto publicado. El listado trae
+      `used_in` para avisar antes de intentarlo. La consulta de uso vive en
+      `catalog.uso_de_assets` — `ContentBlock` es suyo.
 - [ ] **S7 · Preview como estudiante y como docente.** Reutiliza
       `learning/service.serialize_moment_for`, no dupliques el filtro de `teacher_note`.
       ⇠ S5.
 - [ ] **S6 · Duplicar proyecto.** El scope §7 lo marca como clave: la mayoría de los 36
       comparten estructura. ⇠ S3.
+- [ ] **S18 · Despublicar un proyecto.** `status` solo avanza a `published`; **nadie lo
+      devuelve a `draft`**. El mensaje de error al borrar un proyecto publicado dice
+      "despublícalo primero" y esa acción no existe. Sale de la revisión de arquitectura.
+      ⇠ S1.
+- [ ] **S19 · Limpiar los objetos huérfanos de S3.** `DELETE /assets/{id}` sólo da de
+      baja el registro; el fichero se queda en el bucket para siempre. Borrarlo dentro de
+      la petición no vale: si el commit falla después, queda un fichero destruido que la
+      BD sigue referenciando. Trabajo ARQ idempotente que borre el objeto **sólo si ya no
+      existe ninguna fila** con esa `s3_key`. ⇠ S10.
 - [ ] **S9 · Autoguardado y bloqueo optimista.** Dos editores sobre el mismo proyecto
       deben avisar, no perder trabajo. ⇠ S3.
 
 ### Frontend ⇠ B2
 
-- [ ] **S11 · Layout y rutas anidadas del Studio.** Mantenerlo en su chunk (`lazy()` +
-      `manualChunks`): los estudiantes no deben descargar el editor.
-- [ ] **S12 · Listado y creación de proyectos.** ⇠ S11, S1.
+- [x] **S11 · Layout y rutas anidadas del Studio.** ✅ Shell con `<Routes>` anidadas
+      (índice → listado, `projects/:id` → detalle) y selector del **idioma de edición**,
+      distinto del de la interfaz. Destapó que el chunk aparte **estaba roto**: la config
+      de `manualChunks` era de Rollup y bajo rolldown convertía "studio" en el chunk
+      común, así que el bundle de entrada lo importaba entero. Quitada, y añadido
+      `scripts/check-chunks.mjs` al `npm run build` para que no vuelva a pasar en silencio.
+- [x] **S12 · Listado y creación de proyectos.** ✅ Listado con estado e idiomas
+      traducidos, y alta con el identificador derivado del título (sin acentos, va en la
+      URL) editable a mano. El 409 de slug repetido se pinta con el mensaje del backend.
+      Hooks a mano sobre `http()` y **no** el cliente de orval: su código está gitignored
+      y `api:gen` necesita el backend, así que importarlo rompería el build en CI.
 - [ ] **S13 · Editor de momentos y bloques** con reordenación por drag. ⇠ S12, S3.
 - [ ] **S14 · Texto enriquecido con esquema acotado** (TipTap con nodos limitados:
       negrita, listas, enlaces, código). **Nunca HTML libre** — es superficie de XSS y
@@ -107,9 +141,13 @@ Lo que existe: `core` (config, security, deps, errors), `db`, `identity` (login 
 
 ### Backend ⇠ B1
 
-- [ ] **N1 · `POST /auth/refresh`.** El login **emite** refresh tokens y no hay endpoint
-      que los canjee: la sesión muere a los 15 minutos y no hay forma de renovarla.
-      `identity/router.py`. *Es el hueco más urgente del núcleo.*
+- [x] **N1 · `POST /auth/refresh`.** ✅ La vigencia se extrae a `_vigencia()`, compartida
+      con el login: se revalida en **cada** emisión, así que refrescar no revive una
+      licencia vencida. El rol y la institución se releen de la base, no de los claims.
+      Requirió separar autenticación de autorización: un token expirado devolvía **403**,
+      el mismo código que "no te toca", y así el cliente no puede saber cuándo renovar.
+      Nuevo `Unauthenticated` (401) en `core/errors.py`, usado por `get_tenant`.
+      10 tests de integración.
 - [ ] **N2 · Rotación de refresh + logout/revocación.** `arquitectura.md` §7 pide refresh
       rotativo; hoy no rota ni se puede invalidar. ⇠ N1.
 - [ ] **N3 · Alta y gestión de usuarios.** No hay CRUD. **⇠ bloqueado por §8: ¿cómo se
@@ -122,20 +160,33 @@ Lo que existe: `core` (config, security, deps, errors), `db`, `identity` (login 
       parametrizado de `test_tenant_isolation.py`. **⇠ §8: ¿progreso lineal o libre?**
 - [ ] **N6 · Panel docente básico.** Listado de estudiantes de un curso con su progreso
       por momento (el scope lo pide a nivel de momento, no de proyecto). ⇠ N4, N5.
+- [ ] **N11 · Desacoplar el listado del estudiante de `catalog`.**
+      `learning.list_published_projects` hace **join contra `Project`** para filtrar por
+      `status` y ordenar, aunque el snapshot ya lleva `grade`, `slug` y `title` dentro.
+      `arquitectura.md` §3.1 vende "una query, un índice, cacheable" y el camino de lectura
+      sigue acoplado a las tablas de escritura. Sale de la revisión de arquitectura.
 - [ ] **N7 · Rate limit del chat.** `settings.CHAT_RATE_LIMIT_PER_HOUR` está definido y
       **no lo aplica nadie**. Redis ya está levantado. Protege costo y evita abuso (R9).
 
 ### Frontend ⇠ B2
 
-- [ ] **N8 · Guardar y usar el refresh token.** `useAuth.login()` **descarta
-      `res.refresh_token`**: sólo lee `access_token`, `role` y `lang`, así que el cliente
-      no guarda con qué renovar. Y `lib/http.ts` borra el token en 401/403 y manda a login
-      **sin intentar refrescar**. Aunque N1 exista, sin esto la sesión sigue muriendo a
-      los 15 minutos. ⇠ N1.
+- [x] **N8 · Guardar y usar el refresh token.** ✅ `AuthProvider` lo guarda y `http.ts`
+      renueva y reintenta al recibir 401, con **una sola renovación en vuelo** y sin
+      reintentar en `/auth/login` ni `/auth/refresh`. `streamChat` igual, que es donde más
+      importa. De paso: un **403 ya no cierra la sesión** — un docente entrando a un
+      endpoint de editor se quedaba fuera. `useAuth.tsx` partido en `useAuth.ts` (hook) y
+      `AuthProvider.tsx` (componente).
 - [ ] **N9 · Progreso en la UI.** Marcar momento completado desde `MomentPage` y pintar el
       avance en el listado de proyectos. ⇠ N5.
 - [ ] **N10 · Manejar el 429 del rate limit** en `ChatPanel` con un mensaje claro en vez
       de un error genérico. ⇠ N7.
+- [x] **N12 · El recorrido del estudiante está cortado.** ✅ Nueva `ProjectPage` en
+      `/projects/:id` con los seis momentos, y vuelta al proyecto desde el momento. Un
+      momento sin bloques no es enlace. Cubierto con un test que **navega la app entera**,
+      no componentes aislados — que es por lo que nadie había visto el corte; verificado
+      en rojo quitando la ruta.
+- [ ] **N13 · No hay botón de cerrar sesión.** `useAuth.logout()` existe y `auth.logout`
+      está traducido, pero ningún componente lo usa.
 
 ## 4. F3 — Evaluación (R10)
 
@@ -195,10 +246,18 @@ Todo se construye y se testea contra `StubProvider`, sin depender de Luis.
       `localStorage` y se pierde al cambiar de equipo. ⇠ I1, B1.
 - [ ] **I2 · Completar `en.json`** con los textos de interfaz. Los textos de contenido los
       carga el cliente desde el Studio, no van aquí. ⇠ I1.
+- [ ] **I7b · Paleta de marca del PO.** Los tokens semánticos ya están
+      (`src/index.css` + `tailwind.config.js`) y **cero colores crudos** en la UI, pero
+      los valores son un neutro provisional. Cuando el PO entregue la paleta se cambia
+      ese bloque y nada más. Verificar contraste AA (4.5:1 para texto) al sustituirlos:
+      `content-subtle` es el suelo actual con 4.8:1.
 - [ ] **I3 · Responsive mobile-first.** El scope §5 lo marca: los estudiantes entran desde
       el celular y la sala de robótica no tiene un PC por cabeza.
 - [ ] **I4 · Accesibilidad.** `alt_text` ya está en el modelo; falta exigirlo y usarlo en
       la UI. ⇠ S15.
+- [ ] **I8 · Caché del contenido publicado en Redis.** `arquitectura.md` §5 justifica
+      Redis por partida doble, cola **y caché**; hoy solo se usa de cola, así que el
+      argumento de rendimiento del snapshot está a medio cobrar. ⇠ N11.
 - [ ] **I5 · Tests de frontend** con vitest + msw (hoy: cero). ⇠ B2.
 - [ ] **I6 · Tests de integración** de cada endpoint nuevo, contra Postgres real. *No
       esperar a esta sección: cada endpoint entra con su test.*

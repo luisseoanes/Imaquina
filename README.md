@@ -5,6 +5,7 @@ Plataforma de robótica educativa: 36 proyectos por grado (Transición → 11°)
 - **Alcance y fases:** [`docs/scope-mvp.md`](docs/scope-mvp.md)
 - **Decisiones de arquitectura:** [`docs/arquitectura.md`](docs/arquitectura.md)
 - **Brief original del cliente:** [`docs/plataforma-imaquina-robotica.md`](docs/plataforma-imaquina-robotica.md)
+- **Qué falta y en qué orden:** [`docs/backlog.md`](docs/backlog.md)
 
 ## Stack
 
@@ -68,7 +69,7 @@ frontend/src/
 
 Son las decisiones de `docs/arquitectura.md` convertidas en invariantes revisables:
 
-1. **Un módulo no importa modelos ni queries de otro módulo.** Sólo su capa de servicio.
+1. **Un módulo puede leer modelos de otro, pero nunca escribe sobre ellos.** Cuando se pueda, se llama a su capa de servicio.
 2. **Toda consulta de datos por institución pasa por `TenantContext`.** Son datos de menores; el cruce entre colegios es un incidente, no un bug.
 3. **La guía docente se filtra en el backend** (`learning/service.serialize_moment_for`), nunca en React.
 4. **Los estudiantes leen del snapshot publicado**, no de las tablas normalizadas.
@@ -87,7 +88,7 @@ Separados en dos niveles, a propósito:
 Los de integración **se saltan solos** con un mensaje claro si la base no está levantada, en vez de reventar con un error de conexión que no dice nada.
 
 ```bash
-make test-unit   # 36 tests, sin Docker, ~3s
+make test-unit   # sin Docker, siempre corren
 make test-int    # requiere: make up && make testdb
 make test        # todo
 make lint        # ruff
@@ -125,4 +126,13 @@ Windows — pero en Windows hay que llamarlo desde Git Bash o WSL.
 
 ## Estado
 
-Esqueleto ejecutable con la arquitectura ya cableada. Falta, según el cronograma de `scope-mvp.md`: el editor del Content Studio (F2), el módulo de evaluación completo (F3), y los embeddings reales del RAG (F4 — hoy hay un placeholder en `workers/worker.py`).
+Backend con esquema migrado, semillas de desarrollo y verificación automática antes de
+cada release. Del Content Studio funciona el backend de autoría —proyectos, los seis
+momentos, bloques, traducciones ES/EN y librería de media— y en el frontend el listado y
+el alta de proyectos.
+
+Falta el editor de bloques, la evaluación completa (F3) y los embeddings reales del RAG
+(F4, hoy un placeholder en `workers/worker.py`).
+
+**El estado detallado, con dependencias y orden de ejecución, está en
+[`docs/backlog.md`](docs/backlog.md)** — no se duplica aquí para que no diverja.

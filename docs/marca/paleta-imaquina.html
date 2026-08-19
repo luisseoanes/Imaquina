@@ -1,0 +1,814 @@
+<title>Paleta Imaquina Robótica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  /* ── Tokens ────────────────────────────────────────────────────────────────
+   La página usa la paleta que propone: es el argumento y la demostración.  */
+  :root {
+    --surface: #FFFFFF;
+    --surface-muted: #F6F6F2;
+    --line: #E3E3DB;
+    --content: #22231E;
+    --content-muted: #55564C;
+    --content-subtle: #6C6D60;
+    --brand: #FCB71B;
+    --brand-ink: #9D6E02;
+    --brand-content: #1A1B18;
+    --note: #FFF6E0;
+    --note-content: #5A3E00;
+    --shadow: 0 1px 2px rgb(34 35 30 / .06), 0 8px 24px rgb(34 35 30 / .06);
+
+    --curiosear: #E80764;
+    --descubrir: #A808F3;
+    --inventar: #0B8296;
+    --innovar: #9D6E02;
+
+    --paso: clamp(1rem, .6rem + 1.6vw, 1.75rem);
+    --medida: 62ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #161714;
+      --surface-muted: #22231E;
+      --line: #383A31;
+      --content: #F3F3EE;
+      --content-muted: #B6B7AB;
+      --content-subtle: #909184;
+      --brand: #FCB71B;
+      --brand-ink: #FCB71B;
+      --brand-content: #1A1B18;
+      --note: #2A2416;
+      --note-content: #F5D98A;
+      --shadow: 0 1px 2px rgb(0 0 0 / .5), 0 8px 24px rgb(0 0 0 / .4);
+      --curiosear: #F91C78;
+      --descubrir: #C046F9;
+      --inventar: #2AD2EF;
+      --innovar: #FCB71B;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --surface: #161714;
+    --surface-muted: #22231E;
+    --line: #383A31;
+    --content: #F3F3EE;
+    --content-muted: #B6B7AB;
+    --content-subtle: #909184;
+    --brand: #FCB71B;
+    --brand-ink: #FCB71B;
+    --brand-content: #1A1B18;
+    --note: #2A2416;
+    --note-content: #F5D98A;
+    --shadow: 0 1px 2px rgb(0 0 0 / .5), 0 8px 24px rgb(0 0 0 / .4);
+    --curiosear: #F91C78;
+    --descubrir: #C046F9;
+    --inventar: #2AD2EF;
+    --innovar: #FCB71B;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--content);
+    font: 400 clamp(1rem, .96rem + .2vw, 1.0625rem)/1.65 "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .envoltorio {
+    max-width: 68rem;
+    margin-inline: auto;
+    padding: var(--paso);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: "Zilla Slab", Georgia, serif;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 1.2rem + 3.4vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -.015em;
+  }
+
+  h2 {
+    font-size: clamp(1.4rem, 1.1rem + 1.2vw, 2rem);
+    font-weight: 600;
+    line-height: 1.15;
+  }
+
+  h3 {
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    max-width: var(--medida);
+  }
+
+  .eyebrow {
+    font: 500 .75rem/1 "IBM Plex Mono", ui-monospace, monospace;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--content-subtle);
+  }
+
+  section {
+    padding-block: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+    border-top: 1px solid var(--line);
+  }
+
+  section:first-of-type {
+    border-top: 0;
+  }
+
+  .pila {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .pila-ancha {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  /* ── Portada ──────────────────────────────────────────────────────────── */
+  .portada {
+    display: grid;
+    gap: 2.5rem;
+    padding-block: clamp(2rem, 1rem + 5vw, 4.5rem);
+  }
+
+  @media (min-width: 56rem) {
+    .portada {
+      grid-template-columns: 1.35fr 1fr;
+      align-items: center;
+    }
+  }
+
+  /* Las esferas del logo: color sostenido por maquinaria neutra. */
+  .orbes {
+    display: flex;
+    gap: clamp(.5rem, 2vw, 1.25rem);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .orbe {
+    width: clamp(3.5rem, 11vw, 6.5rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 32% 28%, rgb(255 255 255 / .55), transparent 42%),
+      radial-gradient(circle at 68% 78%, rgb(0 0 0 / .28), transparent 55%),
+      var(--c);
+    box-shadow: var(--shadow);
+  }
+
+  /* ── Piezas ───────────────────────────────────────────────────────────── */
+  .rejilla {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 40rem) {
+    .rejilla-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 52rem) {
+    .rejilla-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .tarjeta {
+    background: var(--surface-muted);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+  }
+
+  .muestra {
+    height: 4.5rem;
+    border-radius: 10px;
+    border: 1px solid rgb(0 0 0 / .08);
+  }
+
+  .punto {
+    display: inline-block;
+    width: .85rem;
+    height: .85rem;
+    border-radius: 50%;
+    margin-right: .5rem;
+    vertical-align: -.12em;
+    /* Anillo translúcido: hace visible el blanco sobre fondo claro y el
+         carbón sobre fondo oscuro, sin depender del tema. */
+    box-shadow: inset 0 0 0 1px rgb(128 128 128 / .45);
+  }
+
+  .hex {
+    font: 500 .8125rem/1 "IBM Plex Mono", ui-monospace, monospace;
+    letter-spacing: .02em;
+    color: var(--content-muted);
+  }
+
+  .dato {
+    font-variant-numeric: tabular-nums;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  /* ── Tablas ───────────────────────────────────────────────────────────── */
+  .scroll-x {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+  }
+
+  caption {
+    text-align: left;
+    padding: 1rem 1.25rem .25rem;
+    font-weight: 600;
+    font-family: "Zilla Slab", Georgia, serif;
+    font-size: 1.0625rem;
+  }
+
+  th,
+  td {
+    text-align: left;
+    padding: .7rem 1.25rem;
+    border-top: 1px solid var(--line);
+    font-size: .9375rem;
+  }
+
+  th {
+    font-weight: 600;
+    color: var(--content-muted);
+    font-size: .8125rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  .pastilla {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font: 500 .75rem/1 "IBM Plex Sans", sans-serif;
+    padding: .3rem .55rem;
+    border-radius: 999px;
+  }
+
+  .pastilla.ok {
+    background: #E8F4E4;
+    color: #2C5720;
+  }
+
+  .pastilla.mal {
+    background: #FCEBE9;
+    color: #B3261E;
+  }
+
+  /* ── Maquetas: paleta fija, NO siguen el tema del lector ───────────────── */
+  .demo {
+    border-radius: 16px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: var(--shadow);
+  }
+
+  .demo-claro {
+    --d-surface: #FFFFFF;
+    --d-muted: #F6F6F2;
+    --d-line: #E3E3DB;
+    --d-ink: #22231E;
+    --d-ink2: #55564C;
+    --d-ink3: #6C6D60;
+    --d-brand: #FCB71B;
+    --d-brand-ink: #9D6E02;
+    --d-note: #FFF6E0;
+    --d-note-line: #FCB71B;
+    --d-note-ink: #5A3E00;
+    --d-ok: #E8F4E4;
+    --d-ok-ink: #2C5720;
+  }
+
+  .demo-oscuro {
+    --d-surface: #161714;
+    --d-muted: #22231E;
+    --d-line: #383A31;
+    --d-ink: #F3F3EE;
+    --d-ink2: #B6B7AB;
+    --d-ink3: #909184;
+    --d-brand: #FCB71B;
+    --d-brand-ink: #FCB71B;
+    --d-note: #2A2416;
+    --d-note-line: #9D6E02;
+    --d-note-ink: #F5D98A;
+    --d-ok: #1E2B1A;
+    --d-ok-ink: #A7D39A;
+  }
+
+  .demo {
+    background: var(--d-surface);
+    color: var(--d-ink);
+    border: 1px solid var(--d-line);
+  }
+
+  .demo h3 {
+    color: var(--d-ink);
+  }
+
+  .demo .sub {
+    color: var(--d-ink3);
+    font-size: .875rem;
+  }
+
+  .demo .fila {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .75rem;
+    border: 1px solid var(--d-line);
+    border-radius: 10px;
+    background: var(--d-muted);
+  }
+
+  .demo .indice {
+    width: 2rem;
+    height: 2rem;
+    flex: none;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--d-brand);
+    color: #1A1B18;
+    font-weight: 600;
+    font-size: .875rem;
+  }
+
+  .demo .boton {
+    background: var(--d-brand);
+    color: #1A1B18;
+    border: 0;
+    border-radius: 10px;
+    padding: .7rem 1.1rem;
+    font: 600 .9375rem "IBM Plex Sans", sans-serif;
+    cursor: pointer;
+    align-self: flex-start;
+  }
+
+  .demo .enlace {
+    color: var(--d-brand-ink);
+    font-weight: 500;
+  }
+
+  .demo .aviso {
+    background: var(--d-note);
+    color: var(--d-note-ink);
+    border-left: 4px solid var(--d-note-line);
+    border-radius: 0 10px 10px 0;
+    padding: .8rem 1rem;
+    font-size: .9375rem;
+  }
+
+  .demo .insignia {
+    background: var(--d-ok);
+    color: var(--d-ok-ink);
+    padding: .25rem .6rem;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 500;
+  }
+
+  .demo .borrador {
+    background: var(--d-muted);
+    color: var(--d-ink3);
+    padding: .25rem .6rem;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 500;
+    border: 1px solid var(--d-line);
+  }
+
+  .etiqueta-modo {
+    font: 500 .75rem/1 "IBM Plex Mono", monospace;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--content-subtle);
+    margin-bottom: .6rem;
+  }
+
+  /* ── Contraste: fallo vs acierto ──────────────────────────────────────── */
+  .par {
+    display: grid;
+    gap: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+
+  @media (min-width: 40rem) {
+    .par {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .par>div {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    min-height: 8.5rem;
+    justify-content: center;
+  }
+
+  .mal-ej {
+    background: #FFFFFF;
+    color: #FCB71B;
+  }
+
+  .bien-ej {
+    background: #FFFFFF;
+    color: #9D6E02;
+  }
+
+  .par .ej {
+    font: 600 1.375rem "Zilla Slab", Georgia, serif;
+  }
+
+  .par .pie {
+    font-size: .8125rem;
+    color: #55564C;
+    font-family: "IBM Plex Mono", monospace;
+  }
+
+  .decision {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface-muted);
+  }
+
+  .decision .marca {
+    width: .5rem;
+    align-self: stretch;
+    border-radius: 999px;
+    background: var(--brand);
+    flex: none;
+  }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-block: 2rem 3rem;
+    color: var(--content-subtle);
+    font-size: .875rem;
+  }
+
+  a {
+    color: var(--brand-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand-ink);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>
+
+<div class="envoltorio">
+
+  <header class="portada">
+    <div class="pila">
+      <h1>Propuesta de color<br>Plataforma Imaquina</h1>
+      <p style="color: var(--content-muted); font-size: 1.125rem;">
+        Los colores se han extraído del logo y de las cuatro
+        piezas de Curiosear, Descubrir, Inventar e Innovar. Lo que añadimos es lo
+        que hace falta para que funcionen en pantalla, se lean bien y aguanten
+        modo claro y modo oscuro.
+      </p>
+    </div>
+    <div class="orbes" role="img" aria-label="Las cuatro esferas de la marca: ámbar, magenta, violeta y cian">
+      <div class="orbe" style="--c:#FCB71B"></div>
+      <div class="orbe" style="--c:#F8086C"></div>
+      <div class="orbe" style="--c:#AA08F5"></div>
+      <div class="orbe" style="--c:#28D2EF"></div>
+    </div>
+  </header>
+
+  <section class="pila-ancha">
+    <div class="pila">
+      <span class="eyebrow">1 · Origen</span>
+      <h2>Cinco colores, tomados de las imágenes compartidas</h2>
+      <p style="color: var(--content-muted);">
+        Medidos directamente sobre los archivos, no a ojo. El ámbar del logo es
+        el color principal de la marca; los otros tres identifican las etapas.
+      </p>
+    </div>
+    <div class="rejilla rejilla-4">
+      <div class="tarjeta">
+        <div class="muestra" style="background:#FCB71B"></div>
+        <h3>Ámbar</h3>
+        <span class="hex">#FCB71B</span>
+        <span style="color:var(--content-subtle); font-size:.875rem;">Esfera del logo</span>
+      </div>
+      <div class="tarjeta">
+        <div class="muestra" style="background:#F8086C"></div>
+        <h3>Magenta</h3>
+        <span class="hex">#F8086C</span>
+        <span style="color:var(--content-subtle); font-size:.875rem;">Curiosear</span>
+      </div>
+      <div class="tarjeta">
+        <div class="muestra" style="background:#AA08F5"></div>
+        <h3>Violeta</h3>
+        <span class="hex">#AA08F5</span>
+        <span style="color:var(--content-subtle); font-size:.875rem;">Descubrir</span>
+      </div>
+      <div class="tarjeta">
+        <div class="muestra" style="background:#28D2EF"></div>
+        <h3>Cian</h3>
+        <span class="hex">#28D2EF</span>
+        <span style="color:var(--content-subtle); font-size:.875rem;">Inventar</span>
+      </div>
+    </div>
+    <div class="rejilla rejilla-2">
+      <div class="tarjeta">
+        <div class="muestra" style="background:#3A3A3B"></div>
+        <h3>Carbón</h3>
+        <span class="hex">#3A3A3B</span>
+        <span style="color:var(--content-subtle); font-size:.875rem;">El cubo del logo. Es la base del modo
+          oscuro.</span>
+      </div>
+      <div class="tarjeta">
+        <div class="muestra" style="background:#707264"></div>
+        <h3>Oliva</h3>
+        <span class="hex">#707264</span>
+        <span style="color:var(--content-subtle); font-size:.875rem;">
+          El gris de «IMAQUINA ROBÓTICA». No es un gris neutro: tira a verde, y
+          por eso todos los grises de la plataforma llevan ese mismo matiz.
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <section class="pila-ancha">
+    <div class="pila">
+      <span class="eyebrow">2 · El problema</span>
+      <h2>El ámbar no puede llevar texto sobre blanco</h2>
+      <p style="color: var(--content-muted);">
+        Es el único punto donde la marca y la pantalla chocan. Un texto necesita
+        destacar sobre su fondo al menos 4,5 veces para que cualquiera pueda
+        leerlo, es la norma internacional de accesibilidad, y con menores de
+        edad y celulares al sol en un patio no es un tecnicismo.
+        El ámbar destaca <strong class="dato">1,76</strong> veces. El cian,
+        <strong class="dato">1,82</strong>.
+      </p>
+    </div>
+
+    <div class="par">
+      <div class="mal-ej">
+        <span class="ej">Publicar proyecto</span>
+        <span class="pie">#FCB71B sobre blanco · 1,76:1</span>
+        <span><span class="pastilla mal">No se puede usar así</span></span>
+      </div>
+      <div class="bien-ej">
+        <span class="ej">Publicar proyecto</span>
+        <span class="pie">#9D6E02 sobre blanco · 4,50:1</span>
+        <span><span class="pastilla ok">Mismo tono, ya legible</span></span>
+      </div>
+    </div>
+
+    <p style="color: var(--content-muted);">
+      La solución no es cambiar la marca. El ámbar de la marca se usa
+      <strong>como fondo</strong> (el botón amarillo con texto oscuro, que es
+      justo la imagen del logo) y para <strong>texto</strong> se usa una versión
+      oscurecida del mismo tono. Nadie percibe dos amarillos distintos; perciben
+      la marca, y se lee.
+    </p>
+    <p style="color: var(--content-muted);">
+      Y aquí está la razón de que hagan falta dos paletas: <strong>sobre fondo
+        oscuro pasa lo contrario</strong>. El ámbar de marca destaca
+      <strong class="dato">9,83</strong> veces sobre el carbón. En modo oscuro el
+      color de la marca luce tal cual, sin retocar.
+    </p>
+  </section>
+
+  <section class="pila-ancha">
+    <div class="pila">
+      <span class="eyebrow">3 · La propuesta</span>
+      <h2>Para tema claro y oscuro</h2>
+      <p style="color: var(--content-muted);">
+        No son dos paletas distintas: es la misma lista de papeles (fondo,
+        texto
+        principal, texto secundario, acción) con un valor para cada modo. Se
+        decide una vez y el sistema entero lo hereda.
+      </p>
+    </div>
+
+    <div class="scroll-x">
+      <table>
+        <caption>Papeles y valores</caption>
+        <thead>
+          <tr>
+            <th scope="col">Papel</th>
+            <th scope="col">Modo claro</th>
+            <th scope="col">Modo oscuro</th>
+            <th scope="col" class="num">Contraste</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Fondo de página</td>
+            <td class="hex"><span class="punto" style="background:#FFFFFF"></span>#FFFFFF</td>
+            <td class="hex"><span class="punto" style="background:#161714"></span>#161714</td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>Fondo de tarjetas</td>
+            <td class="hex"><span class="punto" style="background:#F6F6F2"></span>#F6F6F2</td>
+            <td class="hex"><span class="punto" style="background:#22231E"></span>#22231E</td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>Líneas y bordes</td>
+            <td class="hex"><span class="punto" style="background:#E3E3DB"></span>#E3E3DB</td>
+            <td class="hex"><span class="punto" style="background:#383A31"></span>#383A31</td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>Texto principal</td>
+            <td class="hex"><span class="punto" style="background:#22231E"></span>#22231E</td>
+            <td class="hex"><span class="punto" style="background:#F3F3EE"></span>#F3F3EE</td>
+            <td class="num">15,8 · 16,2</td>
+          </tr>
+          <tr>
+            <td>Texto secundario</td>
+            <td class="hex"><span class="punto" style="background:#55564C"></span>#55564C</td>
+            <td class="hex"><span class="punto" style="background:#B6B7AB"></span>#B6B7AB</td>
+            <td class="num">7,4 · 8,9</td>
+          </tr>
+          <tr>
+            <td>Texto de apoyo</td>
+            <td class="hex"><span class="punto" style="background:#6C6D60"></span>#6C6D60</td>
+            <td class="hex"><span class="punto" style="background:#909184"></span>#909184</td>
+            <td class="num">5,3 · 5,6</td>
+          </tr>
+          <tr>
+            <td>Acción principal (fondo)</td>
+            <td class="hex"><span class="punto" style="background:#FCB71B"></span>#FCB71B</td>
+            <td class="hex"><span class="punto" style="background:#FCB71B"></span>#FCB71B</td>
+            <td class="num">9,8 · 9,8</td>
+          </tr>
+          <tr>
+            <td>Enlaces y texto de marca</td>
+            <td class="hex"><span class="punto" style="background:#9D6E02"></span>#9D6E02</td>
+            <td class="hex"><span class="punto" style="background:#FCB71B"></span>#FCB71B</td>
+            <td class="num">4,5 · 10,2</td>
+          </tr>
+          <tr>
+            <td>Guía del docente</td>
+            <td class="hex"><span class="punto" style="background:#FFF6E0"></span>#FFF6E0</td>
+            <td class="hex"><span class="punto" style="background:#2A2416"></span>#2A2416</td>
+            <td class="num">9,2 · 11,1</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color: var(--content-subtle); font-size: .875rem;">
+      Contraste del texto sobre su fondo. Mínimo exigido: 4,5. Los 18 pares de la
+      interfaz cumplen; ninguno se queda justo por debajo.
+    </p>
+  </section>
+
+  <section class="pila-ancha">
+    <div class="pila">
+      <span class="eyebrow">4 · Aplicado</span>
+      <h2>La misma pantalla en los dos modos</h2>
+      <p style="color: var(--content-muted);">
+        Esto es la vista de un proyecto tal como la verá un estudiante en el
+        móvil, y la guía que sólo ve el docente.
+      </p>
+    </div>
+
+    <div class="rejilla rejilla-2">
+      <div>
+        <div class="etiqueta-modo">Modo claro</div>
+        <div class="demo demo-claro">
+          <div>
+            <h3>Semáforo inteligente</h3>
+            <div class="sub">Grado 5 · Kit básico de robótica</div>
+          </div>
+          <div class="fila"><span class="indice">1</span><span>Introducción e inclusión</span></div>
+          <div class="fila"><span class="indice">2</span><span>Indagación</span></div>
+          <div class="aviso"><strong>Guía del docente.</strong> Formen equipos de cuatro antes de repartir los kits.
+          </div>
+          <div style="display:flex; gap:.5rem; align-items:center;">
+            <span class="insignia">Publicado</span><span class="borrador">Borrador</span>
+          </div>
+          <button class="boton" type="button">Publicar proyecto</button>
+          <a class="enlace" href="#4">Ver todos los proyectos</a>
+        </div>
+      </div>
+      <div>
+        <div class="etiqueta-modo">Modo oscuro</div>
+        <div class="demo demo-oscuro">
+          <div>
+            <h3>Semáforo inteligente</h3>
+            <div class="sub">Grado 5 · Kit básico de robótica</div>
+          </div>
+          <div class="fila"><span class="indice">1</span><span>Introducción e inclusión</span></div>
+          <div class="fila"><span class="indice">2</span><span>Indagación</span></div>
+          <div class="aviso"><strong>Guía del docente.</strong> Formen equipos de cuatro antes de repartir los kits.
+          </div>
+          <div style="display:flex; gap:.5rem; align-items:center;">
+            <span class="insignia">Publicado</span><span class="borrador">Borrador</span>
+          </div>
+          <button class="boton" type="button">Publicar proyecto</button>
+          <a class="enlace" href="#4">Ver todos los proyectos</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pila-ancha">
+    <div class="pila">
+      <span class="eyebrow">5 · Los colores de etapa</span>
+      <h2>Magenta, violeta y cian: para identificar, no para leer</h2>
+      <p style="color: var(--content-muted);">
+        Sirven para que un estudiante reconozca de un vistazo en qué etapa está.
+        Como fondo van tal cual salen de la marca; cuando tengan que llevar texto
+        encima usan su versión ajustada, igual que el ámbar.
+      </p>
+    </div>
+    <div class="rejilla rejilla-4">
+      <div class="tarjeta" style="background:#F8086C; border-color:#F8086C;">
+        <h3 style="color:#FFFFFF;">Curiosear</h3>
+        <span class="hex" style="color:rgb(255 255 255 / .85);">#F8086C · texto #E80764</span>
+      </div>
+      <div class="tarjeta" style="background:#AA08F5; border-color:#AA08F5;">
+        <h3 style="color:#FFFFFF;">Descubrir</h3>
+        <span class="hex" style="color:rgb(255 255 255 / .85);">#AA08F5 · texto #A808F3</span>
+      </div>
+      <div class="tarjeta" style="background:#28D2EF; border-color:#28D2EF;">
+        <h3 style="color:#0B2E35;">Inventar</h3>
+        <span class="hex" style="color:rgb(10 46 53 / .8);">#28D2EF · texto #0B8296</span>
+      </div>
+      <div class="tarjeta" style="background:#FCB71B; border-color:#FCB71B;">
+        <h3 style="color:#1A1B18;">Innovar</h3>
+        <span class="hex" style="color:rgb(26 27 24 / .75);">#FCB71B · texto #9D6E02</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Colores medidos sobre los archivos de marca originales. Contrastes calculados
+    según WCAG 2.1, nivel AA.
+  </footer>
+</div>
