@@ -542,3 +542,143 @@ async def test_una_imagen_sin_alt_no_cuenta_como_traducida(client, db):
     estado = {e["lang"]: e for e in resp.json()}
 
     assert any("no tiene alt_text" in m for m in estado["es"]["missing"])
+
+
+# --- Duplicar proyecto (S6) -------------------------------------------------
+
+
+async def test_duplicar_copia_bloques_y_traducciones(client, db):
+    h = _h(await _token(db, "editor"))
+    pid, mid = await _proyecto_con_momento(client, h)
+    await client.patch(f"{BASE}/{pid}", headers=h, json={"title": "Original"})
+    await client.post(
+        f"{BLOQUES}/moments/{mid}/blocks",
+        headers=h,
+        json={"kind": "text", "body": "hola"},
+    )
+
+    resp = await client.post(
+        f"{BASE}/{pid}/duplicate",
+        headers=h,
+        json={"slug": f"copia-{uuid.uuid4().hex[:6]}"},
+    )
+
+    assert resp.status_code == 201
+    copia = resp.json()
+    assert copia["id"] != pid
+    assert copia["title"] == "Original"
+    assert copia["status"] == "draft"
+    copia_mid = next(m["id"] for m in copia["moments"] if m["type"] == "intro")
+    bloques = (
+        await client.get(f"{BLOQUES}/moments/{copia_mid}/blocks", headers=h)
+    ).json()
+    assert bloques[0]["body"] == "hola"
+    assert bloques[0]["id"] != mid  # es un bloque nuevo, no el mismo id
+
+
+async def test_duplicar_con_slug_repetido_da_409(client, db):
+    h = _h(await _token(db, "editor"))
+    pid, _ = await _proyecto_con_momento(client, h)
+    slug_existente = (await client.get(f"{BASE}/{pid}", headers=h)).json()["slug"]
+
+    resp = await client.post(
+        f"{BASE}/{pid}/duplicate", headers=h, json={"slug": slug_existente}
+    )
+
+    assert resp.status_code == 409
+
+
+async def test_duplicar_publicado_nace_borrador(client, db):
+    h = _h(await _token(db, "editor"))
+    pid, mid = await _proyecto_con_momento(client, h)
+    detalle = (await client.get(f"{BASE}/{pid}", headers=h)).json()
+    for m in detalle["moments"]:
+        await client.patch(
+            f"{BLOQUES}/moments/{m['id']}", headers=h, json={"title": "T"}
+        )
+        await client.post(
+            f"{BLOQUES}/moments/{m['id']}/blocks",
+            headers=h,
+            json={"kind": "text", "body": "x"},
+        )
+    await client.post(f"/api/v1/studio/publishing/projects/{pid}/publish", headers=h)
+
+    resp = await client.post(
+        f"{BASE}/{pid}/duplicate",
+        headers=h,
+        json={"slug": f"copia-{uuid.uuid4().hex[:6]}"},
+    )
+
+    assert resp.json()["status"] == "draft"
+
+
+# --- Bloqueo optimista (S9) --------------------------------------------------
+
+
+async def test_guardar_con_updated_at_desactualizado_da_409(client, db):
+    h = _h(await _token(db, "editor"))
+    pid, _ = await _proyecto_con_momento(client, h)
+    original = (await client.get(f"{BASE}/{pid}", headers=h)).json()
+
+    # Otra "sesión" guarda primero.
+    await client.patch(f"{BASE}/{pid}", headers=h, json={"title": "Cambiado por otro"})
+
+    resp = await client.patch(
+        f"{BASE}/{pid}",
+        headers=h,
+        json={"title": "Mi cambio", "expected_updated_at": original["updated_at"]},
+    )
+
+    assert resp.status_code == 409
+
+
+async def test_guardar_sin_expected_updated_at_no_comprueba_nada(client, db):
+    """El autoguardado normal, sin conflicto, no manda el campo."""
+    h = _h(await _token(db, "editor"))
+    pid, _ = await _proyecto_con_momento(client, h)
+
+    resp = await client.patch(f"{BASE}/{pid}", headers=h, json={"title": "Nuevo"})
+
+    assert resp.status_code == 200
+
+
+async def test_guardar_con_updated_at_vigente_funciona(client, db):
+    h = _h(await _token(db, "editor"))
+    pid, _ = await _proyecto_con_momento(client, h)
+    original = (await client.get(f"{BASE}/{pid}", headers=h)).json()
+
+    resp = await client.patch(
+        f"{BASE}/{pid}",
+        headers=h,
+        json={"title": "Al día", "expected_updated_at": original["updated_at"]},
+    )
+
+    assert resp.status_code == 200
+
+
+# --- Preview como estudiante / docente (S7) ---------------------------------
+
+
+async def test_preview_como_estudiante_no_trae_guia_docente(client, db):
+    h = _h(await _token(db, "editor"))
+    _, mid = await _proyecto_con_momento(client, h)
+    await client.patch(
+        f"{BLOQUES}/moments/{mid}", headers=h, json={"teacher_note": "solo para el profe"}
+    )
+
+    resp = await client.get(f"{BLOQUES}/moments/{mid}/preview?as=student", headers=h)
+
+    assert resp.status_code == 200
+    assert "teacher_note" not in resp.json()
+
+
+async def test_preview_como_docente_si_trae_guia_docente(client, db):
+    h = _h(await _token(db, "editor"))
+    _, mid = await _proyecto_con_momento(client, h)
+    await client.patch(
+        f"{BLOQUES}/moments/{mid}", headers=h, json={"teacher_note": "solo para el profe"}
+    )
+
+    resp = await client.get(f"{BLOQUES}/moments/{mid}/preview?as=teacher", headers=h)
+
+    assert resp.json()["teacher_note"] == "solo para el profe"

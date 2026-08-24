@@ -4,14 +4,16 @@ Todo bajo el guard `Author` (editor/admin): el docente ve la guia didactica
 pero NO entra al editor. La autorizacion real vive aqui, no en React.
 """
 
+from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
-from app.core.deps import Author, Db
+from app.core.deps import Author, Db, Role, TenantContext
 from app.modules.catalog import service
 from app.modules.catalog.models import BlockKind
+from app.modules.learning.service import serialize_moment_for
 
 router = APIRouter(prefix="/studio/catalog", tags=["studio"])
 
@@ -39,6 +41,9 @@ class ProjectPatch(BaseModel):
     order: int | None = None
     summary: str | None = None
     lang: str = Field(default="es", pattern="^(es|en)$")
+    # S9: bloqueo optimista. Si viene y no coincide con el `updated_at` actual,
+    # el guardado se rechaza con 409 en vez de pisar el cambio de otra sesión.
+    expected_updated_at: datetime | None = None
 
 
 @router.get("/projects")
@@ -73,6 +78,18 @@ async def delete_project(project_id: UUID, author: Author, db: Db) -> None:
     await service.delete_project(db, project_id)
 
 
+class DuplicateIn(BaseModel):
+    slug: str = Field(min_length=1, max_length=120)
+
+
+@router.post("/projects/{project_id}/duplicate", status_code=201)
+async def duplicate_project(
+    project_id: UUID, payload: DuplicateIn, author: Author, db: Db
+):
+    """S6: la mayoría de los 36 proyectos comparten estructura."""
+    return await service.duplicate_project(db, project_id, slug=payload.slug)
+
+
 # --- Momentos --------------------------------------------------------------
 #
 # Sin POST ni DELETE a proposito: son seis, fijos, y los crea el proyecto (R7).
@@ -87,6 +104,7 @@ class MomentPatch(BaseModel):
     # R8: la pregunta con la que el chat abre el momento.
     chatbot_opening_prompt: str | None = None
     lang: str = Field(default="es", pattern="^(es|en)$")
+    expected_updated_at: datetime | None = None
 
 
 @router.get("/moments/{moment_id}")
@@ -101,6 +119,28 @@ async def update_moment(
     datos = payload.model_dump(exclude_unset=True)
     lang = datos.pop("lang", "es")
     return await service.update_moment(db, moment_id, lang=lang, **datos)
+
+
+@router.get("/moments/{moment_id}/preview")
+async def preview_moment(
+    moment_id: UUID,
+    author: Author,
+    db: Db,
+    lang: str = "es",
+    as_: str = Query(default="student", alias="as", pattern="^(student|teacher)$"),
+):
+    """S7: mismo filtro de `teacher_note` que ve el estudiante de verdad.
+
+    Reutiliza `learning.serialize_moment_for` en vez de duplicar el criterio:
+    se construye un `TenantContext` con el rol pedido, no el del editor real,
+    para poder previsualizar ambas vistas sin dos endpoints distintos.
+    """
+    moment = await service.get_moment(db, moment_id, lang=lang)
+    rol_previsto = Role.TEACHER if as_ == "teacher" else Role.STUDENT
+    tenant_previsto = TenantContext(
+        user_id=author.user_id, institution_id=author.institution_id, role=rol_previsto
+    )
+    return serialize_moment_for(moment, tenant_previsto)
 
 
 @router.get("/projects/{project_id}/translations")
@@ -134,6 +174,7 @@ class BlockPatch(BaseModel):
     caption: str | None = None
     alt_text: str | None = Field(default=None, max_length=500)
     lang: str = Field(default="es", pattern="^(es|en)$")
+    expected_updated_at: datetime | None = None
 
 
 class OrderIn(BaseModel):

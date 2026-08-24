@@ -9,6 +9,7 @@ guardar sin problema. Lo unico que se exige aqui es lo que romperia la base.
 """
 
 import uuid
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import func, select
@@ -27,6 +28,19 @@ from app.modules.catalog.models import (
     ProjectTranslation,
 )
 from app.modules.media import service as media
+
+
+def _revisar_conflicto(actual: datetime, esperado: datetime | None) -> None:
+    """S9: bloqueo optimista sobre `updated_at`.
+
+    Sin `expected_updated_at` no se comprueba nada (autoguardado normal). Si
+    viene y no coincide, otra sesión escribió encima entre que el editor leyó
+    y que intenta guardar: mejor avisar que perder ese cambio en silencio.
+    """
+    if esperado is not None and actual != esperado:
+        raise Conflict(
+            "El contenido cambió en otra sesión. Recarga antes de guardar."
+        )
 
 
 async def _get(
@@ -76,6 +90,7 @@ def _serializar(project: Project, lang: str) -> dict[str, Any]:
         # Que idiomas tienen ya traduccion: el editor pinta con esto el
         # indicador de "falta traducir" (S4).
         "langs": sorted(t.lang for t in project.translations),
+        "updated_at": project.updated_at.isoformat(),
     }
 
 
@@ -183,6 +198,7 @@ async def update_project(
     project_id: uuid.UUID,
     *,
     lang: str = "es",
+    expected_updated_at: datetime | None = None,
     **campos: Any,
 ) -> dict[str, Any]:
     """Actualizacion parcial. Sólo toca lo que venga en `campos`.
@@ -191,6 +207,7 @@ async def update_project(
     trabajo de `publishing`, que ademas versiona y dispara el reindexado.
     """
     project = await _get(db, project_id)
+    _revisar_conflicto(project.updated_at, expected_updated_at)
 
     if (slug := campos.get("slug")) is not None and slug != project.slug:
         await _slug_libre(db, slug, excepto=project.id)
@@ -209,6 +226,15 @@ async def update_project(
 
     await db.flush()
     await db.refresh(project, ["translations"])
+    # `title`/`summary` viven en `ProjectTranslation`, una tabla aparte: un
+    # UPDATE que solo la toque a ELLA no dispara el `onupdate` de `Project`,
+    # y S9 (bloqueo optimista) no detectaría el caso más común de conflicto
+    # -- dos editores cambiando el título. Se toca a mano, ESCRIBIENDO sin
+    # leer el valor previo: `refresh(..., ["translations"])` deja el resto
+    # de columnas expiradas, y leerlo aquí dispararía un lazy load fuera de
+    # greenlet (MissingGreenlet).
+    project.updated_at = datetime.now(UTC)
+    await db.flush()
     return _serializar(project, lang)
 
 
@@ -226,6 +252,61 @@ async def delete_project(db: AsyncSession, project_id: uuid.UUID) -> None:
         )
     await db.delete(project)
     await db.flush()
+
+
+async def duplicate_project(
+    db: AsyncSession, project_id: uuid.UUID, *, slug: str
+) -> dict[str, Any]:
+    """Copia el proyecto entero: traducciones, momentos y bloques (S6).
+
+    Clave porque la mayoría de los 36 comparten estructura. El nuevo nace
+    `draft` siempre (el default del modelo) y los bloques mantienen el mismo
+    `media_asset_id` — duplicar no duplica el archivo en el bucket, solo la
+    referencia a la librería.
+    """
+    from app.modules.publishing import service as publishing
+
+    original = await publishing.cargar_para_validar(db, project_id)
+    await _slug_libre(db, slug)
+
+    nuevo = Project(
+        slug=slug, grade=original.grade, kit=original.kit, order=original.order
+    )
+    for tr in original.translations:
+        nuevo.translations.append(
+            ProjectTranslation(lang=tr.lang, title=tr.title, summary=tr.summary)
+        )
+
+    for moment in sorted(original.moments, key=lambda m: m.order):
+        nuevo_momento = Moment(type=moment.type, order=moment.order)
+        for tr in moment.translations:
+            nuevo_momento.translations.append(
+                MomentTranslation(
+                    lang=tr.lang,
+                    title=tr.title,
+                    teacher_note=tr.teacher_note,
+                    chatbot_opening_prompt=tr.chatbot_opening_prompt,
+                )
+            )
+        for bloque in sorted(moment.blocks, key=lambda b: b.order):
+            nuevo_bloque = ContentBlock(
+                kind=bloque.kind, order=bloque.order, media_asset_id=bloque.media_asset_id
+            )
+            for tr in bloque.translations:
+                nuevo_bloque.translations.append(
+                    BlockTranslation(
+                        lang=tr.lang,
+                        body=tr.body,
+                        caption=tr.caption,
+                        alt_text=tr.alt_text,
+                    )
+                )
+            nuevo_momento.blocks.append(nuevo_bloque)
+        nuevo.moments.append(nuevo_momento)
+
+    db.add(nuevo)
+    await db.flush()
+    return await get_project(db, nuevo.id, lang="es")
 
 
 # --- Bloques de contenido -------------------------------------------------
@@ -249,6 +330,7 @@ def _serializar_bloque(bloque: ContentBlock, lang: str) -> dict[str, Any]:
         "caption": tr.caption if tr else None,
         "alt_text": tr.alt_text if tr else None,
         "langs": sorted(t.lang for t in bloque.translations),
+        "updated_at": bloque.updated_at.isoformat(),
     }
 
 
@@ -343,10 +425,16 @@ async def create_block(
 
 
 async def update_block(
-    db: AsyncSession, block_id: uuid.UUID, *, lang: str = "es", **campos: Any
+    db: AsyncSession,
+    block_id: uuid.UUID,
+    *,
+    lang: str = "es",
+    expected_updated_at: datetime | None = None,
+    **campos: Any,
 ) -> dict[str, Any]:
     """Parcial. `order` no se toca aquí: se reordena en bloque, no de uno en uno."""
     bloque = await _get_block(db, block_id)
+    _revisar_conflicto(bloque.updated_at, expected_updated_at)
 
     if "kind" in campos and campos["kind"] is not None:
         bloque.kind = campos["kind"]
@@ -363,6 +451,10 @@ async def update_block(
             for campo, valor in textos.items():
                 setattr(tr, campo, valor)
 
+    # `body`/`caption`/`alt_text` viven en `BlockTranslation`: tocarlos solo
+    # actualiza esa tabla y no dispara el `onupdate` del bloque. Sin esto S9
+    # no detecta el conflicto más común (dos editores en el mismo bloque).
+    bloque.updated_at = datetime.now(UTC)
     await db.flush()
     return _serializar_bloque(await _get_block(db, block_id), lang)
 
@@ -419,6 +511,7 @@ def _serializar_momento(moment: Moment, lang: str) -> dict[str, Any]:
         # R8: la pregunta con la que el chat abre el momento.
         "chatbot_opening_prompt": tr.chatbot_opening_prompt if tr else None,
         "langs": sorted(t.lang for t in moment.translations),
+        "updated_at": moment.updated_at.isoformat(),
         "blocks": [
             _serializar_bloque(b, lang)
             for b in sorted(moment.blocks, key=lambda b: b.order)
@@ -433,10 +526,16 @@ async def get_moment(
 
 
 async def update_moment(
-    db: AsyncSession, moment_id: uuid.UUID, *, lang: str = "es", **campos: Any
+    db: AsyncSession,
+    moment_id: uuid.UUID,
+    *,
+    lang: str = "es",
+    expected_updated_at: datetime | None = None,
+    **campos: Any,
 ) -> dict[str, Any]:
     """Parcial, por idioma. `type` y `order` no se tocan: los fija R7."""
     moment = await _get_moment(db, moment_id)
+    _revisar_conflicto(moment.updated_at, expected_updated_at)
 
     textos = {
         c: campos[c]
@@ -454,6 +553,10 @@ async def update_moment(
         else:
             for campo, valor in textos.items():
                 setattr(tr, campo, valor)
+        # `title`/`teacher_note`/`chatbot_opening_prompt` viven en
+        # `MomentTranslation`: sin este toque explícito, S9 no detectaría un
+        # conflicto al editar solo esos campos.
+        moment.updated_at = datetime.now(UTC)
         await db.flush()
 
     return _serializar_momento(await _get_moment(db, moment_id), lang)
