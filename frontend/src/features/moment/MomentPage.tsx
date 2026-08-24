@@ -1,10 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import ChatPanel from "@/features/chat/ChatPanel";
+import AssessmentForm from "@/features/assessment/AssessmentForm";
 import { useAuth } from "@/features/auth/useAuth";
 import { http } from "@/lib/http";
+import { RichTextView } from "@/lib/richText";
 
 export interface Block {
   id: string;
@@ -26,15 +28,29 @@ export interface MomentData {
 }
 
 export default function MomentPage() {
-  const { projectId, momentType } = useParams();
+  const { projectId = "", momentType } = useParams();
   const { t } = useTranslation();
-  const { isStaff } = useAuth();
+  const { session, isStaff } = useAuth();
   const [showGuide, setShowGuide] = useState(false);
+  const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ["moment", projectId, momentType],
     queryFn: () =>
       http<MomentData>({ url: `/learn/projects/${projectId}/moments/${momentType}` }),
+  });
+
+  // N5/N9: solo el estudiante marca progreso -- el docente no "completa"
+  // momentos, los revisa.
+  const completar = useMutation({
+    mutationFn: () =>
+      http<void>({
+        url: `/learn/projects/${projectId}/moments/${momentType}/complete`,
+        method: "POST",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["progress", projectId] });
+    },
   });
 
   if (isLoading) return <p className="p-6">{t("common.loading")}</p>;
@@ -73,9 +89,24 @@ export default function MomentPage() {
         ))}
       </article>
 
-      {/* El chatbot acompaña los momentos 1–5, no la evaluación (R8). */}
-      {data.type !== "assess" && (
-        <ChatPanel momentId={data.id} openingPrompt={data.chatbot_opening_prompt} />
+      {session?.role === "student" && (
+        <button
+          onClick={() => completar.mutate()}
+          disabled={completar.isPending || completar.isSuccess}
+          className="mt-6 rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:opacity-50"
+        >
+          {completar.isSuccess ? t("projects.completed") : t("projects.markComplete")}
+        </button>
+      )}
+
+      {/* Momento 6, R10: formulario de evaluación en vez de chatbot (R8 lo
+          reserva a los momentos 1-5). */}
+      {data.type === "assess" && session?.role === "student" ? (
+        <AssessmentForm momentId={data.id} />
+      ) : (
+        data.type !== "assess" && (
+          <ChatPanel momentId={data.id} openingPrompt={data.chatbot_opening_prompt} />
+        )
       )}
     </main>
   );
@@ -84,7 +115,7 @@ export default function MomentPage() {
 function BlockView({ block }: { block: Block }) {
   switch (block.kind) {
     case "text":
-      return <p className="whitespace-pre-wrap">{block.body}</p>;
+      return <RichTextView html={block.body ?? ""} />;
     case "image":
       return (
         <figure>
