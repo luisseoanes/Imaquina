@@ -54,6 +54,13 @@ class ValidationFailed(DomainError):
     code = "validation_failed"
 
 
+class RateLimited(DomainError):
+    """N7: protege costo del chat, no es un error del usuario."""
+
+    status_code = 429
+    code = "rate_limited"
+
+
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(DomainError)
     async def _handle(_: Request, exc: DomainError) -> JSONResponse:

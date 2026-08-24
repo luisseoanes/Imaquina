@@ -6,7 +6,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 
-from app.core.deps import Db, Tenant
+from app.core.deps import Db, Staff, Tenant
 from app.modules.assistant import service
 from app.modules.assistant.models import ChatSession
 from app.modules.assistant.provider import (
@@ -38,6 +38,18 @@ async def start_session(payload: StartIn, tenant: Tenant, db: Db):
     return {"session_id": str(session.id)}
 
 
+@router.get("/sessions")
+async def list_sessions(tenant: Tenant, db: Db, moment_id: UUID | None = None):
+    """C2/C6: para que el frontend reuse la sesión del momento en vez de
+    crear una nueva en cada montaje."""
+    return await service.listar_sesiones(db, tenant, moment_id=moment_id)
+
+
+@router.get("/sessions/{session_id}/messages")
+async def session_messages(session_id: UUID, tenant: Tenant, db: Db):
+    return await service.listar_mensajes(db, tenant, session_id)
+
+
 class AskIn(BaseModel):
     question: str
 
@@ -51,6 +63,10 @@ async def ask(
     provider: Provider,
 ):
     """Respuesta en streaming (SSE). El primer token debe salir en <2s."""
+    # N7: se revisa AQUI, antes del StreamingResponse -- dentro del generador
+    # ya es tarde para devolver un 429 limpio (ver service.ask).
+    await service.revisar_rate_limit(tenant)
+
     user = (
         await db.execute(select(User).where(User.id == tenant.user_id))
     ).scalar_one()
@@ -73,3 +89,13 @@ async def ask(
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+# --- Registro de rechazos del guardrail (C5) --------------------------------
+
+staff_router = APIRouter(prefix="/studio/assistant", tags=["studio"])
+
+
+@staff_router.get("/rejections")
+async def rejections(staff: Staff, db: Db, limit: int = 100):
+    return await service.listar_rechazos(db, staff.require_institution(), limit=limit)
