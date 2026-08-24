@@ -40,6 +40,10 @@ class Assessment(Base, UUIDMixin, TimestampMixin):
     )
     max_attempts: Mapped[int] = mapped_column(Integer, default=1)
     pass_score: Mapped[float] = mapped_column(Float, default=60.0)
+    # Individual o por equipo "segun lo que asigne el docente en la tarea, con
+    # libertad" -- decision del cliente (ver docs/backlog.md A2). No hay
+    # entidad Team: solo marca si `Attempt.team_label` aplica.
+    team_mode: Mapped[bool] = mapped_column(Boolean, default=False)
 
     questions: Mapped[list["Question"]] = relationship(
         back_populates="assessment",
@@ -119,6 +123,9 @@ class Attempt(Base, UUIDMixin, TimestampMixin):
     submitted_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    # Libre, la escribe quien envía el intento -- "Equipo 3". Solo agrupa en
+    # el tablero de resultados (A5), no hay membresía real que mantener.
+    team_label: Mapped[str | None] = mapped_column(String(120), nullable=True)
 
     answers: Mapped[list["Answer"]] = relationship(cascade="all, delete-orphan")
 

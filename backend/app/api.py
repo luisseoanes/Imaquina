@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 
+from app.modules.assessment.router import learn_router as assessment_learn_router
+from app.modules.assessment.router import router as assessment_router
 from app.modules.assistant.router import router as assistant_router
 from app.modules.assistant.router import staff_router as assistant_staff_router
 from app.modules.catalog.router import router as catalog_router
@@ -21,3 +23,5 @@ api_router.include_router(assistant_staff_router)
 api_router.include_router(catalog_router)
 api_router.include_router(publishing_router)
 api_router.include_router(media_router)
+api_router.include_router(assessment_router)
+api_router.include_router(assessment_learn_router)

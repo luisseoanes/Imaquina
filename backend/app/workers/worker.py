@@ -66,8 +66,70 @@ async def reindex_project(ctx: dict, project_id: str) -> dict:
 
 
 async def export_results(ctx: dict, assessment_id: str, requested_by: str) -> dict:
-    """Genera el XLSX del tablero docente (R10). TODO: openpyxl."""
-    return {"assessment_id": assessment_id, "status": "pendiente"}
+    """Genera el XLSX del tablero docente (R10, A6).
+
+    Sube a una key determinista (`exports/{assessment_id}.xlsx`): un segundo
+    export sobre la misma evaluación simplemente sobreescribe, no acumula
+    ficheros viejos. `service.export_url` hace `head_object` sobre esa misma
+    key para saber si ya está listo.
+    """
+    from io import BytesIO
+
+    import boto3
+    from openpyxl import Workbook
+    from sqlalchemy import select
+
+    from app.modules.assessment.models import Assessment, Attempt
+    from app.modules.identity.models import User
+
+    aid = uuid.UUID(assessment_id)
+    async with SessionLocal() as db:
+        assessment = (
+            await db.execute(select(Assessment).where(Assessment.id == aid))
+        ).scalar_one_or_none()
+        if assessment is None:
+            return {"assessment_id": assessment_id, "status": "no encontrada"}
+
+        intentos = (
+            await db.execute(select(Attempt).where(Attempt.assessment_id == aid))
+        ).scalars().all()
+        estudiantes = {
+            u.id: u.full_name
+            for u in (
+                await db.execute(
+                    select(User).where(User.id.in_([a.student_id for a in intentos]))
+                )
+            ).scalars().all()
+        }
+
+        libro = Workbook()
+        hoja = libro.active
+        hoja.title = "Resultados"
+        hoja.append(["Estudiante", "Equipo", "Estado", "Puntaje", "Enviado"])
+        for intento in intentos:
+            hoja.append(
+                [
+                    estudiantes.get(intento.student_id, str(intento.student_id)),
+                    intento.team_label or "",
+                    intento.status,
+                    intento.score,
+                    intento.submitted_at.isoformat() if intento.submitted_at else "",
+                ]
+            )
+
+        buffer = BytesIO()
+        libro.save(buffer)
+
+    s3 = boto3.client(
+        "s3",
+        endpoint_url=settings.S3_ENDPOINT_URL,
+        aws_access_key_id=settings.S3_ACCESS_KEY,
+        aws_secret_access_key=settings.S3_SECRET_KEY,
+        region_name=settings.S3_REGION,
+    )
+    key = f"exports/{assessment_id}.xlsx"
+    s3.put_object(Bucket=settings.S3_BUCKET, Key=key, Body=buffer.getvalue())
+    return {"assessment_id": assessment_id, "status": "listo", "s3_key": key}
 
 
 async def delete_orphaned_media(ctx: dict, s3_key: str) -> dict:
