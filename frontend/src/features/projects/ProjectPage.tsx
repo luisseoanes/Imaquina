@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 
+import { useAuth } from "@/features/auth/useAuth";
 import { http } from "@/lib/http";
 
 interface MomentResumen {
@@ -30,14 +31,31 @@ interface ProjectData {
 export default function ProjectPage() {
   const { projectId = "" } = useParams();
   const { t } = useTranslation();
+  const { session } = useAuth();
+  const esEstudiante = session?.role === "student";
 
   const { data, isLoading } = useQuery({
     queryKey: ["project", projectId],
     queryFn: () => http<ProjectData>({ url: `/learn/projects/${projectId}` }),
   });
 
+  // N5: progreso lineal, decidido. Solo aplica al estudiante -- el backend
+  // ya lo exige de verdad (`learning._exigir_momento_desbloqueado`), esto es
+  // para no mandarlo a un enlace que el servidor va a rechazar.
+  const { data: progreso } = useQuery({
+    queryKey: ["progress", projectId],
+    queryFn: () => http<Record<string, string>>({ url: `/learn/projects/${projectId}/progress` }),
+    enabled: esEstudiante,
+  });
+
   if (isLoading) return <p className="p-4 sm:p-6">{t("common.loading")}</p>;
   if (!data) return null;
+
+  const desbloqueado = (idx: number): boolean => {
+    if (!esEstudiante || !progreso) return true;
+    if (idx === 0) return true;
+    return progreso[data.moments[idx - 1].type] === "completed";
+  };
 
   return (
     <main className="mx-auto max-w-3xl p-4 sm:p-6">
@@ -54,8 +72,10 @@ export default function ProjectPage() {
 
       <h2 className="mt-6 mb-2 font-medium">{t("projects.moments")}</h2>
       <ol className="divide-y divide-line overflow-hidden rounded border">
-        {data.moments.map((m) => {
+        {data.moments.map((m, idx) => {
           const vacio = m.blocks.length === 0;
+          const completado = progreso?.[m.type] === "completed";
+          const bloqueado = !vacio && !desbloqueado(idx);
           const contenido = (
             <>
               <span
@@ -63,15 +83,19 @@ export default function ProjectPage() {
                            bg-surface-muted text-sm font-medium"
                 aria-hidden
               >
-                {m.order + 1}
+                {completado ? "✓" : m.order + 1}
               </span>
               <span className="flex-1">
                 <span className="block font-medium">{m.title}</span>
                 {/* El nombre metodológico del momento (R7) sólo si aporta:
                     si el editor tituló "Introducción", repetirlo es ruido. */}
-                {(vacio || t(`moments.${m.type}`) !== m.title) && (
+                {(vacio || bloqueado || t(`moments.${m.type}`) !== m.title) && (
                   <span className="block text-sm text-content-subtle">
-                    {vacio ? t("projects.momentEmpty") : t(`moments.${m.type}`)}
+                    {vacio
+                      ? t("projects.momentEmpty")
+                      : bloqueado
+                        ? t("projects.momentLocked")
+                        : t(`moments.${m.type}`)}
                   </span>
                 )}
               </span>
@@ -81,7 +105,7 @@ export default function ProjectPage() {
           // `min-h-14`: objetivo táctil cómodo en móvil, no una fila de tabla.
           return (
             <li key={m.id}>
-              {vacio ? (
+              {vacio || bloqueado ? (
                 <div className="flex min-h-14 items-center gap-3 p-3 text-content-subtle">
                   {contenido}
                 </div>
