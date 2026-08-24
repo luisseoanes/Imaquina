@@ -84,6 +84,10 @@ class Course(Base, UUIDMixin, TimestampMixin):
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
 
+    enrollments: Mapped[list["Enrollment"]] = relationship(
+        back_populates="course", cascade="all, delete-orphan"
+    )
+
 
 class Enrollment(Base, UUIDMixin, TimestampMixin):
     __tablename__ = "enrollments"
@@ -95,6 +99,9 @@ class Enrollment(Base, UUIDMixin, TimestampMixin):
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), index=True
     )
+
+    course: Mapped["Course"] = relationship(back_populates="enrollments")
+    student: Mapped["User"] = relationship()
 
 
 class RefreshToken(Base, UUIDMixin, TimestampMixin):

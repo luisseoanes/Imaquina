@@ -90,3 +90,6 @@ Author = Annotated[TenantContext, Depends(require_role(Role.EDITOR, Role.ADMIN))
 Staff = Annotated[
     TenantContext, Depends(require_role(Role.TEACHER, Role.EDITOR, Role.ADMIN))
 ]
+# N3: alta y gestion de cuentas es solo del administrador de institucion, ni
+# siquiera editor/docente.
+Admin = Annotated[TenantContext, Depends(require_role(Role.ADMIN))]

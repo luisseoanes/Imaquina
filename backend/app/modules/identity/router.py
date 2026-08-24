@@ -2,11 +2,11 @@ from datetime import UTC, date, datetime, time
 from uuid import UUID
 
 from fastapi import APIRouter
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.deps import Db, Tenant
+from app.core.deps import Admin, Db, Staff, Tenant
 from app.core.errors import LicenseExpired, PermissionDenied, Unauthenticated
 from app.core.security import create_token, decode_token, verify_password
 from app.modules.identity import service
@@ -163,3 +163,95 @@ async def me(tenant: Tenant, db: Db) -> MeOut:
         grade=user.grade,
         lang=user.preferred_lang,
     )
+
+
+# --- Alta y gestión de cuentas (N3) -----------------------------------------
+#
+# Guard `Admin`, no `Author`: crear cuentas es de un rol aparte, ni editor ni
+# docente pueden hacerlo. Todo scopeado a `tenant.institution_id` -- son datos
+# de menores, cruzar instituciones es un incidente.
+
+admin_router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+class UserIn(BaseModel):
+    email: EmailStr
+    full_name: str = Field(min_length=1, max_length=200)
+    password: str = Field(min_length=8)
+    role: str = Field(pattern="^(student|teacher|editor|admin)$")
+    grade: str | None = Field(default=None, max_length=20)
+
+
+class UserPatch(BaseModel):
+    full_name: str | None = Field(default=None, min_length=1, max_length=200)
+    role: str | None = Field(default=None, pattern="^(student|teacher|editor|admin)$")
+    grade: str | None = None
+    is_active: bool | None = None
+
+
+@admin_router.get("/users")
+async def list_users(admin: Admin, db: Db):
+    return await service.list_users(db, admin.require_institution())
+
+
+@admin_router.post("/users", status_code=201)
+async def create_user(payload: UserIn, admin: Admin, db: Db):
+    return await service.create_user(
+        db, institution_id=admin.require_institution(), **payload.model_dump()
+    )
+
+
+@admin_router.patch("/users/{user_id}")
+async def update_user(user_id: UUID, payload: UserPatch, admin: Admin, db: Db):
+    datos = payload.model_dump(exclude_unset=True)
+    return await service.update_user(db, user_id, admin.require_institution(), **datos)
+
+
+# --- Cursos y matrículas (N4) ------------------------------------------------
+#
+# Crear cursos y matricular es del administrador; un docente solo LISTA los
+# suyos (`Staff`, filtrado por `teacher_id`).
+
+courses_router = APIRouter(prefix="/courses", tags=["courses"])
+
+
+class CourseIn(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    grade: str = Field(min_length=1, max_length=20)
+    teacher_id: UUID | None = None
+
+
+class EnrollIn(BaseModel):
+    user_id: UUID
+
+
+@courses_router.get("")
+async def list_courses(staff: Staff, db: Db, mine: bool = False):
+    """`mine=true`: solo los cursos donde `teacher_id` es quien pide (lo que
+    ve un docente). Sin el filtro, la vista de administración ve todos."""
+    teacher_id = staff.user_id if mine else None
+    return await service.list_courses(
+        db, institution_id=staff.require_institution(), teacher_id=teacher_id
+    )
+
+
+@courses_router.post("", status_code=201)
+async def create_course(payload: CourseIn, admin: Admin, db: Db):
+    return await service.create_course(
+        db, institution_id=admin.require_institution(), **payload.model_dump()
+    )
+
+
+@courses_router.post("/{course_id}/enrollments", status_code=204)
+async def enroll(course_id: UUID, payload: EnrollIn, admin: Admin, db: Db) -> None:
+    await service.enroll(db, course_id, admin.require_institution(), payload.user_id)
+
+
+@courses_router.delete("/{course_id}/enrollments/{user_id}", status_code=204)
+async def unenroll(course_id: UUID, user_id: UUID, admin: Admin, db: Db) -> None:
+    await service.unenroll(db, course_id, admin.require_institution(), user_id)
+
+
+@courses_router.get("/{course_id}/students")
+async def course_students(course_id: UUID, staff: Staff, db: Db):
+    return await service.estudiantes_de(db, course_id, staff.require_institution())
