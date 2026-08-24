@@ -42,6 +42,7 @@ def _proyecto():
         slug="seguidor-de-linea",
         grade="5",
         kit="Kit basico",
+        order=0,
         moments=[momento],
         translations=[_Tr(lang="es", title="Seguidor de linea", summary=None)],
     )
