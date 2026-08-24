@@ -39,6 +39,14 @@ class Settings(BaseSettings):
     S3_REGION: str = "auto"
     PRESIGNED_URL_TTL: int = 3600
     MAX_UPLOAD_MB: int = 512
+    # URL pública desde la que se SIRVE lo subido (CDN/bucket público), para
+    # construir el `body` que el editor guarda en los bloques image/audio.
+    # Si no está configurada (dev sin bucket real), se usa `S3_ENDPOINT_URL`.
+    S3_PUBLIC_URL: str | None = None
+
+    def media_url(self, s3_key: str) -> str:
+        base = (self.S3_PUBLIC_URL or self.S3_ENDPOINT_URL or "").rstrip("/")
+        return f"{base}/{self.S3_BUCKET}/{s3_key}"
 
     # --- Claude / asistente --------------------------------------------
     # Ver docs/arquitectura.md 4. El modelo es palanca de costo: medir antes de bajar.

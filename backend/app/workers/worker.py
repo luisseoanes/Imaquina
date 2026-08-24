@@ -69,8 +69,43 @@ async def export_results(ctx: dict, assessment_id: str, requested_by: str) -> di
     return {"assessment_id": assessment_id, "status": "pendiente"}
 
 
+async def delete_orphaned_media(ctx: dict, s3_key: str) -> dict:
+    """IDEMPOTENTE: borra el objeto del bucket solo si ya no hay ninguna fila
+    de `MediaAsset` con esta `s3_key` (S19).
+
+    `media.service.borrar` da de baja el registro sin tocar el bucket -- el
+    fichero queda huerfano hasta que este trabajo lo limpia. La comprobacion
+    de nuevo aqui es la guarda contra condiciones de carrera; `delete_object`
+    de S3 ya es idempotente si el objeto no existe.
+    """
+    import boto3
+    from sqlalchemy import select
+
+    from app.modules.media.models import MediaAsset
+
+    async with SessionLocal() as db:
+        sigue_referenciado = (
+            await db.execute(
+                select(MediaAsset.id).where(MediaAsset.s3_key == s3_key)
+            )
+        ).scalar_one_or_none()
+
+    if sigue_referenciado is not None:
+        return {"s3_key": s3_key, "borrado": False, "razon": "en uso"}
+
+    s3 = boto3.client(
+        "s3",
+        endpoint_url=settings.S3_ENDPOINT_URL,
+        aws_access_key_id=settings.S3_ACCESS_KEY,
+        aws_secret_access_key=settings.S3_SECRET_KEY,
+        region_name=settings.S3_REGION,
+    )
+    s3.delete_object(Bucket=settings.S3_BUCKET, Key=s3_key)
+    return {"s3_key": s3_key, "borrado": True}
+
+
 class WorkerSettings:
-    functions = [reindex_project, export_results]
+    functions = [reindex_project, export_results, delete_orphaned_media]
     redis_settings = RedisSettings.from_dsn(str(settings.REDIS_URL))
     max_jobs = 10
     job_timeout = 300

@@ -16,6 +16,7 @@ from app.core.deps import Author, Db
 from app.core.errors import ValidationFailed
 from app.modules.media import service
 from app.modules.media.models import MediaAsset
+from app.workers.tasks import enqueue_media_cleanup
 
 router = APIRouter(prefix="/studio/media", tags=["studio"])
 
@@ -86,7 +87,13 @@ async def register(payload: RegisterIn, author: Author, db: Db):
     asset = MediaAsset(**payload.model_dump(), uploaded_by=author.user_id)
     db.add(asset)
     await db.flush()
-    return {"id": str(asset.id), "s3_key": asset.s3_key}
+    # El editor guarda esto como `body` del bloque image/audio: sin una URL
+    # resoluble no hay forma de reproducir lo subido.
+    return {
+        "id": str(asset.id),
+        "s3_key": asset.s3_key,
+        "url": settings.media_url(asset.s3_key),
+    }
 
 
 @router.get("/assets")
@@ -110,4 +117,7 @@ async def list_assets(
 
 @router.delete("/assets/{asset_id}", status_code=204)
 async def delete_asset(asset_id: uuid.UUID, author: Author, db: Db) -> None:
-    await service.borrar(db, asset_id)
+    s3_key = await service.borrar(db, asset_id)
+    # S19: el objeto en el bucket se limpia en background, solo si para
+    # entonces sigue sin haber ninguna fila con esa clave (idempotente).
+    await enqueue_media_cleanup(s3_key)

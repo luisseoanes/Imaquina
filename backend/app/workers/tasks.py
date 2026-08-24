@@ -24,3 +24,8 @@ async def enqueue_reindex(project_id: uuid.UUID) -> None:
 async def enqueue_export(assessment_id: uuid.UUID, requested_by: uuid.UUID) -> None:
     pool = await create_pool(_redis_settings())
     await pool.enqueue_job("export_results", str(assessment_id), str(requested_by))
+
+
+async def enqueue_media_cleanup(s3_key: str) -> None:
+    pool = await create_pool(_redis_settings())
+    await pool.enqueue_job("delete_orphaned_media", s3_key)

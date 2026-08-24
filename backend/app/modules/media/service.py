@@ -10,6 +10,7 @@ from typing import Any
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.errors import Conflict, NotFound
 from app.modules.media.models import MediaAsset
 
@@ -28,6 +29,7 @@ def _serializar(asset: MediaAsset, usos: int) -> dict[str, Any]:
     return {
         "id": str(asset.id),
         "s3_key": asset.s3_key,
+        "url": settings.media_url(asset.s3_key),
         "mime_type": asset.mime_type,
         "size_bytes": asset.size_bytes,
         "original_filename": asset.original_filename,
@@ -94,12 +96,17 @@ async def _usos(db: AsyncSession, asset_ids: list[uuid.UUID]) -> dict[uuid.UUID,
     return await catalog.uso_de_assets(db, asset_ids)
 
 
-async def borrar(db: AsyncSession, asset_id: uuid.UUID) -> None:
+async def borrar(db: AsyncSession, asset_id: uuid.UUID) -> str:
     """No se borra un asset en uso.
 
     `content_blocks.media_asset_id` tiene ON DELETE SET NULL: borrarlo dejaria
     los bloques que lo usan apuntando a nada, sin aviso y posiblemente en un
     proyecto ya publicado.
+
+    Devuelve el `s3_key` para que el router encole su limpieza (S19): el
+    objeto en el bucket no se borra aqui, dentro de la transaccion -- si el
+    commit falla despues, quedaria un fichero destruido que la BD sigue
+    referenciando.
     """
     asset = (
         await db.execute(select(MediaAsset).where(MediaAsset.id == asset_id))
@@ -112,8 +119,7 @@ async def borrar(db: AsyncSession, asset_id: uuid.UUID) -> None:
             f"El asset se usa en {usos} bloque(s). Quitalo de ahi antes de borrarlo."
         )
 
-    # Solo se da de baja de la libreria. El objeto en S3 lo limpia un trabajo
-    # aparte (ver backlog): borrarlo aqui, dentro de la transaccion, dejaria un
-    # fichero destruido si el commit falla despues.
+    s3_key = asset.s3_key
     await db.delete(asset)
     await db.flush()
+    return s3_key
