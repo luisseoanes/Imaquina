@@ -1,7 +1,13 @@
 import { useCallback, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
-import { clearTokens, http, setAccessToken, setRefreshToken } from "@/lib/http";
+import {
+  clearTokens,
+  getRefreshToken,
+  http,
+  setAccessToken,
+  setRefreshToken,
+} from "@/lib/http";
 import { AuthCtx } from "./useAuth";
 import type { AuthValue, Role, Session } from "./useAuth";
 
@@ -36,6 +42,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    // N2: revoca el refresh en el servidor. Best-effort -- si falla (sin
+    // red, ya expirado), la sesión local se cierra igual: no hay forma de
+    // que un fallo de revocación deje al usuario atrapado sin poder salir.
+    const refreshToken = getRefreshToken();
+    if (refreshToken) {
+      void http({
+        url: "/auth/logout",
+        method: "POST",
+        data: { refresh_token: refreshToken },
+      }).catch(() => {});
+    }
     clearTokens();
     localStorage.removeItem("session");
     setSession(null);

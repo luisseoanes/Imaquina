@@ -22,6 +22,10 @@ export function clearTokens() {
   setRefreshToken(null);
 }
 
+export function getRefreshToken(): string | null {
+  return refreshToken;
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -58,7 +62,12 @@ function renovarAcceso(): Promise<boolean> {
         body: JSON.stringify({ refresh_token: refreshToken }),
       });
       if (!res.ok) return false;
-      setAccessToken(((await res.json()) as { access_token: string }).access_token);
+      // El refresh ROTA (N2): el que se acaba de usar queda revocado en el
+      // servidor, así que el nuevo hay que guardarlo o el siguiente refresco
+      // ya no tiene con qué.
+      const body = (await res.json()) as { access_token: string; refresh_token: string };
+      setAccessToken(body.access_token);
+      setRefreshToken(body.refresh_token);
       return true;
     } catch {
       return false;

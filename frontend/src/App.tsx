@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, Route, Routes } from "react-router-dom";
+import AppHeader from "@/components/AppHeader";
 import LoginPage from "@/features/auth/LoginPage";
 import { useAuth } from "@/features/auth/useAuth";
 import MomentPage from "@/features/moment/MomentPage";
@@ -12,7 +13,13 @@ const StudioPage = lazy(() => import("@/features/studio/StudioPage"));
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { session } = useAuth();
-  return session ? <>{children}</> : <Navigate to="/login" replace />;
+  if (!session) return <Navigate to="/login" replace />;
+  return (
+    <>
+      <AppHeader />
+      {children}
+    </>
+  );
 }
 
 function RequireAuthor({ children }: { children: React.ReactNode }) {

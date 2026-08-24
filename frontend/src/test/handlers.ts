@@ -14,4 +14,8 @@ export const handlers = [
       lang: "es",
     }),
   ),
+  // N2: el logout revoca en el servidor. Mockeado por defecto porque
+  // `AuthProvider.logout()` lo dispara siempre, best-effort, aunque el test
+  // no esté probando logout en sí.
+  http.post(`${API}/auth/logout`, () => new HttpResponse(null, { status: 204 })),
 ];
