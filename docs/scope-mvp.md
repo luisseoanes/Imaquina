@@ -282,17 +282,27 @@ Esto no termina cuando el código funciona:
 3. **¿El contenido existe ya escrito** (en Word, Drive, PDF) o hay que producirlo desde cero? Cambia por completo el esfuerzo de carga.
 4. **¿Quién paga el consumo del LLM?** Costo variable mensual — debe estar en el contrato.
 5. **¿Cuántos usuarios concurrentes se esperan?** "Escalable" (R3) no es un número. Dimensiona todo.
-6. **¿Cómo se crean las cuentas?** ¿El colegio carga un CSV? ¿El docente crea a sus estudiantes? ¿Autoregistro con código de curso?
-7. **¿Video propio o embebido?** (§7) — define si hay costo de transcodificación y almacenamiento.
+6. ~~¿Cómo se crean las cuentas?~~ **Resuelto (18/08/2026):** un tercer rol — un
+   administrador de institución — da de alta docentes y estudiantes y los asigna a curso.
+   No hay autoregistro ni carga de CSV por el colegio.
+7. ~~¿Video propio o embebido?~~ (§7) **Resuelto (18/08/2026): embebido, YouTube.** Sin
+   costo de transcodificación ni almacenamiento propio.
 
 **Importantes:**
 8. ¿Necesitan flujo de revisión (alguien escribe, otro aprueba antes de publicar)? En MVP va borrador → publicado, sin aprobador.
-9. ¿La evaluación es individual o por equipo? El PDF habla de "equipos de trabajo" en indagación pero de "resultados por estudiante" en evaluación.
-10. ¿Preguntas abiertas en la evaluación? Si sí, ¿las califica el docente a mano o se propone asistencia de IA?
-11. ¿Un estudiante puede reintentar una evaluación? ¿Cuántas veces?
+9. ~~¿La evaluación es individual o por equipo?~~ **Resuelto (18/08/2026): depende de lo
+   que asigne el docente por tarea** — no es una decisión fija de la plataforma, se marca
+   al asignar la evaluación. Deja abierta una pregunta de modelo nueva: ¿cómo se forman
+   los equipos? ¿grupos fijos del curso o los arma el docente al asignar?
+10. ~~¿Preguntas abiertas en la evaluación? ¿Quién las califica?~~ **Resuelto
+    (18/08/2026): sí las hay, las califica el docente** (sin asistencia de IA por ahora).
+11. ~~¿Un estudiante puede reintentar una evaluación? ¿Cuántas veces?~~ **Resuelto
+    (18/08/2026): lo define el docente** por evaluación (`max_attempts`).
 12. ¿Los datos de menores tienen requisitos de habeas data (Ley 1581 Colombia)? Muy probablemente sí → política de tratamiento de datos y consentimiento.
-13. ¿Hay identidad visual / manual de marca?
-14. ¿Progreso lineal obligatorio (desbloquear momento a momento) o navegación libre?
+13. ~~¿Hay identidad visual / manual de marca?~~ **Resuelto: sí**, paleta aprobada por el
+    PO el 18/08/2026 (ver `docs/marca/paleta-imaquina.html` y `docs/backlog.md` I7b).
+14. ~~¿Progreso lineal obligatorio (desbloquear momento a momento) o navegación libre?~~
+    **Resuelto (18/08/2026): lineal obligatorio.**
 
 ---
 
