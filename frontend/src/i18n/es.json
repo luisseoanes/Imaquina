@@ -25,24 +25,94 @@
     "moments": "Momentos",
     "back": "Volver a proyectos",
     "backToProject": "Volver al proyecto",
-    "momentEmpty": "Sin contenido todavía"
+    "momentEmpty": "Sin contenido todavía",
+    "momentLocked": "Completa el momento anterior para desbloquear este",
+    "markComplete": "Marcar como completado",
+    "completed": "Completado"
   },
   "teacher": {
     "guide": "Guía del docente",
     "showGuide": "Ver guía didáctica",
     "results": "Resultados",
-    "export": "Exportar a Excel"
+    "export": "Exportar a Excel",
+    "panelTitle": "Panel docente",
+    "course": "Curso",
+    "pickCourse": "Elige un curso",
+    "pickProject": "Elige un proyecto",
+    "student": "Estudiante"
+  },
+  "nav": {
+    "admin": "Administración",
+    "teacher": "Panel docente"
+  },
+  "roles": {
+    "student": "Estudiante",
+    "teacher": "Docente",
+    "editor": "Editor",
+    "admin": "Administrador"
+  },
+  "admin": {
+    "title": "Administración",
+    "users": "Usuarios",
+    "courses": "Cursos",
+    "email": "Correo",
+    "fullName": "Nombre completo",
+    "password": "Contraseña",
+    "role": "Rol",
+    "grade": "Grado",
+    "createUser": "Crear cuenta",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "courseName": "Nombre del curso",
+    "createCourse": "Crear curso",
+    "pickStudent": "Elige un estudiante",
+    "enroll": "Matricular",
+    "unenroll": "Quitar"
   },
   "chat": {
     "title": "Consultor técnico",
     "placeholder": "Pregúntame sobre tu proyecto…",
     "send": "Enviar",
-    "thinking": "Pensando…"
+    "thinking": "Pensando…",
+    "rateLimited": "Has hecho muchas preguntas esta hora. Intenta un poco más tarde."
   },
   "assessment": {
     "submit": "Enviar evaluación",
     "score": "Puntaje",
-    "attempt": "Intento"
+    "attempt": "Intento",
+    "title": "Evaluación",
+    "start": "Comenzar",
+    "submitted": "Enviado",
+    "lastScore": "Último puntaje",
+    "noAttemptsLeft": "Ya usaste todos tus intentos para esta evaluación.",
+    "teamLabel": "Nombre del equipo (opcional)",
+    "status": {
+      "in_progress": "En curso",
+      "submitted": "Enviado, falta calificar",
+      "graded": "Calificado"
+    },
+    "graded": "Calificado",
+    "grade": "Calificar",
+    "points": "Puntos",
+    "downloadReady": "Descargar Excel",
+    "exporting": "Generando el archivo…",
+    "noAttempts": "Todavía no hay intentos.",
+    "builderTitle": "Preguntas de la evaluación",
+    "maxAttempts": "Intentos permitidos",
+    "passScore": "Puntaje para aprobar",
+    "teamMode": "Por equipo",
+    "addQuestion": "Añadir pregunta",
+    "addChoice": "Añadir opción",
+    "choiceLabel": "Texto de la opción",
+    "correct": "Correcta",
+    "prompt": "Enunciado",
+    "correctNumeric": "Respuesta correcta",
+    "kinds": {
+      "mcq": "Opción múltiple",
+      "true_false": "Verdadero/Falso",
+      "open": "Abierta",
+      "numeric": "Numérica"
+    }
   },
   "studio": {
     "title": "Content Studio",
@@ -65,7 +135,62 @@
     "untitled": "(sin título)",
     "back": "Volver a proyectos",
     "editorPending": "El editor de bloques llega en S13.",
-    "slugHint": "Se usa en la URL. Se genera del título, puedes cambiarlo."
+    "slugHint": "Se usa en la URL. Se genera del título, puedes cambiarlo.",
+    "actions": "Acciones",
+    "publishNow": "Publicar",
+    "publishing": "Publicando…",
+    "publishBlocked": "Hay que resolver esto antes de publicar:",
+    "unpublish": "Despublicar",
+    "unpublishConfirm": "¿Despublicar? Los estudiantes dejarán de verlo.",
+    "duplicate": "Duplicar",
+    "duplicateTitle": "Duplicar proyecto",
+    "duplicateSlug": "Identificador del duplicado",
+    "deleteProject": "Borrar",
+    "deleteConfirm": "¿Borrar este proyecto? No se puede deshacer.",
+    "previewAs": "Vista previa como",
+    "previewStudent": "Estudiante",
+    "previewTeacher": "Docente",
+    "closePreview": "Cerrar vista previa",
+    "bilingualView": "Vista bilingüe",
+    "singleLangView": "Un idioma",
+    "momentTitle": "Título del momento",
+    "teacherNote": "Guía docente",
+    "openingPrompt": "Pregunta de apertura del chat",
+    "addBlock": "Añadir bloque",
+    "deleteBlock": "Borrar bloque",
+    "body": "Contenido",
+    "caption": "Pie de foto",
+    "altText": "Texto alternativo (obligatorio)",
+    "embedUrl": "URL (YouTube)",
+    "dragHandle": "Arrastrar para reordenar",
+    "saveConflict": "El contenido cambió en otra sesión.",
+    "reload": "Recargar",
+    "blockKinds": {
+      "text": "Texto",
+      "image": "Imagen",
+      "audio": "Audio",
+      "video": "Video (YouTube)",
+      "embed": "Embed"
+    },
+    "editor": {
+      "bold": "Negrita",
+      "italic": "Cursiva",
+      "bulletList": "Lista",
+      "orderedList": "Lista numerada",
+      "code": "Código",
+      "link": "Enlace",
+      "linkPrompt": "URL del enlace"
+    },
+    "media": {
+      "title": "Librería de media",
+      "upload": "Subir",
+      "uploading": "Subiendo…",
+      "search": "Buscar…",
+      "none": "No hay archivos todavía.",
+      "pick": "Elegir",
+      "selected": "Seleccionado",
+      "altRequired": "Describe la imagen (accesibilidad)"
+    }
   },
   "common": {
     "save": "Guardar",

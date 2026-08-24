@@ -25,24 +25,94 @@
     "moments": "Moments",
     "back": "Back to projects",
     "backToProject": "Back to project",
-    "momentEmpty": "No content yet"
+    "momentEmpty": "No content yet",
+    "momentLocked": "Complete the previous moment to unlock this one",
+    "markComplete": "Mark as completed",
+    "completed": "Completed"
   },
   "teacher": {
     "guide": "Teacher guide",
     "showGuide": "Show teaching guide",
     "results": "Results",
-    "export": "Export to Excel"
+    "export": "Export to Excel",
+    "panelTitle": "Teacher panel",
+    "course": "Course",
+    "pickCourse": "Pick a course",
+    "pickProject": "Pick a project",
+    "student": "Student"
+  },
+  "nav": {
+    "admin": "Administration",
+    "teacher": "Teacher panel"
+  },
+  "roles": {
+    "student": "Student",
+    "teacher": "Teacher",
+    "editor": "Editor",
+    "admin": "Administrator"
+  },
+  "admin": {
+    "title": "Administration",
+    "users": "Users",
+    "courses": "Courses",
+    "email": "Email",
+    "fullName": "Full name",
+    "password": "Password",
+    "role": "Role",
+    "grade": "Grade",
+    "createUser": "Create account",
+    "active": "Active",
+    "inactive": "Inactive",
+    "courseName": "Course name",
+    "createCourse": "Create course",
+    "pickStudent": "Pick a student",
+    "enroll": "Enroll",
+    "unenroll": "Remove"
   },
   "chat": {
     "title": "Technical advisor",
     "placeholder": "Ask me about your project…",
     "send": "Send",
-    "thinking": "Thinking…"
+    "thinking": "Thinking…",
+    "rateLimited": "You've asked a lot of questions this hour. Try again a bit later."
   },
   "assessment": {
     "submit": "Submit assessment",
     "score": "Score",
-    "attempt": "Attempt"
+    "attempt": "Attempt",
+    "title": "Assessment",
+    "start": "Start",
+    "submitted": "Submitted",
+    "lastScore": "Last score",
+    "noAttemptsLeft": "You've used all your attempts for this assessment.",
+    "teamLabel": "Team name (optional)",
+    "status": {
+      "in_progress": "In progress",
+      "submitted": "Submitted, awaiting grading",
+      "graded": "Graded"
+    },
+    "graded": "Graded",
+    "grade": "Grade",
+    "points": "Points",
+    "downloadReady": "Download Excel",
+    "exporting": "Generating the file…",
+    "noAttempts": "No attempts yet.",
+    "builderTitle": "Assessment questions",
+    "maxAttempts": "Allowed attempts",
+    "passScore": "Passing score",
+    "teamMode": "Team-based",
+    "addQuestion": "Add question",
+    "addChoice": "Add choice",
+    "choiceLabel": "Choice text",
+    "correct": "Correct",
+    "prompt": "Prompt",
+    "correctNumeric": "Correct answer",
+    "kinds": {
+      "mcq": "Multiple choice",
+      "true_false": "True/False",
+      "open": "Open",
+      "numeric": "Numeric"
+    }
   },
   "studio": {
     "title": "Content Studio",
@@ -65,7 +135,62 @@
     "untitled": "(untitled)",
     "back": "Back to projects",
     "editorPending": "The block editor lands in S13.",
-    "slugHint": "Used in the URL. Generated from the title, you can change it."
+    "slugHint": "Used in the URL. Generated from the title, you can change it.",
+    "actions": "Actions",
+    "publishNow": "Publish",
+    "publishing": "Publishing…",
+    "publishBlocked": "This needs fixing before publishing:",
+    "unpublish": "Unpublish",
+    "unpublishConfirm": "Unpublish? Students will stop seeing it.",
+    "duplicate": "Duplicate",
+    "duplicateTitle": "Duplicate project",
+    "duplicateSlug": "Duplicate's identifier",
+    "deleteProject": "Delete",
+    "deleteConfirm": "Delete this project? This can't be undone.",
+    "previewAs": "Preview as",
+    "previewStudent": "Student",
+    "previewTeacher": "Teacher",
+    "closePreview": "Close preview",
+    "bilingualView": "Bilingual view",
+    "singleLangView": "Single language",
+    "momentTitle": "Moment title",
+    "teacherNote": "Teacher guide",
+    "openingPrompt": "Chat opening prompt",
+    "addBlock": "Add block",
+    "deleteBlock": "Delete block",
+    "body": "Content",
+    "caption": "Caption",
+    "altText": "Alt text (required)",
+    "embedUrl": "URL (YouTube)",
+    "dragHandle": "Drag to reorder",
+    "saveConflict": "The content changed in another session.",
+    "reload": "Reload",
+    "blockKinds": {
+      "text": "Text",
+      "image": "Image",
+      "audio": "Audio",
+      "video": "Video (YouTube)",
+      "embed": "Embed"
+    },
+    "editor": {
+      "bold": "Bold",
+      "italic": "Italic",
+      "bulletList": "List",
+      "orderedList": "Numbered list",
+      "code": "Code",
+      "link": "Link",
+      "linkPrompt": "Link URL"
+    },
+    "media": {
+      "title": "Media library",
+      "upload": "Upload",
+      "uploading": "Uploading…",
+      "search": "Search…",
+      "none": "No files yet.",
+      "pick": "Pick",
+      "selected": "Selected",
+      "altRequired": "Describe the image (accessibility)"
+    }
   },
   "common": {
     "save": "Save",
