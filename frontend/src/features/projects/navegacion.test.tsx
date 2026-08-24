@@ -62,9 +62,12 @@ describe("recorrido del estudiante", () => {
           chatbot_opening_prompt: null,
         }),
       ),
+      mswHttp.get(`${API}/learn/projects/:id/progress`, () => HttpResponse.json({})),
+      mswHttp.get(`${API}/chat/sessions`, () => HttpResponse.json([])),
       mswHttp.post(`${API}/chat/sessions`, () =>
         HttpResponse.json({ session_id: "s1" }),
       ),
+      mswHttp.get(`${API}/chat/sessions/:id/messages`, () => HttpResponse.json([])),
     );
   });
 
