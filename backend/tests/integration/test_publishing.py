@@ -17,6 +17,7 @@ from app.modules.catalog.models import (
     Moment,
     MomentTranslation,
     Project,
+    ProjectStatus,
     ProjectTranslation,
 )
 from app.modules.publishing import service as publishing
@@ -127,3 +128,17 @@ async def test_un_idioma_a_medias_no_se_publica(db):
 
     # Tiene título en inglés pero los momentos no: fuera.
     assert version.snapshot["langs"] == ["es"]
+
+
+async def test_despublicar_vuelve_a_borrador_sin_borrar_el_historial(db):
+    """S18: el mensaje de error al borrar promete esta acción — tiene que existir."""
+    proyecto = await _proyecto_completo(db)
+    version = await publishing.publish(db, proyecto.id, published_by=None)
+
+    actualizado = await publishing.unpublish(db, proyecto.id)
+
+    assert actualizado.status == ProjectStatus.DRAFT
+    # El snapshot sigue ahí: un republicar no debería tener que reconstruir
+    # desde cero, y el rollback sigue teniendo algo a lo que volver.
+    await db.refresh(version)
+    assert version.snapshot is not None

@@ -182,6 +182,9 @@ def build_snapshot(project: Project) -> dict[str, Any]:
         "slug": project.slug,
         "grade": project.grade,
         "kit": project.kit,
+        # N11: el listado del estudiante ordena por esto sin tener que hacer
+        # join contra `Project` -- el snapshot ya lleva todo lo que hace falta.
+        "order": project.order,
         "langs": langs,
         "content": {lang: _contenido(project, lang) for lang in langs},
     }
@@ -257,6 +260,35 @@ async def publish(
     project.status = ProjectStatus.PUBLISHED
     await db.flush()
     return version
+
+
+async def unpublish(db: AsyncSession, project_id: uuid.UUID) -> Project:
+    """S18: la única acción que faltaba para completar el ciclo de `status`.
+
+    La fila de `ProjectVersion` NO se borra — el historial de snapshots se
+    conserva por si se vuelve a publicar — pero deja de ser `is_current`
+    (N11: el camino de lectura del estudiante filtra solo por eso, sin join a
+    `Project.status`; si se dejara `is_current=True`, el proyecto seguiría
+    pareciendo publicado). Un republicar reconstruye el snapshot desde cero de
+    todas formas, así que no se pierde nada al apagar el flag.
+    """
+    project = (
+        await db.execute(select(Project).where(Project.id == project_id))
+    ).scalar_one_or_none()
+    if project is None:
+        raise NotFound("Proyecto no encontrado")
+
+    await db.execute(
+        update(ProjectVersion)
+        .where(
+            ProjectVersion.project_id == project_id,
+            ProjectVersion.is_current.is_(True),
+        )
+        .values(is_current=False)
+    )
+    project.status = ProjectStatus.DRAFT
+    await db.flush()
+    return project
 
 
 async def rollback(

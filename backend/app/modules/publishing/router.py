@@ -25,6 +25,15 @@ async def publish(project_id: UUID, author: Author, db: Db, lang: str = "es"):
     return {"version": version.version, "published_at": version.published_at}
 
 
+@router.post("/projects/{project_id}/unpublish")
+async def unpublish(project_id: UUID, author: Author, db: Db):
+    project = await service.unpublish(db, project_id)
+    # El contenido deja de estar disponible: se reindexa para vaciar sus
+    # chunks del RAG (reindex_project cae a la rama "sin publicar").
+    await enqueue_reindex(project_id)
+    return {"status": project.status}
+
+
 @router.post("/projects/{project_id}/rollback/{version}")
 async def rollback(project_id: UUID, version: int, author: Author, db: Db):
     target = await service.rollback(db, project_id, version)
