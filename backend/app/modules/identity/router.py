@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.deps import Db, Tenant
 from app.core.errors import LicenseExpired, PermissionDenied, Unauthenticated
 from app.core.security import create_token, decode_token, verify_password
+from app.modules.identity import service
 from app.modules.identity.models import License, User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -76,15 +77,15 @@ async def login(payload: LoginIn, db: Db) -> TokenOut:
     # viernes, un refresh emitido el jueves no puede durar 30 dias.
     valid_to = await _vigencia(db, user)
 
-    common = dict(
-        subject=user.id,
-        institution_id=user.institution_id,
-        role=user.role,
-        license_valid_to=valid_to,
-    )
     return TokenOut(
-        access_token=create_token(**common, token_type="access"),
-        refresh_token=create_token(**common, token_type="refresh"),
+        access_token=create_token(
+            subject=user.id,
+            institution_id=user.institution_id,
+            role=user.role,
+            token_type="access",
+            license_valid_to=valid_to,
+        ),
+        refresh_token=await service.emitir_refresh(db, user, license_valid_to=valid_to),
         role=user.role,
         lang=user.preferred_lang,
     )
@@ -96,12 +97,16 @@ class RefreshIn(BaseModel):
 
 class AccessOut(BaseModel):
     access_token: str
+    # N2: rotación real -- el refresh que se acaba de canjear queda revocado
+    # y este es el único que sirve de aquí en adelante. El cliente TIENE que
+    # guardarlo o se queda sin forma de refrescar en el siguiente intento.
+    refresh_token: str
     token_type: str = "bearer"
 
 
 @router.post("/refresh", response_model=AccessOut)
 async def refresh(payload: RefreshIn, db: Db) -> AccessOut:
-    """Canjea un refresh token por un access token nuevo.
+    """Canjea un refresh token por un access token nuevo y ROTA el refresh.
 
     El rol y la institucion se releen de la BASE DE DATOS, no de los claims del
     token: si a alguien se le cambia el rol o se le desactiva la cuenta, el
@@ -117,15 +122,32 @@ async def refresh(payload: RefreshIn, db: Db) -> AccessOut:
     if user is None or not user.is_active:
         raise Unauthenticated("La cuenta ya no esta activa")
 
+    # La vigencia se revisa ANTES de rotar: si la licencia expiró, el refresh
+    # no se quema -- puede volver a servir en cuanto se renueve la licencia,
+    # que es una condición que se autocorrige sola, a diferencia de un jti
+    # robado. Rotar solo pasa en el camino feliz.
+    valid_to = await _vigencia(db, user)
+    await service.rotar_refresh(db, claims["jti"])
+
     return AccessOut(
         access_token=create_token(
             subject=user.id,
             institution_id=user.institution_id,
             role=user.role,
             token_type="access",
-            license_valid_to=await _vigencia(db, user),
-        )
+            license_valid_to=valid_to,
+        ),
+        refresh_token=await service.emitir_refresh(db, user, license_valid_to=valid_to),
     )
+
+
+@router.post("/logout", status_code=204)
+async def logout(payload: RefreshIn, db: Db) -> None:
+    """Revoca el refresh token. No exige que siga vigente: cerrar sesión dos
+    veces con el mismo token, o uno ya expirado, no debe dar error."""
+    claims = decode_token(payload.refresh_token)
+    if claims is not None and claims.get("type") == "refresh":
+        await service.revocar_refresh(db, claims["jti"])
 
 
 @router.get("/me", response_model=MeOut)

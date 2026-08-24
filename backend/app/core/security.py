@@ -1,6 +1,6 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -52,6 +52,10 @@ def create_token(
         "iat": now,
         "exp": expires,
     }
+    # N2: solo el refresh lleva jti -- es el que se rota/revoca. El access
+    # dura 15 minutos y nunca se guarda en BD, no hace falta rastrearlo.
+    if token_type == "refresh":
+        payload["jti"] = str(uuid4())
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
