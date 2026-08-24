@@ -2,6 +2,7 @@
 
 import uuid
 
+from arq import cron
 from arq.connections import RedisSettings
 
 from app.core.config import settings
@@ -104,8 +105,31 @@ async def delete_orphaned_media(ctx: dict, s3_key: str) -> dict:
     return {"s3_key": s3_key, "borrado": True}
 
 
+async def purge_old_chat_history(ctx: dict) -> dict:
+    """C4: retención acotada -- son datos de menores (Ley 1581). Borra de
+    verdad, no marca: `ChatMessage` cuelga de `ChatSession` con CASCADE, así
+    que borrar la sesión se lleva sus mensajes."""
+    from datetime import UTC, datetime, timedelta
+
+    from sqlalchemy import delete
+
+    from app.modules.assistant.models import ChatSession
+
+    limite = datetime.now(UTC) - timedelta(days=settings.CHAT_RETENTION_DAYS)
+    async with SessionLocal() as db:
+        resultado = await db.execute(
+            delete(ChatSession).where(ChatSession.created_at < limite)
+        )
+        await db.commit()
+    return {"borrados": resultado.rowcount}
+
+
 class WorkerSettings:
     functions = [reindex_project, export_results, delete_orphaned_media]
+    # Primer uso de cron en el repo: antes todo era encolado al vuelo desde
+    # un router (publicar, borrar media). Esto es la excepción -- nadie
+    # dispara "purgar historial viejo" a mano, tiene que ser periódico.
+    cron_jobs = [cron(purge_old_chat_history, hour={3}, minute=0)]
     redis_settings = RedisSettings.from_dsn(str(settings.REDIS_URL))
     max_jobs = 10
     job_timeout = 300

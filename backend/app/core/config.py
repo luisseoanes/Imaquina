@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     GUARDRAIL_MODEL: str = "claude-haiku-4-5"
     ASSISTANT_MAX_TOKENS: int = 4096
     CHAT_RATE_LIMIT_PER_HOUR: int = 60
+    # C4: datos de menores (Ley 1581) -- retención acotada, se borra de
+    # verdad al expirar, no se marca.
+    CHAT_RETENTION_DAYS: int = 180
     RAG_TOP_K: int = 6
     EMBEDDING_DIM: int = 1024
 
