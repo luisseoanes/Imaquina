@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link, Route, Routes } from "react-router-dom";
 
 import type { Lang } from "./api";
+import MomentEditor from "./MomentEditor";
 import ProjectDetail from "./ProjectDetail";
 import ProjectsList from "./ProjectsList";
 
@@ -42,6 +43,10 @@ export default function StudioPage() {
       <Routes>
         <Route index element={<ProjectsList lang={lang} />} />
         <Route path="projects/:projectId" element={<ProjectDetail lang={lang} />} />
+        <Route
+          path="projects/:projectId/moments/:momentId"
+          element={<MomentEditor lang={lang} />}
+        />
       </Routes>
     </main>
   );
