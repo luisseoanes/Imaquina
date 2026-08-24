@@ -10,6 +10,7 @@ import ProjectsPage from "@/features/projects/ProjectsPage";
 
 // El Content Studio nunca llega al bundle del estudiante.
 const StudioPage = lazy(() => import("@/features/studio/StudioPage"));
+const AdminPage = lazy(() => import("@/features/admin/AdminPage"));
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { session } = useAuth();
@@ -25,6 +26,11 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 function RequireAuthor({ children }: { children: React.ReactNode }) {
   const { canAuthor } = useAuth();
   return canAuthor ? <>{children}</> : <Navigate to="/" replace />;
+}
+
+function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const { session } = useAuth();
+  return session?.role === "admin" ? <>{children}</> : <Navigate to="/" replace />;
 }
 
 export default function App() {
@@ -48,6 +54,14 @@ export default function App() {
         <Route
           path="/studio/*"
           element={<RequireAuthor><StudioPage /></RequireAuthor>}
+        />
+        <Route
+          path="/admin/*"
+          element={
+            <RequireAuth>
+              <RequireAdmin><AdminPage /></RequireAdmin>
+            </RequireAuth>
+          }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
