@@ -68,6 +68,9 @@ export default function LoginPage() {
         >
           {t("auth.login")}
         </button>
+        {/* No hay recuperación por correo (N15): las cuentas de menores se
+            crean sin buzón propio, así que la única vía es el administrador. */}
+        <p className="text-center text-xs text-content-subtle">{t("auth.forgot")}</p>
       </form>
     </main>
   );

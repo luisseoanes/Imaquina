@@ -50,6 +50,19 @@ export function useSetUserActive() {
   });
 }
 
+/** Restablecer la contraseña de una cuenta (N15). No invalida `users`: la
+ *  respuesta es 204 y ningún campo de la lista cambia. */
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: ({ id, new_password }: { id: string; new_password: string }) =>
+      http<void>({
+        url: `/admin/users/${id}/reset-password`,
+        method: "POST",
+        data: { new_password },
+      }),
+  });
+}
+
 export function useCourses() {
   return useQuery({
     queryKey: ["admin", "courses"],

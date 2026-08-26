@@ -14,7 +14,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.errors import Conflict, NotFound, Unauthenticated, ValidationFailed
-from app.core.security import create_token, decode_token, hash_password
+from app.core.security import (
+    create_token,
+    decode_token,
+    hash_password,
+    verify_password,
+)
 from app.modules.identity.models import Course, Enrollment, RefreshToken, User
 
 ROLES_VALIDOS = ("student", "teacher", "editor", "admin")
@@ -77,6 +82,28 @@ async def revocar_refresh(db: AsyncSession, jti: str) -> None:
     if row is not None and row.revoked_at is None:
         row.revoked_at = datetime.now(UTC)
         await db.flush()
+
+
+async def revocar_todos_los_refresh(db: AsyncSession, user_id: uuid.UUID) -> None:
+    """Mata todas las sesiones vivas del usuario (N15).
+
+    OJO con el alcance: el access token es stateless y NO se puede revocar, así
+    que quien tenga uno en la mano sigue entrando hasta que expire —15 minutos.
+    Esto corta la renovación, no el acceso inmediato. Acortar esa ventana exige
+    una lista de revocación de access tokens, que es justo lo que
+    `arquitectura.md` §10 descarta.
+    """
+    filas = (
+        await db.execute(
+            select(RefreshToken).where(
+                RefreshToken.user_id == user_id, RefreshToken.revoked_at.is_(None)
+            )
+        )
+    ).scalars().all()
+    ahora = datetime.now(UTC)
+    for fila in filas:
+        fila.revoked_at = ahora
+    await db.flush()
 
 
 # --- Alta y gestión de cuentas (N3) -----------------------------------------
@@ -172,6 +199,54 @@ async def update_user(
         user.is_active = activo
 
     await db.flush()
+    return _serializar_user(user)
+
+
+# --- Contraseñas (N15) -------------------------------------------------------
+
+
+async def cambiar_password(
+    db: AsyncSession, user_id: uuid.UUID, *, actual: str, nueva: str
+) -> User:
+    """El propio usuario cambia su contraseña, probando que sabe la actual.
+
+    Exigir la actual es lo que separa esto de un secuestro de cuenta: sin ella,
+    un access token robado bastaría para dejar fuera al dueño legítimo.
+    """
+    user = (
+        await db.execute(select(User).where(User.id == user_id))
+    ).scalar_one_or_none()
+    if user is None:
+        raise NotFound("Usuario no encontrado")
+    if not verify_password(actual, user.password_hash):
+        raise ValidationFailed("La contraseña actual no es correcta")
+    if verify_password(nueva, user.password_hash):
+        raise ValidationFailed("La contraseña nueva debe ser distinta de la actual")
+
+    user.password_hash = hash_password(nueva)
+    await db.flush()
+    await revocar_todos_los_refresh(db, user.id)
+    return user
+
+
+async def reset_password(
+    db: AsyncSession,
+    user_id: uuid.UUID,
+    institution_id: uuid.UUID,
+    *,
+    nueva: str,
+) -> dict[str, Any]:
+    """El administrador fija una contraseña para una cuenta de SU institución.
+
+    No pide la actual —el administrador no la sabe, ese es el punto— así que la
+    frontera de datos es lo único que protege esto: `_get_user_de_institucion`
+    da 404 para una cuenta de otra institución, no 403, para no confirmar que
+    ese correo existe en la plataforma.
+    """
+    user = await _get_user_de_institucion(db, user_id, institution_id)
+    user.password_hash = hash_password(nueva)
+    await db.flush()
+    await revocar_todos_los_refresh(db, user.id)
     return _serializar_user(user)
 
 

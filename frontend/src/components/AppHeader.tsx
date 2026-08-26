@@ -23,6 +23,9 @@ export default function AppHeader() {
         )}
       </nav>
       <span className="ml-auto text-content-subtle">{t(`roles.${session.role}`)}</span>
+      <Link to="/cuenta" className="text-content-subtle hover:underline">
+        {t("nav.account")}
+      </Link>
       <button onClick={logout} className="text-content-subtle hover:underline">
         {t("auth.logout")}
       </button>
