@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { AlertTriangle, Bot, Send, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ApiError, http, streamChat } from "@/lib/http";
@@ -112,25 +113,43 @@ export default function ChatPanel({
   }
 
   return (
-    <section className="mt-8 rounded border" aria-labelledby="chat-title">
-      <header id="chat-title" className="border-b px-4 py-2 font-medium">
+    <section
+      className="mt-8 overflow-hidden rounded-2xl border border-line shadow-sm"
+      aria-labelledby="chat-title"
+    >
+      <header
+        id="chat-title"
+        className="flex items-center gap-2 border-b border-line bg-surface-muted px-4 py-3 font-medium"
+      >
+        <Bot size={18} className="text-brand-ink" aria-hidden />
         {t("chat.title")}
       </header>
 
-      {/* La respuesta llega por streaming y sin `aria-live` un lector de
-          pantalla no anuncia nada: el usuario no se entera de que el bot
-          contestó. `polite` y no `assertive` — no debe cortar lo que el
-          usuario esté leyendo. */}
       <div
         aria-live="polite"
         aria-busy={streaming}
         className="max-h-80 space-y-3 overflow-y-auto p-4"
       >
         {visibles.map((m, i) => (
-          <div key={i} className={m.role === "user" ? "text-right" : ""}>
+          <div
+            key={i}
+            className={`flex items-end gap-2 ${m.role === "user" ? "flex-row-reverse" : ""}`}
+          >
             <span
-              className={`inline-block rounded px-3 py-2 text-sm ${
-                m.role === "user" ? "bg-brand text-brand-content" : "bg-surface-muted"
+              className={`flex size-7 shrink-0 items-center justify-center rounded-full ${
+                m.role === "user"
+                  ? "bg-brand/15 text-brand-ink"
+                  : "bg-surface-muted text-content-subtle"
+              }`}
+              aria-hidden
+            >
+              {m.role === "user" ? <User size={14} /> : <Bot size={14} />}
+            </span>
+            <span
+              className={`inline-block max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
+                m.role === "user"
+                  ? "rounded-br-sm bg-brand text-brand-content"
+                  : "rounded-bl-sm bg-surface-muted"
               }`}
             >
               {m.content || (streaming && t("chat.thinking"))}
@@ -140,27 +159,31 @@ export default function ChatPanel({
       </div>
 
       {rateLimited && (
-        <p className="border-t border-danger bg-note px-4 py-2 text-sm text-danger">
+        <p className="flex items-center gap-2 border-t border-line bg-note px-4 py-2 text-sm text-note-content">
+          <AlertTriangle size={16} className="shrink-0" aria-hidden />
           {t("chat.rateLimited")}
         </p>
       )}
 
-      <div className="flex gap-2 border-t p-3">
+      <div className="flex gap-2 border-t border-line p-3">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && void send()}
           placeholder={t("chat.placeholder")}
-          // El placeholder no es nombre accesible: desaparece al escribir.
           aria-label={t("chat.inputLabel")}
-          className="flex-1 rounded border px-3 py-2 text-sm"
+          className="flex-1 rounded-full border border-line bg-surface px-4 py-2 text-sm
+                     transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
         />
         <button
           onClick={() => void send()}
           disabled={streaming || !sessionId}
-          className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:bg-surface-muted disabled:text-content-muted disabled:cursor-not-allowed"
+          aria-label={t("chat.send")}
+          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand
+                     text-brand-content transition active:scale-[0.98]
+                     disabled:bg-surface-muted disabled:text-content-muted"
         >
-          {t("chat.send")}
+          <Send size={16} aria-hidden />
         </button>
       </div>
     </section>

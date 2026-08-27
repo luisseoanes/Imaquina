@@ -91,5 +91,5 @@ export function RichTextView({ html }: { html: string }) {
   // `DOMParser` con "text/html" es inerte: no ejecuta scripts ni carga nada.
   const doc = new DOMParser().parseFromString(html, "text/html");
   const hijos = Array.from(doc.body.childNodes).map((n, i) => nodoAReact(n, `n${i}`));
-  return <div className="contenido-rico">{hijos}</div>;
+  return <div className="prose prose-sm max-w-none">{hijos}</div>;
 }

@@ -20,28 +20,27 @@ export default function StudioPage() {
 
   return (
     <main className="mx-auto max-w-5xl p-4 sm:p-6">
-      <header className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2">
-        {/* El título era un <Link> suelto: la página no tenía ningún <h1> y no
-            se podía navegar por encabezados. */}
-        <h1 className="text-2xl font-bold">
+      <header className="mb-6 flex flex-wrap items-center gap-4">
+        <h1 className="font-display text-2xl font-bold">
           <Link to=".">{t("studio.title")}</Link>
         </h1>
-        {/* Etiquetado a la vista y no sólo por aria: con AppHeader montado hay
-            DOS pares ES/EN en pantalla —interfaz y edición— y sin distinguirlos
-            no se sabe cuál es cuál. El aria-label decía "Proyectos", copiado de
-            otro sitio. */}
         <div className="ml-auto flex items-center gap-2">
           <span id="lang-edicion" className="text-sm text-content-subtle">
             {t("studio.editingLang")}
           </span>
-          <nav className="flex gap-1" aria-labelledby="lang-edicion">
+          <nav
+            className="flex gap-1 rounded-full border border-line p-1"
+            aria-labelledby="lang-edicion"
+          >
             {IDIOMAS.map((codigo) => (
               <button
                 key={codigo}
                 onClick={() => setLang(codigo)}
                 aria-pressed={lang === codigo}
-                className={`rounded px-3 py-1 text-sm uppercase ${
-                  lang === codigo ? "bg-brand text-brand-content" : "border"
+                className={`rounded-full px-3 py-1 text-sm uppercase transition ${
+                  lang === codigo
+                    ? "bg-brand text-brand-content"
+                    : "text-content-subtle hover:text-content"
                 }`}
               >
                 {codigo}

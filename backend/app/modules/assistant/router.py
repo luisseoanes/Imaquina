@@ -11,13 +11,16 @@ from app.modules.assistant import service
 from app.modules.assistant.models import ChatSession
 from app.modules.assistant.provider import (
     AssistantProvider,
+    GeminiEmbedder,
     get_assistant_provider,
+    get_embedder,
 )
 from app.modules.identity.models import User
 
 router = APIRouter(prefix="/chat", tags=["assistant"])
 
 Provider = Annotated[AssistantProvider, Depends(get_assistant_provider)]
+Embedder = Annotated[GeminiEmbedder | None, Depends(get_embedder)]
 
 
 class StartIn(BaseModel):
@@ -61,6 +64,7 @@ async def ask(
     tenant: Tenant,
     db: Db,
     provider: Provider,
+    embedder: Embedder,
 ):
     """Respuesta en streaming (SSE). El primer token debe salir en <2s."""
     # N7: se revisa AQUI, antes del StreamingResponse -- dentro del generador
@@ -80,6 +84,7 @@ async def ask(
             tenant=tenant,
             grade=user.grade,
             lang=user.preferred_lang,
+            embedder=embedder,
         ):
             yield f"data: {token}\n\n"
         yield "data: [DONE]\n\n"

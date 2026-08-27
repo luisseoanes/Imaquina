@@ -61,7 +61,7 @@ describe("selector de idioma", () => {
 
     await user.click(screen.getByRole("button", { name: "EN" }));
 
-    expect(await screen.findByText("Sign out")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Sign out" })).toBeInTheDocument();
   });
 
   it("vuelve a pedir el contenido en el idioma nuevo", async () => {
@@ -137,7 +137,7 @@ describe("selector de idioma", () => {
     await user.type(screen.getByLabelText(/Contraseña|Password/), "clave-12345");
     await user.click(screen.getByRole("button", { name: /Iniciar sesión|Sign in/ }));
 
-    expect(await screen.findByText("Sign out")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Sign out" })).toBeInTheDocument();
     expect(localStorage.getItem("lang")).toBe("en");
   });
 
@@ -153,6 +153,6 @@ describe("selector de idioma", () => {
 
     await user.click(screen.getByRole("button", { name: "EN" }));
 
-    expect(await screen.findByText("Sign out")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Sign out" })).toBeInTheDocument();
   });
 });

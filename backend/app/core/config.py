@@ -59,7 +59,13 @@ class Settings(BaseSettings):
     # verdad al expirar, no se marca.
     CHAT_RETENTION_DAYS: int = 180
     RAG_TOP_K: int = 6
-    EMBEDDING_DIM: int = 1024
+
+    # --- Gemini / embeddings del RAG ------------------------------------
+    # Segundo proveedor detrás del mismo puerto (ver assistant/provider.py):
+    # Anthropic no ofrece un endpoint propio de embeddings.
+    GEMINI_API_KEY: str = ""
+    EMBEDDING_MODEL: str = "gemini-embedding-001"
+    EMBEDDING_DIM: int = 768
 
     @property
     def sync_database_url(self) -> str:

@@ -14,3 +14,4 @@ os.environ.setdefault(
 )
 os.environ.setdefault("SECRET_KEY", "clave-solo-para-tests")
 os.environ.setdefault("ANTHROPIC_API_KEY", "")  # fuerza StubProvider: cero red
+os.environ.setdefault("GEMINI_API_KEY", "")  # fuerza get_embedder() -> None: cero red

@@ -1,6 +1,9 @@
+import { Download, FileSpreadsheet } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { useAttempts, useExportStatus, useGradeAnswer, useTriggerExport, type Attempt } from "./resultsApi";
 
 function CalificarAbierta({ assessmentId, answer }: { assessmentId: string; answer: Attempt["answers"][number] }) {
@@ -23,15 +26,17 @@ function CalificarAbierta({ assessmentId, answer }: { assessmentId: string; answ
         type="number"
         value={score}
         onChange={(e) => setScore(e.target.value)}
-        className="w-16 rounded border px-1 py-0.5 text-xs"
+        className="w-16 rounded-lg border border-line px-1.5 py-1 text-xs focus:border-brand
+                   focus:outline-none focus:ring-2 focus:ring-brand/30"
         placeholder={t("assessment.points")}
       />
-      <button
+      <Button
+        size="sm"
+        variant="secondary"
         onClick={() => score && calificar.mutate({ id: answer.id, teacher_score: Number(score) })}
-        className="rounded border px-2 py-0.5 text-xs"
       >
         {t("assessment.grade")}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -48,19 +53,29 @@ export default function AssessmentResults({ assessmentId }: { assessmentId: stri
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-medium">{t("teacher.results")}</h3>
-        <button
+        <h3 className="flex items-center gap-2 font-medium">
+          <FileSpreadsheet size={18} className="text-brand-ink" aria-hidden />
+          {t("teacher.results")}
+        </h3>
+        <Button
+          size="sm"
+          variant="secondary"
           onClick={() => {
             setPidiendoExport(true);
             exportar.mutate();
           }}
-          className="rounded border px-3 py-1.5 text-sm"
         >
           {t("teacher.export")}
-        </button>
+        </Button>
       </div>
       {pidiendoExport && estado.data?.status === "listo" && estado.data.url && (
-        <a href={estado.data.url} target="_blank" rel="noreferrer" className="mb-3 block text-sm text-brand-ink underline">
+        <a
+          href={estado.data.url}
+          target="_blank"
+          rel="noreferrer"
+          className="mb-3 flex items-center gap-2 text-sm text-brand-ink hover:underline"
+        >
+          <Download size={14} aria-hidden />
           {t("assessment.downloadReady")}
         </a>
       )}
@@ -68,12 +83,14 @@ export default function AssessmentResults({ assessmentId }: { assessmentId: stri
         <p className="mb-3 text-sm text-content-subtle">{t("assessment.exporting")}</p>
       )}
 
-      <ul className="divide-y rounded border">
+      <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line shadow-sm">
         {intentos?.map((a) => (
           <li key={a.id} className="p-3 text-sm">
             <div className="flex items-center gap-2">
               <span className="flex-1">{a.team_label ?? a.id.slice(0, 8)}</span>
-              <span className="text-content-subtle">{t(`assessment.status.${a.status}`)}</span>
+              <Badge tone={a.status === "graded" ? "success" : "neutral"}>
+                {t(`assessment.status.${a.status}`)}
+              </Badge>
               <span className="font-medium">{a.score ?? "—"}</span>
             </div>
             {a.answers

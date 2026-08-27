@@ -27,8 +27,10 @@ function BotonBarra({
       onClick={onClick}
       aria-pressed={activo}
       title={title}
-      className={`rounded px-2 py-0.5 text-xs font-medium ${
-        activo ? "bg-brand text-brand-content" : "border text-content-muted"
+      className={`rounded-lg px-2 py-1 text-xs font-medium transition ${
+        activo
+          ? "bg-brand text-brand-content"
+          : "border border-line text-content-muted hover:bg-surface-muted"
       }`}
     >
       {label}
@@ -104,7 +106,8 @@ export default function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          "contenido-rico rounded border px-2 py-1.5 min-h-[6rem] focus:outline-none focus:ring-1 focus:ring-brand",
+          "prose prose-sm max-w-none rounded-xl border border-line px-3 py-2 min-h-[6rem] " +
+          "focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand",
       },
     },
   });

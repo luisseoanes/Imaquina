@@ -33,11 +33,11 @@ export default function LanguageSwitcher() {
           aria-current={lang === actual ? "true" : undefined}
           className={
             lang === actual
-              ? "rounded bg-brand px-2 py-0.5 text-xs text-brand-content"
-              : "rounded px-2 py-0.5 text-xs text-content-subtle hover:underline"
+              ? "rounded bg-brand px-2 py-1 text-xs font-medium text-brand-content"
+              : "rounded px-2 py-1 text-xs text-content-subtle hover:underline"
           }
         >
-          {t(`nav.lang.${lang}`)}
+          {lang.toUpperCase()}
         </button>
       ))}
     </div>

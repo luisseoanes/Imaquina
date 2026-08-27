@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Check, ChevronRight, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import ChatPanel from "@/features/chat/ChatPanel";
 import AssessmentForm from "@/features/assessment/AssessmentForm";
 import { useAuth } from "@/features/auth/useAuth";
+import { Button } from "@/components/ui/Button";
 import { http } from "@/lib/http";
-import { useLang } from "@/lib/useLang";
 import { RichTextView } from "@/lib/richText";
 
 export interface Block {
@@ -35,14 +36,10 @@ export default function MomentPage() {
   const [showGuide, setShowGuide] = useState(false);
   const qc = useQueryClient();
 
-  const lang = useLang();
   const { data, isLoading } = useQuery({
-    queryKey: ["moment", projectId, momentType, lang],
+    queryKey: ["moment", projectId, momentType],
     queryFn: () =>
-      http<MomentData>({
-        url: `/learn/projects/${projectId}/moments/${momentType}`,
-        params: { lang },
-      }),
+      http<MomentData>({ url: `/learn/projects/${projectId}/moments/${momentType}` }),
   });
 
   // N5/N9: solo el estudiante marca progreso -- el docente no "completa"
@@ -65,43 +62,48 @@ export default function MomentPage() {
     <main className="mx-auto max-w-3xl p-4 sm:p-6">
       <Link
         to={`/projects/${projectId}`}
-        className="text-sm text-content-subtle hover:underline"
+        className="inline-flex items-center gap-1 text-sm text-content-subtle hover:text-content"
       >
-        ← {t("projects.backToProject")}
+        <ChevronRight className="rotate-180" size={14} aria-hidden />
+        {t("projects.backToProject")}
       </Link>
 
-      <h1 className="mt-2 text-xl font-bold sm:text-2xl">{data.title}</h1>
+      <h1 className="mt-2 font-display text-xl font-bold sm:text-2xl">{data.title}</h1>
 
       {/* R4: el boton del docente. `teacher_note` sólo viene si el backend
           decidio mandarlo — aqui no ocultamos nada, simplemente no llega. */}
       {isStaff && data.teacher_note && (
-        <section className="my-4 rounded border border-note-line bg-note p-3">
+        <section className="my-4 rounded-2xl border border-note-line bg-note p-4">
           <button
             onClick={() => setShowGuide((v) => !v)}
-            className="text-sm font-medium text-note-content"
+            className="flex items-center gap-2 text-sm font-medium text-note-content"
           >
+            <Sparkles size={16} aria-hidden />
             {t("teacher.showGuide")}
           </button>
           {showGuide && (
-            <p className="mt-2 whitespace-pre-wrap text-sm">{data.teacher_note}</p>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-note-content">
+              {data.teacher_note}
+            </p>
           )}
         </section>
       )}
 
-      <article className="mt-6">
+      <article className="prose prose-sm sm:prose-base mt-6 max-w-none prose-headings:font-display">
         {data.blocks.map((b) => (
           <BlockView key={b.id} block={b} />
         ))}
       </article>
 
       {session?.role === "student" && (
-        <button
+        <Button
           onClick={() => completar.mutate()}
           disabled={completar.isPending || completar.isSuccess}
-          className="mt-6 rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:bg-surface-muted disabled:text-content-muted disabled:cursor-not-allowed"
+          className="mt-6"
         >
+          <Check size={16} aria-hidden />
           {completar.isSuccess ? t("projects.completed") : t("projects.markComplete")}
-        </button>
+        </Button>
       )}
 
       {/* Momento 6, R10: formulario de evaluación en vez de chatbot (R8 lo

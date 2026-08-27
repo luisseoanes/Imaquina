@@ -1,7 +1,10 @@
+import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { ApiError } from "@/lib/http";
 import {
   useDeleteProject,
@@ -57,40 +60,37 @@ function BarraDeAcciones({ projectId, status }: { projectId: string; status: str
     <div className="mb-4">
       <div className="flex flex-wrap gap-2">
         {status === "published" ? (
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={onUnpublish}
             disabled={despublicar.isPending}
-            className="rounded border px-3 py-1.5 text-sm"
           >
             {t("studio.unpublish")}
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
             type="button"
+            size="sm"
             onClick={onPublish}
             disabled={validar.isPending || publicar.isPending}
-            className="rounded bg-brand px-3 py-1.5 text-sm text-brand-content"
           >
             {publicar.isPending ? t("studio.publishing") : t("studio.publishNow")}
-          </button>
+          </Button>
         )}
-        <button type="button" onClick={onDuplicate} className="rounded border px-3 py-1.5 text-sm">
+        <Button type="button" variant="secondary" size="sm" onClick={onDuplicate}>
           {t("studio.duplicate")}
-        </button>
+        </Button>
         {status !== "published" && (
-          <button
-            type="button"
-            onClick={onDelete}
-            className="rounded border border-danger px-3 py-1.5 text-sm text-danger"
-          >
+          <Button type="button" variant="danger" size="sm" onClick={onDelete}>
             {t("studio.deleteProject")}
-          </button>
+          </Button>
         )}
       </div>
 
       {problemas && problemas.length > 0 && (
-        <div className="mt-2 rounded border border-danger bg-note p-2 text-sm">
+        <div className="mt-2 rounded-xl border border-danger/30 bg-note p-3 text-sm">
           <p className="font-medium">{t("studio.publishBlocked")}</p>
           <ul className="ml-4 list-disc">
             {problemas.map((p) => (
@@ -115,17 +115,14 @@ function EstadoDeTraduccion({ projectId }: { projectId: string }) {
   return (
     <div className="mb-4 flex gap-3 text-xs">
       {data.map((estado) => (
-        <span
+        <Badge
           key={estado.lang}
-          className={`rounded px-2 py-0.5 uppercase ${
-            estado.complete
-              ? "bg-success text-success-content"
-              : "bg-surface-muted text-content-muted"
-          }`}
+          tone={estado.complete ? "success" : "neutral"}
+          className="uppercase"
           title={estado.complete ? undefined : estado.missing.join("; ")}
         >
           {estado.lang}: {estado.complete ? "✓" : "…"}
-        </span>
+        </Badge>
       ))}
     </div>
   );
@@ -142,11 +139,18 @@ export default function ProjectDetail({ lang }: { lang: Lang }) {
 
   return (
     <>
-      <Link to=".." relative="path" className="text-sm text-content-subtle hover:underline">
-        ← {t("studio.back")}
+      <Link
+        to=".."
+        relative="path"
+        className="inline-flex items-center gap-1 text-sm text-content-subtle hover:text-content"
+      >
+        <ChevronRight className="rotate-180" size={14} aria-hidden />
+        {t("studio.back")}
       </Link>
 
-      <h2 className="mt-2 text-xl font-bold">{data.title ?? t("studio.untitled")}</h2>
+      <h2 className="mt-2 font-display text-xl font-bold">
+        {data.title ?? t("studio.untitled")}
+      </h2>
       <p className="text-sm text-content-subtle">
         {data.slug} · {t("studio.grade")} {data.grade}
         {data.kit ? ` · ${data.kit}` : ""}
@@ -158,7 +162,7 @@ export default function ProjectDetail({ lang }: { lang: Lang }) {
       <BarraDeAcciones projectId={projectId} status={data.status} />
 
       <h3 className="mt-6 mb-2 font-medium">{t("studio.moments")}</h3>
-      <ol className="divide-y rounded border">
+      <ol className="divide-y divide-line overflow-hidden rounded-2xl border border-line shadow-sm">
         {data.moments.map((m) => (
           <li key={m.id}>
             <Link

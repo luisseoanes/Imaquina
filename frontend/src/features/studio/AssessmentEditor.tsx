@@ -18,6 +18,9 @@ import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Field, fieldClass } from "@/components/ui/Field";
 import {
   useAddChoice,
   useAssessment,
@@ -61,7 +64,8 @@ function OpcionesDeChoice({
           <input
             defaultValue={c.label ?? ""}
             onBlur={(e) => actualizar.mutate({ id: c.id, label: e.target.value })}
-            className="flex-1 rounded border px-2 py-1 text-sm"
+            className="flex-1 rounded-xl border border-line bg-surface px-3 py-1.5 text-sm
+                       transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
             placeholder={t("assessment.choiceLabel")}
           />
           <button onClick={() => borrar.mutate(c.id)} className="text-xs text-danger hover:underline">
@@ -71,7 +75,7 @@ function OpcionesDeChoice({
       ))}
       <button
         onClick={() => agregar.mutate({ questionId: question.id, label: "", is_correct: false })}
-        className="text-xs text-content-subtle hover:underline"
+        className="text-xs text-brand-ink hover:underline"
       >
         + {t("assessment.addChoice")}
       </button>
@@ -91,7 +95,7 @@ function TarjetaDePregunta({ question, lang }: { question: Question; lang: Lang 
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`rounded border p-3 ${isDragging ? "opacity-50" : ""}`}
+      className={`rounded-2xl border border-line p-3 shadow-sm transition ${isDragging ? "opacity-50" : ""}`}
     >
       <div className="mb-2 flex items-center gap-2">
         <button
@@ -103,14 +107,13 @@ function TarjetaDePregunta({ question, lang }: { question: Question; lang: Lang 
         >
           ⠿
         </button>
-        <span className="rounded bg-surface-muted px-2 py-0.5 text-xs uppercase text-content-muted">
-          {t(`assessment.kinds.${question.kind}`)}
-        </span>
+        <Badge>{t(`assessment.kinds.${question.kind}`)}</Badge>
         <input
           type="number"
           defaultValue={question.points}
           onBlur={(e) => actualizar.mutate({ id: question.id, points: Number(e.target.value) })}
-          className="w-16 rounded border px-2 py-1 text-sm"
+          className="w-16 rounded-xl border border-line bg-surface px-2 py-1 text-sm
+                     focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
           title={t("assessment.points")}
         />
         <button
@@ -126,7 +129,7 @@ function TarjetaDePregunta({ question, lang }: { question: Question; lang: Lang 
         onBlur={(e) => actualizar.mutate({ id: question.id, prompt: e.target.value })}
         rows={2}
         placeholder={t("assessment.prompt")}
-        className="w-full rounded border px-2 py-1 text-sm"
+        className={fieldClass}
       />
 
       {(question.kind === "mcq" || question.kind === "true_false") && (
@@ -141,7 +144,7 @@ function TarjetaDePregunta({ question, lang }: { question: Question; lang: Lang 
             actualizar.mutate({ id: question.id, correct_numeric: Number(e.target.value) })
           }
           placeholder={t("assessment.correctNumeric")}
-          className="mt-2 w-full rounded border px-2 py-1 text-sm"
+          className={fieldClass}
         />
       )}
     </li>
@@ -178,12 +181,11 @@ export default function AssessmentEditor({ momentId, lang }: { momentId: string;
   };
 
   return (
-    <div className="mt-6 rounded border p-4">
+    <div className="mt-6 rounded-2xl border border-line p-4 shadow-sm">
       <h3 className="mb-3 font-medium">{t("assessment.builderTitle")}</h3>
 
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
-        <label>
-          <span className="text-sm font-medium">{t("assessment.maxAttempts")}</span>
+        <Field label={t("assessment.maxAttempts")}>
           <input
             type="number"
             min={1}
@@ -191,20 +193,19 @@ export default function AssessmentEditor({ momentId, lang }: { momentId: string;
             onBlur={(e) =>
               actualizarAssessment.mutate({ id: data.id, max_attempts: Number(e.target.value) })
             }
-            className="mt-1 w-full rounded border px-2 py-1 text-sm"
+            className={fieldClass}
           />
-        </label>
-        <label>
-          <span className="text-sm font-medium">{t("assessment.passScore")}</span>
+        </Field>
+        <Field label={t("assessment.passScore")}>
           <input
             type="number"
             defaultValue={data.pass_score}
             onBlur={(e) =>
               actualizarAssessment.mutate({ id: data.id, pass_score: Number(e.target.value) })
             }
-            className="mt-1 w-full rounded border px-2 py-1 text-sm"
+            className={fieldClass}
           />
-        </label>
+        </Field>
         <label className="flex items-end gap-2">
           <input
             type="checkbox"
@@ -229,7 +230,8 @@ export default function AssessmentEditor({ momentId, lang }: { momentId: string;
         <select
           value={tipoNuevo}
           onChange={(e) => setTipoNuevo(e.target.value as QuestionKind)}
-          className="rounded border px-2 py-1 text-sm"
+          className="rounded-xl border border-line bg-surface px-2 py-1.5 text-sm
+                     focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
         >
           {TIPOS.map((k) => (
             <option key={k} value={k}>
@@ -237,12 +239,9 @@ export default function AssessmentEditor({ momentId, lang }: { momentId: string;
             </option>
           ))}
         </select>
-        <button
-          onClick={() => crear.mutate({ kind: tipoNuevo })}
-          className="rounded border px-3 py-1 text-sm"
-        >
+        <Button variant="secondary" size="sm" onClick={() => crear.mutate({ kind: tipoNuevo })}>
           + {t("assessment.addQuestion")}
-        </button>
+        </Button>
       </div>
     </div>
   );
