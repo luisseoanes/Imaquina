@@ -326,11 +326,25 @@ Todo se construye y se testea contra `StubProvider`, sin depender de Luis.
 
 ## 6. F5 — i18n y pulido
 
-- [ ] **I1 · Selector de idioma.** `i18n/index.ts` exporta `setLanguage` y **ningún
-      componente lo llama**: hoy no hay forma de cambiar de idioma en la UI (R6). ⇠ B2.
-- [ ] **I7 · Persistir el idioma preferido.** `User.preferred_lang` existe y el login lo
-      devuelve, pero **no hay endpoint para cambiarlo**: el idioma sólo vive en
-      `localStorage` y se pierde al cambiar de equipo. ⇠ I1, B1.
+- [x] **I1 · Selector de idioma.** ✅ `LanguageSwitcher` en `AppHeader`. El ítem se
+      quedaba corto: además de que nadie llamaba a `setLanguage`, **el frontend nunca
+      mandaba `lang` a los endpoints del estudiante** — `/learn/projects`, el detalle y el
+      momento usaban el `lang="es"` por defecto del backend, así que un selector por sí
+      solo habría cambiado los botones y dejado el contenido en español. Ahora el idioma
+      va en la petición **y en la `queryKey`**, que es lo que hace que TanStack Query
+      refetchee solo al cambiarlo, sin invalidación manual. `lib/useLang.ts` lo normaliza
+      a "es"/"en": i18next puede devolver "es-CO" según el navegador y el backend caería
+      al primer idioma del snapshot sin avisar. El idioma de EDICIÓN del Studio (S11)
+      sigue siendo independiente. ⇠ B2.
+- [x] **I7 · Persistir el idioma preferido.** ✅ `PATCH /auth/me` (`lang`, con pattern
+      `es|en` — es la única puerta de escritura a un `String(2)`). El selector lo guarda
+      **best-effort**, mismo criterio que la revocación del logout: si la petición falla el
+      idioma ya cambió en pantalla y no tiene sentido bloquear al usuario por no poder
+      guardar una preferencia. Al revés también faltaba: `AuthProvider.login` ahora aplica
+      el idioma de LA CUENTA, que si no, entrar desde un equipo compartido del aula te
+      servía la interfaz en el idioma del último que lo usó. 4 tests de integración y 4 de
+      frontend que navegan la app entera (el del `lang` en la petición, verificado en
+      rojo). ⇠ I1, B1.
 - [x] **I2 · Completar `en.json`** con los textos de interfaz. ✅ Estaba desactualizado,
       como I5/I6: `es.json` y `en.json` tienen hoy las **mismas 178 claves**, cero huecos.
       Las pocas cadenas idénticas entre idiomas son cognados reales (`Studio`, `editor`,
@@ -348,13 +362,75 @@ Todo se construye y se testea contra `StubProvider`, sin depender de Luis.
       **4, no 6**, y hoy no se usan en ningún componente. Falta decidir el mapeo a
       `MOMENT_ORDER` (¿se agrupan dos momentos por etapa? ¿se piden 2 tonos más al PO?)
       antes de pintarlos en la UI del estudiante. ⇠ I7b.
-- [ ] **I3 · Responsive mobile-first.** El scope §5 lo marca: los estudiantes entran desde
-      el celular y la sala de robótica no tiene un PC por cabeza.
-- [ ] **I4 · Accesibilidad.** `alt_text` ya está en el modelo; falta exigirlo y usarlo en
-      la UI. ⇠ S15.
-- [ ] **I8 · Caché del contenido publicado en Redis.** `arquitectura.md` §5 justifica
-      Redis por partida doble, cola **y caché**; hoy solo se usa de cola, así que el
-      argumento de rendimiento del snapshot está a medio cobrar. ⇠ N11.
+- [x] **I3 · Responsive mobile-first.** ✅ Revisado con Chrome de verdad a 390/768/1280 en
+      las nueve vistas (estudiante ×3, admin, docente con tabla poblada, Studio ×3,
+      evaluación), no leyendo clases de Tailwind. **Un solo defecto real, y era
+      transversal:** `AppHeader` era un `flex` sin `wrap` con seis elementos y medía
+      **574px en un viewport de 390**, así que arrastraba a scroll horizontal *todas* las
+      pantallas autenticadas — el desborde que se veía en admin y docente no era suyo.
+      Corregido con `flex-wrap` y ocultando el rol (informativo, no accionable) por debajo
+      de `sm`. Lo agravé yo en I1/N15 al meterle el selector de idioma y "Mi cuenta".
+      La tabla del panel docente mide 672px en móvil y **eso está bien**: su
+      `overflow-x-auto` la hace scrollear dentro de su caja sin mover el documento.
+      Queda `frontend/scripts/audit-responsive.mjs`, que conduce Chrome por CDP y sale con
+      código 1 si el documento scrollea en horizontal (verificado revirtiendo el arreglo
+      del header). **No está en `npm run build`**: necesita la app y la API levantadas, así
+      que es herramienta de revisión, no guard de CI — en jsdom esto no se puede detectar,
+      vitest no calcula layout.
+- [x] **I4 · Accesibilidad.** ✅ Cerrado también: el Content Studio no tenía ningún
+      `<h1>` —su título era un `<Link>` suelto—, así que no se podía navegar por
+      encabezados. **Corrección a la nota anterior de este ítem: el
+      defecto de los `<label>` NO estaba en `AdminPage`, `TeacherPage` ni el Studio.** Esas
+      pantallas usan el patrón envolvente (`<label><span>…</span><input/></label>`), que es
+      válido y da nombre accesible; el fallo estaba sólo en `LoginPage`, donde el `<label>`
+      era hermano del input. Comprobado, no leído: `features/a11y.test.tsx` computa el
+      nombre accesible de cada control en ocho pantallas y `test/a11y.ts` implementa las
+      cuatro formas de nombrarlo, sin dependencias nuevas (`dom-accessibility-api` sólo
+      entra como transitiva de testing-library y añadirla obliga a tocar el lock).
+      Cerrado además: `alt_text` se pinta en los tres sitios con imagen; `<html lang>`
+      ahora sigue al idioma (WCAG 3.1.1 — `index.html` lo traía fijo en "es" y con el
+      selector de I1 un usuario en inglés tenía el documento declarado como español); el
+      chat lleva `aria-live="polite"` + `aria-busy` (la respuesta llega por streaming y no
+      se anunciaba nada) y su campo tiene `aria-label`, porque sólo tenía `placeholder` y
+      ése desaparece al escribir. **Queda:** foco visible, teclado en el drag de bloques
+      Cerrados los tres que quedaban, midiendo en Chrome y no a ojo:
+      **(1) Reordenar era imposible sin ratón.** `MomentEditor` y `AssessmentEditor`
+      registraban sólo `PointerSensor`, así que el asa de arrastre no respondía al
+      teclado y no había *ninguna* otra forma de cambiar el orden de bloques o preguntas.
+      Añadido `KeyboardSensor` con `sortableKeyboardCoordinates`. Verificado conduciendo
+      Chrome: Tab hasta el asa → Espacio → Flecha abajo → Espacio invierte el orden y
+      **persiste en la base**; quitando el sensor, la misma secuencia no hace nada.
+      **(2) El foco visible NO era un defecto** — la primera medición dio un falso
+      positivo porque `el.focus()` por script no dispara `:focus-visible`. Con Tab de
+      verdad los 8 controles muestran `outline: auto 1px`: Tailwind 4 no lo elimina en
+      preflight. No se tocó nada.
+      **(3) `disabled:opacity-50` daba 1.89:1 en modo oscuro** (medido), prácticamente
+      ilegible, porque apaga el botón entero contra el fondo de la página. Sustituido en
+      los 11 botones por tokens que nombran la intención —`disabled:bg-surface-muted
+      disabled:text-content-muted disabled:cursor-not-allowed`—: ahora **7.8:1 en oscuro
+      y 6.87:1 en claro**, AA holgado. WCAG 1.4.3 exime los controles inactivos, pero el
+      criterio del repo son 4.5:1 y a 1.89 no se leía qué botón había que habilitar. ⇠ S15.
+- [x] **N16 · El Studio no tenía salida.** ✅ No estaba en el backlog. `/studio/*` colgaba
+      de `RequireAuthor` a secas y no de `RequireAuth`, que es quien monta `AppHeader`: una
+      vez dentro del Content Studio no había forma de cerrar sesión ni de volver a
+      `/admin`, `/teacher` o `/cuenta` — la única salida era editar la URL a mano. Ahora
+      va anidado igual que `/admin` y `/teacher`. Efecto secundario que había que resolver:
+      con `AppHeader` montado quedan **dos pares ES/EN** en pantalla, el de la interfaz y
+      el de edición del Studio (S11), así que el segundo se etiqueta "Idioma de edición" a
+      la vista; su `<nav>` llevaba además un `aria-label` copiado que decía "Proyectos".
+      `check-chunks` sigue en verde: `AppHeader` ya estaba en el bundle de entrada, así
+      que el Studio no arrastró nada nuevo.
+- [~] **I8 · Caché del contenido publicado en Redis. NO SE HACE, hasta tener una
+      métrica.** Decisión del PO, 27/08/2026. `arquitectura.md` §5 justificaba Redis por
+      partida doble —cola y caché— y hoy sólo se usa de cola, así que ese argumento queda
+      a medio cobrar **a propósito**. El motivo de no hacerlo: no hay ni un usuario real
+      ni una sola medición de latencia del camino de lectura, así que no se sabe si hay
+      algo que optimizar; y a cambio obliga a invalidar en `publish`, `unpublish` y
+      `rollback` — tres caminos donde un fallo sirve contenido **viejo** a los alumnos.
+      El riesgo es cierto y el beneficio, hipotético.
+      **Qué lo reabre:** una medición del p95 de `GET /learn/projects/{id}/moments/{type}`
+      bajo carga real que resulte inaceptable. Con ese número se replantea; sin él, no.
+      ⇠ N11.
 - [x] **I5 · Tests de frontend** con vitest + msw. ✅ Desactualizado desde hace tiempo —
       ya no son cero: crecieron junto con cada feature (Studio, núcleo, evaluación).
       Sigue siendo la práctica esperada para lo que falta de F5. ⇠ B2.
@@ -362,11 +438,29 @@ Todo se construye y se testea contra `StubProvider`, sin depender de Luis.
       fue una tarea aparte — cada endpoint de S/N/A/C entró con su test, tal como decía
       esta misma línea.
 
+- [x] **I9 · El estudiante descargaba el editor entero.** ✅ No estaba en el backlog; salió
+      al revisar el bundle. `RichTextView` montaba TipTap en `editable:false` para
+      renderizar el contenido, así que **565 KB de editor entraban en el bundle de
+      entrada** — el 73% de lo que descargaba un estudiante era un editor que no abre
+      nunca. `check-chunks.mjs` no lo detectaba: sólo vigila que el entry no importe el
+      chunk del *Studio*, y éste era otro. Sustituido por un render propio del esquema
+      acotado (`lib/richText.tsx`, ~90 líneas, sin dependencias nuevas) que recorre el
+      HTML y lo reconstruye con React contra una lista blanca de etiquetas. **La garantía
+      de seguridad no se movió de sitio**: sigue siendo lista blanca en el cliente y sigue
+      sin haber `dangerouslySetInnerHTML`; 12 tests la cubren, la mitad adversarios
+      (`<script>`, `onclick`, `javascript:`, `data:`, `<iframe>`, `<img onerror>`).
+      **Resultado medido: 757 KB → 373 KB** (241 → 115 KB comprimidos), menos de la mitad.
+      De paso salió un defecto que llevaba ahí desde S14 y que nadie había visto: las
+      listas del contenido **nunca** se vieron con viñetas ni numeración, porque
+      `prose prose-sm` venía de `@tailwindcss/typography`, que jamás se instaló — la clase
+      no existe en el CSS y el preflight de Tailwind quita `list-style`. Resuelto con
+      `.contenido-rico` en `index.css`, compartida por el render y el editor.
+
 ## 7. Fuera de este backlog
 
 | Qué | De quién |
 |---|---|
-| Embeddings reales, prompt de sistema, chunking/ranking/top-k, calidad del RAG, `is_in_domain` | Luis — ver `CLAUDE.md` § Frontera del trabajo de modelo |
+| Embeddings reales, prompt de sistema, chunking/ranking/top-k, calidad del RAG, `is_in_domain` | Luis — ver `CLAUDE.md` § Frontera del trabajo de modelo. **Recordado el 27/08/2026**: siguen siendo un vector de ceros, así que el chat responde sin recuperar nada. |
 | Infra, hosting, servidor, despliegue | PO |
 | Carga de los 34 proyectos restantes y los textos en inglés | Cliente, con el Content Studio |
 | App nativa, offline, gamificación, LMS, dashboards de directivos, aprobación multinivel | Fuera del MVP (`scope-mvp.md` §3) |

@@ -259,6 +259,20 @@ Rollup convertía "studio" en el chunk común bajo rolldown y el entry acababa
 importándolo. `scripts/check-chunks.mjs` corre en `npm run build` y falla si el bundle de
 entrada vuelve a importar el chunk del Studio.
 
+**El estudiante no carga TipTap.** `lib/richText.tsx` renderiza el HTML del contenido
+recorriéndolo y reconstruyéndolo con React contra una **lista blanca** de etiquetas
+(`p, strong, em, s, code, ul, ol, li, br, a`), no montando un TipTap en `editable:false`
+como antes: eso metía 565 KB de editor en el bundle de entrada para gente que sólo lee, y
+`check-chunks.mjs` no lo veía porque sólo vigila el chunk del Studio. La garantía de
+seguridad sigue siendo la misma —lista blanca en el cliente, nunca
+`dangerouslySetInnerHTML`— y `lib/richText.test.tsx` la cubre (`<script>`, `onerror`,
+`javascript:`, `data:`). **Si añades una extensión a `richTextExtensions.ts`, añade su
+etiqueta a `PERMITIDAS` o dejará de renderizarse en el momento del estudiante.**
+
+El texto enriquecido se estiliza con `.contenido-rico` (`index.css`), no con `prose`:
+`@tailwindcss/typography` nunca se instaló, así que `prose` no existía en el CSS generado
+y el preflight (`ol,ul{list-style:none}`) dejaba las listas del contenido sin viñetas.
+
 Los datos del Studio se piden con hooks a mano sobre `http()` (`features/studio/api.ts`),
 no con el cliente de orval: el generado está gitignored y `api:gen` necesita el backend,
 así que importarlo rompería el build en CI y en un clon recién hecho. Estado de servidor con
