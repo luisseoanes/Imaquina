@@ -4,6 +4,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { fieldClass } from "@/components/ui/Field";
 import { ApiError } from "@/lib/http";
 import MediaLibraryPicker from "./MediaLibraryPicker";
 import RichTextEditor from "./RichTextEditor";
@@ -56,7 +59,7 @@ export default function BlockCard({
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`rounded border p-3 ${isDragging ? "opacity-50" : ""}`}
+      className={`rounded-2xl border border-line p-3 shadow-sm transition ${isDragging ? "opacity-50" : ""}`}
     >
       <div className="mb-2 flex items-center gap-2">
         <button
@@ -68,9 +71,7 @@ export default function BlockCard({
         >
           ⠿
         </button>
-        <span className="rounded bg-surface-muted px-2 py-0.5 text-xs uppercase text-content-muted">
-          {t(`studio.blockKinds.${block.kind}`)}
-        </span>
+        <Badge>{t(`studio.blockKinds.${block.kind}`)}</Badge>
         <button
           type="button"
           onClick={() => borrar.mutate(block.id)}
@@ -81,7 +82,7 @@ export default function BlockCard({
       </div>
 
       {conflicto && (
-        <div className="mb-2 flex items-center justify-between rounded border border-danger bg-note p-2 text-xs">
+        <div className="mb-2 flex items-center justify-between rounded-xl border border-danger/30 bg-note p-2 text-xs">
           <span>{t("studio.saveConflict")}</span>
           <button type="button" onClick={recargar} className="underline">
             {t("studio.reload")}
@@ -96,16 +97,12 @@ export default function BlockCard({
       {(block.kind === "image" || block.kind === "audio") && (
         <div className="space-y-2">
           {body && block.kind === "image" && (
-            <img src={body} alt={altText} className="max-h-40 rounded border" />
+            <img src={body} alt={altText} className="max-h-40 rounded-xl border border-line" />
           )}
           {body && block.kind === "audio" && <audio controls src={body} className="w-full" />}
-          <button
-            type="button"
-            onClick={() => setShowPicker((v) => !v)}
-            className="rounded border px-2 py-1 text-xs"
-          >
+          <Button type="button" variant="secondary" size="sm" onClick={() => setShowPicker((v) => !v)}>
             {t("studio.media.pick")}
-          </button>
+          </Button>
           {showPicker && (
             <MediaLibraryPicker
               familia={block.kind}
@@ -130,7 +127,7 @@ export default function BlockCard({
               onChange={(e) => setAltText(e.target.value)}
               onBlur={() => guardar({ alt_text: altText })}
               placeholder={t("studio.altText")}
-              className="w-full rounded border px-2 py-1 text-sm"
+              className={fieldClass}
             />
           )}
           <input
@@ -138,7 +135,7 @@ export default function BlockCard({
             onChange={(e) => setCaption(e.target.value)}
             onBlur={() => guardar({ caption })}
             placeholder={t("studio.caption")}
-            className="w-full rounded border px-2 py-1 text-sm"
+            className={fieldClass}
           />
         </div>
       )}
@@ -150,14 +147,14 @@ export default function BlockCard({
             onChange={(e) => setBody(e.target.value)}
             onBlur={() => guardar({ body })}
             placeholder={t("studio.embedUrl")}
-            className="w-full rounded border px-2 py-1 text-sm"
+            className={fieldClass}
           />
           <input
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             onBlur={() => guardar({ caption })}
             placeholder={t("studio.caption")}
-            className="w-full rounded border px-2 py-1 text-sm"
+            className={fieldClass}
           />
         </div>
       )}

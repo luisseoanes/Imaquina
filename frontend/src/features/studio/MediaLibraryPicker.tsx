@@ -3,9 +3,11 @@
  *  El navegador sube directo al bucket con una URL prefirmada — nunca pasa
  *  por FastAPI, un video de 200MB tumbaría el backend.
  */
+import { X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Button } from "@/components/ui/Button";
 import { ApiError } from "@/lib/http";
 import { useMediaAssets, useUploadMedia, type MediaAsset } from "./api";
 
@@ -36,11 +38,16 @@ export default function MediaLibraryPicker({
   };
 
   return (
-    <div className="rounded border bg-surface p-3 shadow-lg">
+    <div className="rounded-2xl border border-line bg-surface p-3 shadow-lg">
       <div className="mb-2 flex items-center justify-between">
         <strong className="text-sm">{t("studio.media.title")}</strong>
-        <button type="button" onClick={onClose} className="text-sm text-content-subtle">
-          ✕
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t("studio.closePreview")}
+          className="text-content-subtle hover:text-content"
+        >
+          <X size={16} aria-hidden />
         </button>
       </div>
 
@@ -49,7 +56,8 @@ export default function MediaLibraryPicker({
           value={altText}
           onChange={(e) => setAltText(e.target.value)}
           placeholder={t("studio.media.altRequired")}
-          className="mb-2 w-full rounded border px-2 py-1 text-sm"
+          className="mb-2 w-full rounded-xl border border-line bg-surface px-3 py-1.5 text-sm
+                     transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
         />
       )}
 
@@ -72,23 +80,25 @@ export default function MediaLibraryPicker({
         value={buscar}
         onChange={(e) => setBuscar(e.target.value)}
         placeholder={t("studio.media.search")}
-        className="mb-2 w-full rounded border px-2 py-1 text-sm"
+        className="mb-2 w-full rounded-xl border border-line bg-surface px-3 py-1.5 text-sm
+                   transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
       />
 
       {data?.items.length === 0 && (
         <p className="text-xs text-content-subtle">{t("studio.media.none")}</p>
       )}
-      <ul className="max-h-48 divide-y overflow-y-auto">
+      <ul className="max-h-48 divide-y divide-line overflow-y-auto">
         {data?.items.map((asset: MediaAsset) => (
           <li key={asset.id} className="flex items-center justify-between gap-2 py-1">
             <span className="truncate text-xs">{asset.original_filename}</span>
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant="secondary"
               onClick={() => onSelect({ url: asset.url, assetId: asset.id })}
-              className="shrink-0 rounded border px-2 py-0.5 text-xs"
             >
               {t("studio.media.pick")}
-            </button>
+            </Button>
           </li>
         ))}
       </ul>

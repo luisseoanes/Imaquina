@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import AppHeader from "@/components/AppHeader";
 import LoginPage from "@/features/auth/LoginPage";
 import { useAuth } from "@/features/auth/useAuth";
+import LandingPage from "@/features/landing/LandingPage";
 import MomentPage from "@/features/moment/MomentPage";
 import ProjectPage from "@/features/projects/ProjectPage";
 import ProjectsPage from "@/features/projects/ProjectsPage";
@@ -21,6 +22,18 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
       <AppHeader />
       {children}
     </>
+  );
+}
+
+/** "/" es pública para visitantes (landing) y el listado de proyectos para
+ *  quien ya tiene sesión -- no cambia el comportamiento de `RequireAuth`. */
+function HomeRoute() {
+  const { session } = useAuth();
+  if (!session) return <LandingPage />;
+  return (
+    <RequireAuth>
+      <ProjectsPage />
+    </RequireAuth>
   );
 }
 
@@ -45,7 +58,7 @@ export default function App() {
     <Suspense fallback={<p className="p-6">{t("common.loading")}</p>}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/" element={<RequireAuth><ProjectsPage /></RequireAuth>} />
+        <Route path="/" element={<HomeRoute />} />
         {/* La vista del proyecto es el eslabon que faltaba: el listado
             enlazaba aqui y no habia ruta, asi que el comodin de abajo
             devolvia al usuario al principio. */}

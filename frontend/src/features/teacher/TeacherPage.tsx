@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Field, fieldClass } from "@/components/ui/Field";
 import AssessmentResults from "./AssessmentResults";
 import { useCourseProgress, useMyCourses, usePublishedProjects, useProjectMoments } from "./api";
 import { useAssessmentIdForMoment } from "./resultsApi";
@@ -23,15 +24,14 @@ export default function TeacherPage() {
 
   return (
     <main className="mx-auto max-w-4xl p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-bold">{t("teacher.panelTitle")}</h1>
+      <h1 className="mb-4 font-display text-xl font-bold">{t("teacher.panelTitle")}</h1>
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-2">
-        <label>
-          <span className="text-sm font-medium">{t("teacher.course")}</span>
+      <div className="mb-6 grid gap-3 rounded-2xl border border-line p-4 shadow-sm sm:grid-cols-2">
+        <Field label={t("teacher.course")}>
           <select
             value={courseId ?? ""}
             onChange={(e) => setCourseId(e.target.value || null)}
-            className="mt-1 w-full rounded border px-2 py-1 text-sm"
+            className={fieldClass}
           >
             <option value="">{t("teacher.pickCourse")}</option>
             {cursos?.map((c) => (
@@ -40,13 +40,12 @@ export default function TeacherPage() {
               </option>
             ))}
           </select>
-        </label>
-        <label>
-          <span className="text-sm font-medium">{t("studio.title")}</span>
+        </Field>
+        <Field label={t("studio.title")}>
           <select
             value={projectId ?? ""}
             onChange={(e) => setProjectId(e.target.value || null)}
-            className="mt-1 w-full rounded border px-2 py-1 text-sm"
+            className={fieldClass}
           >
             <option value="">{t("teacher.pickProject")}</option>
             {proyectos?.map((p) => (
@@ -55,19 +54,19 @@ export default function TeacherPage() {
               </option>
             ))}
           </select>
-        </label>
+        </Field>
       </div>
 
       {isLoading && <p>{t("common.loading")}</p>}
 
       {courseId && projectId && progreso && (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-2xl border border-line shadow-sm">
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b text-left">
-                <th className="p-2">{t("teacher.student")}</th>
+              <tr className="border-b border-line bg-surface-muted text-left">
+                <th className="p-3">{t("teacher.student")}</th>
                 {MOMENT_TYPES.map((tipo) => (
-                  <th key={tipo} className="p-2 text-center">
+                  <th key={tipo} className="p-3 text-center">
                     {t(`moments.${tipo}`)}
                   </th>
                 ))}
@@ -75,12 +74,12 @@ export default function TeacherPage() {
             </thead>
             <tbody>
               {progreso.map((fila) => (
-                <tr key={fila.user_id} className="border-b">
-                  <td className="p-2">{fila.full_name}</td>
+                <tr key={fila.user_id} className="border-b border-line last:border-0">
+                  <td className="p-3">{fila.full_name}</td>
                   {MOMENT_TYPES.map((tipo) => {
                     const estado = fila.progress[tipo] ?? "not_started";
                     return (
-                      <td key={tipo} className="p-2 text-center">
+                      <td key={tipo} className="p-3 text-center">
                         <span
                           className={`inline-block size-3 rounded-full ${
                             estado === "completed"

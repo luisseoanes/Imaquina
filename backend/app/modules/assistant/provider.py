@@ -12,6 +12,8 @@ from dataclasses import dataclass, field
 from typing import Protocol
 
 import anthropic
+from google import genai
+from google.genai import types as genai_types
 
 from app.core.config import settings
 
@@ -170,3 +172,38 @@ def get_assistant_provider() -> AssistantProvider:
     if not settings.ANTHROPIC_API_KEY:
         return StubProvider()
     return ClaudeProvider()
+
+
+# --- Embeddings del RAG (Gemini) ---------------------------------------------
+# Segundo proveedor detrás del mismo puerto: Anthropic no ofrece un endpoint
+# propio de embeddings. Vive aquí por la misma razón que ClaudeProvider -- es
+# trabajo de modelo, no de negocio.
+
+
+class GeminiEmbedder:
+    """Implementación real de embeddings, vía Gemini."""
+
+    def __init__(self) -> None:
+        self._client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
+    async def embed(self, texts: list[str], *, task_type: str) -> list[list[float]]:
+        resp = await self._client.aio.models.embed_content(
+            model=settings.EMBEDDING_MODEL,
+            contents=texts,
+            config=genai_types.EmbedContentConfig(
+                task_type=task_type,
+                output_dimensionality=settings.EMBEDDING_DIM,
+            ),
+        )
+        return [e.values for e in resp.embeddings]
+
+
+def get_embedder() -> GeminiEmbedder | None:
+    """`None` sin key, NUNCA un stub de ceros: `cosine_distance` de pgvector
+    lanza un error en tiempo de ejecución ante un vector de magnitud cero, así
+    que un stub así rompería el chat en cuanto se intentase recuperar. `None`
+    deja la recuperación desactivada (como hoy, sin red ni costo) en vez de
+    hacerla fallar."""
+    if not settings.GEMINI_API_KEY:
+        return None
+    return GeminiEmbedder()

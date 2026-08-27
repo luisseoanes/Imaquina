@@ -11,6 +11,7 @@ from app.modules.assistant.provider import (
     RetrievedChunk,
     StubProvider,
     get_assistant_provider,
+    get_embedder,
 )
 from app.modules.assistant.service import REDIRECT
 
@@ -29,6 +30,13 @@ async def test_stub_provider_cumple_el_contrato():
 async def test_sin_api_key_se_usa_el_stub():
     """En desarrollo y CI no debe salir ni una petición a la API."""
     assert isinstance(get_assistant_provider(), StubProvider)
+
+
+def test_sin_gemini_api_key_la_recuperacion_queda_desactivada():
+    """`None`, no un stub de ceros: `cosine_distance` de pgvector lanza un
+    error ante un vector de magnitud cero, así que un stub así rompería el
+    chat en cuanto se intentase recuperar (ver assistant/provider.py)."""
+    assert get_embedder() is None
 
 
 async def test_guardrail_marca_fuera_de_dominio():

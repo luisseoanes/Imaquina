@@ -17,6 +17,7 @@ async def reindex_project(ctx: dict, project_id: str) -> dict:
     from sqlalchemy import delete, select
 
     from app.modules.assistant.models import DocumentChunk
+    from app.modules.assistant.provider import get_embedder
     from app.modules.publishing.models import ProjectVersion
 
     pid = uuid.UUID(project_id)
@@ -41,28 +42,39 @@ async def reindex_project(ctx: dict, project_id: str) -> dict:
         # Un chunk por idioma: el snapshot lleva todas las traducciones y el
         # chat responde en el idioma del estudiante. Indexar solo uno dejaba
         # al que pregunta en ingles recuperando contexto en español.
-        count = 0
+        pendientes: list[tuple[uuid.UUID, str, str]] = []
         for lang in snapshot.get("langs", []):
             for moment in snapshot["content"][lang]["moments"]:
                 for block in moment["blocks"]:
                     body = (block.get("body") or "").strip()
                     if not body:
                         continue
-                    # TODO: generar embedding real. Placeholder hasta cablear
-                    # el modelo de embeddings (ver docs/scope-mvp.md F4).
-                    db.add(
-                        DocumentChunk(
-                            project_id=pid,
-                            moment_id=uuid.UUID(moment["id"]),
-                            lang=lang,
-                            content=body,
-                            embedding=[0.0] * settings.EMBEDDING_DIM,
-                        )
-                    )
-                    count += 1
+                    pendientes.append((uuid.UUID(moment["id"]), lang, body))
+
+        # Sin GEMINI_API_KEY, get_embedder() es None: se mantiene el
+        # placeholder de ceros -- coherente con que sin key la recuperacion
+        # tampoco se activa nunca en assistant.service.ask.
+        embedder = get_embedder()
+        if embedder and pendientes:
+            vectores = await embedder.embed(
+                [body for _, _, body in pendientes], task_type="RETRIEVAL_DOCUMENT"
+            )
+        else:
+            vectores = [[0.0] * settings.EMBEDDING_DIM for _ in pendientes]
+
+        for (moment_id, lang, body), vector in zip(pendientes, vectores, strict=True):
+            db.add(
+                DocumentChunk(
+                    project_id=pid,
+                    moment_id=moment_id,
+                    lang=lang,
+                    content=body,
+                    embedding=vector,
+                )
+            )
 
         await db.commit()
-    return {"project_id": project_id, "chunks": count}
+    return {"project_id": project_id, "chunks": len(pendientes)}
 
 
 async def export_results(ctx: dict, assessment_id: str, requested_by: str) -> dict:

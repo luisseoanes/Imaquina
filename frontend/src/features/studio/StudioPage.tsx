@@ -19,19 +19,24 @@ export default function StudioPage() {
   const [lang, setLang] = useState<Lang>("es");
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
-      <header className="mb-6 flex items-center gap-4">
-        <Link to="." className="text-2xl font-bold">
+    <main className="mx-auto max-w-5xl p-4 sm:p-6">
+      <header className="mb-6 flex flex-wrap items-center gap-4">
+        <Link to="." className="font-display text-2xl font-bold">
           {t("studio.title")}
         </Link>
-        <nav className="ml-auto flex gap-1" aria-label={t("studio.projects")}>
+        <nav
+          className="ml-auto flex gap-1 rounded-full border border-line p-1"
+          aria-label={t("studio.projects")}
+        >
           {IDIOMAS.map((codigo) => (
             <button
               key={codigo}
               onClick={() => setLang(codigo)}
               aria-pressed={lang === codigo}
-              className={`rounded px-3 py-1 text-sm uppercase ${
-                lang === codigo ? "bg-brand text-brand-content" : "border"
+              className={`rounded-full px-3 py-1 text-sm uppercase transition ${
+                lang === codigo
+                  ? "bg-brand text-brand-content"
+                  : "text-content-subtle hover:text-content"
               }`}
             >
               {codigo}

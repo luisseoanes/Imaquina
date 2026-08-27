@@ -12,6 +12,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 
+import { Button } from "@/components/ui/Button";
+import { fieldClass } from "@/components/ui/Field";
 import { RichTextView } from "@/lib/richText";
 import { ApiError } from "@/lib/http";
 import AssessmentEditor from "./AssessmentEditor";
@@ -75,7 +77,7 @@ function CamposDelMomentoForm({
   return (
     <div className="mb-4 space-y-2">
       {conflicto && (
-        <div className="flex items-center justify-between rounded border border-danger bg-note p-2 text-xs">
+        <div className="flex items-center justify-between rounded-xl border border-danger/30 bg-note p-3 text-xs">
           <span>{t("studio.saveConflict")}</span>
           <button
             type="button"
@@ -92,7 +94,7 @@ function CamposDelMomentoForm({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onBlur={() => guardar({ title })}
-          className="mt-1 w-full rounded border px-2 py-1 text-sm"
+          className={fieldClass}
         />
       </label>
       <label className="block">
@@ -102,7 +104,7 @@ function CamposDelMomentoForm({
           onChange={(e) => setTeacherNote(e.target.value)}
           onBlur={() => guardar({ teacher_note: teacherNote })}
           rows={2}
-          className="mt-1 w-full rounded border px-2 py-1 text-sm"
+          className={fieldClass}
         />
       </label>
       <label className="block">
@@ -111,7 +113,7 @@ function CamposDelMomentoForm({
           value={openingPrompt}
           onChange={(e) => setOpeningPrompt(e.target.value)}
           onBlur={() => guardar({ chatbot_opening_prompt: openingPrompt })}
-          className="mt-1 w-full rounded border px-2 py-1 text-sm"
+          className={fieldClass}
         />
       </label>
     </div>
@@ -152,14 +154,15 @@ function BloquesDelMomento({ momentId, lang }: { momentId: string; lang: Lang })
 
       <div className="mt-3 flex flex-wrap gap-2">
         {TIPOS_DE_BLOQUE.map((kind) => (
-          <button
+          <Button
             key={kind}
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={() => crear.mutate({ kind })}
-            className="rounded border px-2 py-1 text-xs"
           >
             + {t(`studio.blockKinds.${kind}`)}
-          </button>
+          </Button>
         ))}
       </div>
     </div>
@@ -190,7 +193,7 @@ function VistaPrevia({
   const { data, isLoading } = usePreviewMoment(momentId, lang, as_);
 
   return (
-    <div className="mb-4 rounded border p-3">
+    <div className="mb-4 rounded-2xl border border-line p-4 shadow-sm">
       <div className="mb-2 flex items-center justify-between">
         <strong className="text-sm">
           {t("studio.previewAs")}:{" "}
@@ -205,7 +208,7 @@ function VistaPrevia({
         <div className="prose prose-sm max-w-none">
           <h4>{data.title ?? t("studio.untitled")}</h4>
           {data.teacher_note && (
-            <p className="rounded border border-note-line bg-note p-2 text-note-content">
+            <p className="rounded-xl border border-note-line bg-note p-3 text-note-content">
               {data.teacher_note}
             </p>
           )}
@@ -249,26 +252,21 @@ export default function MomentEditor({ lang }: { lang: Lang }) {
       </Link>
 
       <div className="my-3 flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setBilingue((v) => !v)}
-          className="rounded border px-2 py-1 text-xs"
-        >
+        <Button type="button" variant="secondary" size="sm" onClick={() => setBilingue((v) => !v)}>
           {bilingue ? t("studio.singleLangView") : t("studio.bilingualView")}
-        </button>
+        </Button>
         <div className="ml-auto flex gap-1">
           {(["student", "teacher"] as const).map((rol) => (
-            <button
+            <Button
               key={rol}
               type="button"
+              size="sm"
+              variant={previewAs === rol ? "primary" : "secondary"}
               aria-pressed={previewAs === rol}
               onClick={() => setPreviewAs((v) => (v === rol ? null : rol))}
-              className={`rounded border px-2 py-1 text-xs ${
-                previewAs === rol ? "bg-brand text-brand-content" : ""
-              }`}
             >
               {t("studio.previewAs")}: {rol === "teacher" ? t("studio.previewTeacher") : t("studio.previewStudent")}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

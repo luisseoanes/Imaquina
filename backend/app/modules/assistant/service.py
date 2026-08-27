@@ -22,6 +22,7 @@ from app.modules.assistant.models import ChatMessage, ChatSession, DocumentChunk
 from app.modules.assistant.provider import (
     AssistantProvider,
     ChatContext,
+    GeminiEmbedder,
     RetrievedChunk,
 )
 
@@ -120,7 +121,7 @@ async def ask(
     tenant: TenantContext,
     grade: str | None,
     lang: str = "es",
-    query_embedding: list[float] | None = None,
+    embedder: GeminiEmbedder | None = None,
 ) -> AsyncIterator[str]:
     # N7: el rate limit se revisa en el router, ANTES de construir el
     # `StreamingResponse` (ver `router.py`) -- una vez la respuesta empieza a
@@ -149,6 +150,13 @@ async def ask(
         yield reply
         return
 
+    # El embedding de la pregunta se calcula DESPUES del guardrail: una
+    # pregunta fuera de dominio no debe gastar una llamada a Gemini.
+    query_embedding = (
+        (await embedder.embed([question], task_type="RETRIEVAL_QUERY"))[0]
+        if embedder
+        else None
+    )
     chunks = (
         await retrieve(
             db,

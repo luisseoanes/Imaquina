@@ -2,6 +2,32 @@
   "app": {
     "name": "Imaquina Robótica"
   },
+  "landing": {
+    "kicker": "Robótica educativa",
+    "title": "Aprende robótica construyendo, no memorizando",
+    "subtitle": "36 proyectos guiados en 6 momentos, con un consultor técnico que acompaña a cada estudiante en español e inglés.",
+    "cta": "Entrar a la plataforma",
+    "stagesTitle": "Un mismo recorrido, cuatro momentos",
+    "stages": {
+      "curiosear": {
+        "title": "Curiosear",
+        "text": "Se despierta la pregunta: ¿por qué pasa esto?"
+      },
+      "descubrir": {
+        "title": "Descubrir",
+        "text": "Se investiga y se conecta con lo que ya se sabe."
+      },
+      "inventar": {
+        "title": "Inventar",
+        "text": "Se diseña y se construye el prototipo."
+      },
+      "innovar": {
+        "title": "Innovar",
+        "text": "Se comparte, se evalúa y se mejora."
+      }
+    },
+    "footer": "Una plataforma de Imaquina"
+  },
   "auth": {
     "login": "Iniciar sesión",
     "email": "Correo",
@@ -43,7 +69,8 @@
   },
   "nav": {
     "admin": "Administración",
-    "teacher": "Panel docente"
+    "teacher": "Panel docente",
+    "language": "Idioma"
   },
   "roles": {
     "student": "Estudiante",

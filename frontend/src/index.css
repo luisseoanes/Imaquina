@@ -86,7 +86,11 @@
 }
 
 body {
-  @apply bg-surface text-content;
+  @apply bg-surface text-content font-sans antialiased;
+}
+
+h1, h2, h3, h4 {
+  @apply font-display;
 }
 
 /* Los enlaces sin color propio toman el de marca. Un selector de elemento

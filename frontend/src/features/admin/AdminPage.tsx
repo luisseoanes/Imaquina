@@ -1,9 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDown, UserPlus, Users } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Field, fieldClass } from "@/components/ui/Field";
 import { ApiError } from "@/lib/http";
 import {
   useCourses,
@@ -36,50 +40,38 @@ function AltaDeUsuario() {
 
   return (
     <form
-      className="mb-4 grid gap-3 rounded border p-4 sm:grid-cols-6"
+      className="mb-4 grid gap-3 rounded-2xl border border-line p-4 shadow-sm sm:grid-cols-6"
       onSubmit={handleSubmit((datos) =>
         crear.mutate({ ...datos, grade: datos.grade || undefined }, { onSuccess: () => reset() }),
       )}
     >
-      <label className="sm:col-span-2">
-        <span className="text-sm font-medium">{t("admin.email")}</span>
-        <input {...register("email")} className="mt-1 w-full rounded border px-2 py-1 text-sm" />
-      </label>
-      <label className="sm:col-span-2">
-        <span className="text-sm font-medium">{t("admin.fullName")}</span>
-        <input {...register("full_name")} className="mt-1 w-full rounded border px-2 py-1 text-sm" />
-      </label>
-      <label>
-        <span className="text-sm font-medium">{t("admin.password")}</span>
-        <input
-          type="password"
-          {...register("password")}
-          className="mt-1 w-full rounded border px-2 py-1 text-sm"
-        />
-      </label>
-      <label>
-        <span className="text-sm font-medium">{t("admin.role")}</span>
-        <select {...register("role")} className="mt-1 w-full rounded border px-2 py-1 text-sm">
+      <Field label={t("admin.email")} className="sm:col-span-2">
+        <input {...register("email")} className={fieldClass} />
+      </Field>
+      <Field label={t("admin.fullName")} className="sm:col-span-2">
+        <input {...register("full_name")} className={fieldClass} />
+      </Field>
+      <Field label={t("admin.password")}>
+        <input type="password" {...register("password")} className={fieldClass} />
+      </Field>
+      <Field label={t("admin.role")}>
+        <select {...register("role")} className={fieldClass}>
           <option value="student">{t("roles.student")}</option>
           <option value="teacher">{t("roles.teacher")}</option>
           <option value="editor">{t("roles.editor")}</option>
           <option value="admin">{t("roles.admin")}</option>
         </select>
-      </label>
-      <label>
-        <span className="text-sm font-medium">{t("admin.grade")}</span>
-        <input {...register("grade")} className="mt-1 w-full rounded border px-2 py-1 text-sm" />
-      </label>
-      <div className="sm:col-span-6">
-        <button
-          type="submit"
-          disabled={crear.isPending || !formState.isValid}
-          className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:opacity-50"
-        >
+      </Field>
+      <Field label={t("admin.grade")}>
+        <input {...register("grade")} className={fieldClass} />
+      </Field>
+      <div className="flex items-center gap-3 sm:col-span-6">
+        <Button type="submit" disabled={crear.isPending || !formState.isValid}>
+          <UserPlus size={16} aria-hidden />
           {t("admin.createUser")}
-        </button>
+        </Button>
         {crear.error instanceof ApiError && (
-          <span className="ml-3 text-sm text-danger">{crear.error.message}</span>
+          <span className="text-sm text-danger">{crear.error.message}</span>
         )}
       </div>
     </form>
@@ -92,20 +84,20 @@ function ListaDeUsuarios() {
   const activar = useSetUserActive();
 
   return (
-    <ul className="mb-8 divide-y rounded border">
+    <ul className="mb-8 divide-y divide-line overflow-hidden rounded-2xl border border-line shadow-sm">
       {data?.map((u) => (
         <li key={u.id} className="flex items-center gap-3 p-3 text-sm">
           <span className="flex-1">
             {u.full_name} <span className="text-content-subtle">· {u.email}</span>
           </span>
-          <span className="text-content-subtle">{t(`roles.${u.role}`)}</span>
+          <Badge>{t(`roles.${u.role}`)}</Badge>
           <button
             onClick={() => activar.mutate({ id: u.id, is_active: !u.is_active })}
-            className={`rounded px-2 py-0.5 text-xs ${
-              u.is_active ? "bg-success text-success-content" : "bg-surface-muted text-content-muted"
-            }`}
+            className="cursor-pointer"
           >
-            {u.is_active ? t("admin.active") : t("admin.inactive")}
+            <Badge tone={u.is_active ? "success" : "neutral"}>
+              {u.is_active ? t("admin.active") : t("admin.inactive")}
+            </Badge>
           </button>
         </li>
       ))}
@@ -127,25 +119,19 @@ function AltaDeCurso() {
 
   return (
     <form
-      className="mb-4 grid gap-3 rounded border p-4 sm:grid-cols-3"
+      className="mb-4 grid gap-3 rounded-2xl border border-line p-4 shadow-sm sm:grid-cols-3"
       onSubmit={handleSubmit((datos) => crear.mutate(datos, { onSuccess: () => reset() }))}
     >
-      <label>
-        <span className="text-sm font-medium">{t("admin.courseName")}</span>
-        <input {...register("name")} className="mt-1 w-full rounded border px-2 py-1 text-sm" />
-      </label>
-      <label>
-        <span className="text-sm font-medium">{t("admin.grade")}</span>
-        <input {...register("grade")} className="mt-1 w-full rounded border px-2 py-1 text-sm" />
-      </label>
+      <Field label={t("admin.courseName")}>
+        <input {...register("name")} className={fieldClass} />
+      </Field>
+      <Field label={t("admin.grade")}>
+        <input {...register("grade")} className={fieldClass} />
+      </Field>
       <div className="flex items-end">
-        <button
-          type="submit"
-          disabled={crear.isPending || !formState.isValid}
-          className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:opacity-50"
-        >
+        <Button type="submit" disabled={crear.isPending || !formState.isValid}>
           {t("admin.createCourse")}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -163,12 +149,13 @@ function Matricula({ courseId }: { courseId: string }) {
   const idsMatriculados = new Set(matriculados?.map((m) => m.id));
 
   return (
-    <div className="border-t bg-surface-muted p-3">
+    <div className="border-t border-line bg-surface-muted p-3">
       <div className="mb-2 flex gap-2">
         <select
           value={seleccionado}
           onChange={(e) => setSeleccionado(e.target.value)}
-          className="flex-1 rounded border px-2 py-1 text-sm"
+          className="flex-1 rounded-xl border border-line bg-surface px-3 py-2 text-sm
+                     transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
         >
           <option value="">{t("admin.pickStudent")}</option>
           {estudiantes
@@ -179,13 +166,14 @@ function Matricula({ courseId }: { courseId: string }) {
               </option>
             ))}
         </select>
-        <button
+        <Button
+          size="sm"
+          variant="secondary"
           disabled={!seleccionado}
           onClick={() => seleccionado && enrolar.mutate(seleccionado, { onSuccess: () => setSeleccionado("") })}
-          className="rounded border px-3 py-1 text-sm disabled:opacity-50"
         >
           {t("admin.enroll")}
-        </button>
+        </Button>
       </div>
       <ul className="space-y-1">
         {matriculados?.map((m) => (
@@ -207,7 +195,7 @@ function ListaDeCursos() {
   const [abierto, setAbierto] = useState<string | null>(null);
 
   return (
-    <ul className="divide-y rounded border">
+    <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line shadow-sm">
       {data?.map((c) => (
         <li key={c.id}>
           <button
@@ -218,6 +206,11 @@ function ListaDeCursos() {
             <span className="text-content-subtle">
               {t("studio.grade")} {c.grade}
             </span>
+            <ChevronDown
+              size={16}
+              className={`text-content-subtle transition ${abierto === c.id ? "rotate-180" : ""}`}
+              aria-hidden
+            />
           </button>
           {abierto === c.id && <Matricula courseId={c.id} />}
         </li>
@@ -230,13 +223,19 @@ export default function AdminPage() {
   const { t } = useTranslation();
   return (
     <main className="mx-auto max-w-4xl p-4 sm:p-6">
-      <h1 className="mb-4 text-xl font-bold">{t("admin.title")}</h1>
+      <h1 className="mb-6 font-display text-xl font-bold">{t("admin.title")}</h1>
 
-      <h2 className="mb-2 font-medium">{t("admin.users")}</h2>
+      <h2 className="mb-2 flex items-center gap-2 font-medium">
+        <Users size={18} className="text-brand-ink" aria-hidden />
+        {t("admin.users")}
+      </h2>
       <AltaDeUsuario />
       <ListaDeUsuarios />
 
-      <h2 className="mb-2 font-medium">{t("admin.courses")}</h2>
+      <h2 className="mb-2 flex items-center gap-2 font-medium">
+        <Users size={18} className="text-brand-ink" aria-hidden />
+        {t("admin.courses")}
+      </h2>
       <AltaDeCurso />
       <ListaDeCursos />
     </main>
