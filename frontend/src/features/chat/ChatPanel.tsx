@@ -112,10 +112,20 @@ export default function ChatPanel({
   }
 
   return (
-    <section className="mt-8 rounded border">
-      <header className="border-b px-4 py-2 font-medium">{t("chat.title")}</header>
+    <section className="mt-8 rounded border" aria-labelledby="chat-title">
+      <header id="chat-title" className="border-b px-4 py-2 font-medium">
+        {t("chat.title")}
+      </header>
 
-      <div className="max-h-80 space-y-3 overflow-y-auto p-4">
+      {/* La respuesta llega por streaming y sin `aria-live` un lector de
+          pantalla no anuncia nada: el usuario no se entera de que el bot
+          contestó. `polite` y no `assertive` — no debe cortar lo que el
+          usuario esté leyendo. */}
+      <div
+        aria-live="polite"
+        aria-busy={streaming}
+        className="max-h-80 space-y-3 overflow-y-auto p-4"
+      >
         {visibles.map((m, i) => (
           <div key={i} className={m.role === "user" ? "text-right" : ""}>
             <span
@@ -141,12 +151,14 @@ export default function ChatPanel({
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && void send()}
           placeholder={t("chat.placeholder")}
+          // El placeholder no es nombre accesible: desaparece al escribir.
+          aria-label={t("chat.inputLabel")}
           className="flex-1 rounded border px-3 py-2 text-sm"
         />
         <button
           onClick={() => void send()}
           disabled={streaming || !sessionId}
-          className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:opacity-50"
+          className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:bg-surface-muted disabled:text-content-muted disabled:cursor-not-allowed"
         >
           {t("chat.send")}
         </button>

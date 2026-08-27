@@ -84,7 +84,8 @@
     "placeholder": "Ask me about your project…",
     "send": "Send",
     "thinking": "Thinking…",
-    "rateLimited": "You've asked a lot of questions this hour. Try again a bit later."
+    "rateLimited": "You've asked a lot of questions this hour. Try again a bit later.",
+    "inputLabel": "Type your question"
   },
   "assessment": {
     "submit": "Submit assessment",

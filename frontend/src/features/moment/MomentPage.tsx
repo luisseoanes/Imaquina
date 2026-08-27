@@ -98,7 +98,7 @@ export default function MomentPage() {
         <button
           onClick={() => completar.mutate()}
           disabled={completar.isPending || completar.isSuccess}
-          className="mt-6 rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:opacity-50"
+          className="mt-6 rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:bg-surface-muted disabled:text-content-muted disabled:cursor-not-allowed"
         >
           {completar.isSuccess ? t("projects.completed") : t("projects.markComplete")}
         </button>

@@ -84,7 +84,7 @@ function FormularioDeIntento({
       <button
         onClick={() => enviar.mutate(attempt.id, { onSuccess: setResultado })}
         disabled={enviar.isPending}
-        className="mt-4 rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:opacity-50"
+        className="mt-4 rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:bg-surface-muted disabled:text-content-muted disabled:cursor-not-allowed"
       >
         {t("assessment.submit")}
       </button>
@@ -134,7 +134,7 @@ export default function AssessmentForm({ momentId }: { momentId: string }) {
           <button
             onClick={() => iniciar.mutate(teamLabel || undefined)}
             disabled={iniciar.isPending}
-            className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:opacity-50"
+            className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:bg-surface-muted disabled:text-content-muted disabled:cursor-not-allowed"
           >
             {t("assessment.start")}
           </button>

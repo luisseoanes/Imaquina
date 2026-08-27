@@ -1,12 +1,18 @@
 import {
   closestCenter,
   DndContext,
+  KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -123,7 +129,13 @@ function BloquesDelMomento({ momentId, lang }: { momentId: string; lang: Lang })
   const { data } = useStudioMoment(momentId, lang);
   const crear = useCreateBlock(momentId, lang);
   const reordenar = useReorderBlocks(momentId);
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+  // Sin `KeyboardSensor` reordenar era IMPOSIBLE sin ratón (I4): el asa de
+  // arrastre no respondía al teclado, así que un usuario que no use ratón no
+  // podía cambiar el orden de ninguna manera.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   if (!data) return null;
   const bloques = data.blocks;

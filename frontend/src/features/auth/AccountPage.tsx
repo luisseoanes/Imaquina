@@ -114,7 +114,7 @@ export default function AccountPage() {
           <button
             type="submit"
             disabled={cambiar.isPending || !formState.isValid}
-            className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:opacity-50"
+            className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:bg-surface-muted disabled:text-content-muted disabled:cursor-not-allowed"
           >
             {t("account.change")}
           </button>

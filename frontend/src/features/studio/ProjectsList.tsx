@@ -90,7 +90,7 @@ function NuevoProyecto({ lang }: { lang: Lang }) {
         <button
           type="submit"
           disabled={crear.isPending || !formState.isValid}
-          className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:opacity-50"
+          className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:bg-surface-muted disabled:text-content-muted disabled:cursor-not-allowed"
         >
           {crear.isPending ? t("studio.creating") : t("studio.create")}
         </button>

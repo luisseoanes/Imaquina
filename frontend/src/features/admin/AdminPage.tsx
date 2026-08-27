@@ -75,7 +75,7 @@ function AltaDeUsuario() {
         <button
           type="submit"
           disabled={crear.isPending || !formState.isValid}
-          className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:opacity-50"
+          className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:bg-surface-muted disabled:text-content-muted disabled:cursor-not-allowed"
         >
           {t("admin.createUser")}
         </button>
@@ -124,7 +124,7 @@ function ResetDeContrasena({ userId }: { userId: string }) {
       <button
         disabled={valor.length < 8 || reset.isPending}
         onClick={() => reset.mutate({ id: userId, new_password: valor })}
-        className="rounded bg-brand px-2 py-0.5 text-xs text-brand-content disabled:opacity-50"
+        className="rounded bg-brand px-2 py-0.5 text-xs text-brand-content disabled:bg-surface-muted disabled:text-content-muted disabled:cursor-not-allowed"
       >
         {t("common.save")}
       </button>
@@ -203,7 +203,7 @@ function AltaDeCurso() {
         <button
           type="submit"
           disabled={crear.isPending || !formState.isValid}
-          className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:opacity-50"
+          className="rounded bg-brand px-4 py-2 text-sm text-brand-content disabled:bg-surface-muted disabled:text-content-muted disabled:cursor-not-allowed"
         >
           {t("admin.createCourse")}
         </button>
@@ -243,7 +243,7 @@ function Matricula({ courseId }: { courseId: string }) {
         <button
           disabled={!seleccionado}
           onClick={() => seleccionado && enrolar.mutate(seleccionado, { onSuccess: () => setSeleccionado("") })}
-          className="rounded border px-3 py-1 text-sm disabled:opacity-50"
+          className="rounded border px-3 py-1 text-sm disabled:text-content-muted disabled:cursor-not-allowed"
         >
           {t("admin.enroll")}
         </button>

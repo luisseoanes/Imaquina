@@ -43,8 +43,11 @@ export default function LoginPage() {
       <h1 className="mb-6 text-2xl font-bold">{t("app.name")}</h1>
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium">{t("auth.email")}</label>
+          <label htmlFor="email" className="block text-sm font-medium">
+            {t("auth.email")}
+          </label>
           <input
+            id="email"
             {...register("email")}
             type="email"
             autoComplete="username"
@@ -52,8 +55,11 @@ export default function LoginPage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium">{t("auth.password")}</label>
+          <label htmlFor="password" className="block text-sm font-medium">
+            {t("auth.password")}
+          </label>
           <input
+            id="password"
             {...register("password")}
             type="password"
             autoComplete="current-password"
@@ -64,7 +70,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={formState.isSubmitting}
-          className="w-full rounded bg-brand px-4 py-2 text-brand-content disabled:opacity-50"
+          className="w-full rounded bg-brand px-4 py-2 text-brand-content disabled:bg-surface-muted disabled:text-content-muted disabled:cursor-not-allowed"
         >
           {t("auth.login")}
         </button>

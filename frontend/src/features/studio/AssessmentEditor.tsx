@@ -1,12 +1,19 @@
 import {
   closestCenter,
   DndContext,
+  KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -150,7 +157,13 @@ export default function AssessmentEditor({ momentId, lang }: { momentId: string;
   const crear = useCreateQuestion(data?.id ?? "", lang);
   const reordenar = useReorderQuestions(data?.id ?? "");
   const [tipoNuevo, setTipoNuevo] = useState<QuestionKind>("mcq");
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+  // Sin `KeyboardSensor` reordenar era IMPOSIBLE sin ratón (I4): el asa de
+  // arrastre no respondía al teclado, así que un usuario que no use ratón no
+  // podía cambiar el orden de ninguna manera.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   if (!data) return null;
 

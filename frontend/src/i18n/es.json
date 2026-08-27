@@ -84,7 +84,8 @@
     "placeholder": "Pregúntame sobre tu proyecto…",
     "send": "Enviar",
     "thinking": "Pensando…",
-    "rateLimited": "Has hecho muchas preguntas esta hora. Intenta un poco más tarde."
+    "rateLimited": "Has hecho muchas preguntas esta hora. Intenta un poco más tarde.",
+    "inputLabel": "Escribe tu pregunta"
   },
   "assessment": {
     "submit": "Enviar evaluación",
