@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
+import { setLanguage } from "@/i18n";
 import {
   clearTokens,
   getRefreshToken,
@@ -35,6 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // esto la sesion se moria sin posibilidad de renovarla.
     setAccessToken(res.access_token);
     setRefreshToken(res.refresh_token);
+
+    // I7: manda el idioma de LA CUENTA, no el que quedó en este navegador.
+    // Sin esto, entrar desde un equipo compartido del aula te servía la
+    // interfaz en el idioma del último que lo usó.
+    setLanguage(res.lang);
 
     const next = { role: res.role, lang: res.lang };
     localStorage.setItem("session", JSON.stringify(next));

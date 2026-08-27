@@ -165,6 +165,35 @@ async def me(tenant: Tenant, db: Db) -> MeOut:
     )
 
 
+class MePatch(BaseModel):
+    # Los dos idiomas del MVP (R6). Un pattern y no un Enum: `preferred_lang`
+    # es un String(2) en el modelo y esto es la única puerta de escritura.
+    lang: str = Field(pattern="^(es|en)$")
+
+
+@router.patch("/me", response_model=MeOut)
+async def update_me(payload: MePatch, tenant: Tenant, db: Db) -> MeOut:
+    """Persiste el idioma preferido (I7).
+
+    Vivía sólo en `localStorage`, así que se perdía al cambiar de equipo — y en
+    el aula de robótica los estudiantes no tienen un PC fijo, que es justo el
+    caso en el que un idioma pegado al navegador no sirve de nada.
+    """
+    user = (
+        await db.execute(select(User).where(User.id == tenant.user_id))
+    ).scalar_one()
+    user.preferred_lang = payload.lang
+    await db.flush()
+    return MeOut(
+        id=str(user.id),
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role,
+        grade=user.grade,
+        lang=user.preferred_lang,
+    )
+
+
 class PasswordChangeIn(BaseModel):
     current_password: str
     new_password: str = Field(min_length=8)

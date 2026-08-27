@@ -6,6 +6,7 @@ import ChatPanel from "@/features/chat/ChatPanel";
 import AssessmentForm from "@/features/assessment/AssessmentForm";
 import { useAuth } from "@/features/auth/useAuth";
 import { http } from "@/lib/http";
+import { useLang } from "@/lib/useLang";
 import { RichTextView } from "@/lib/richText";
 
 export interface Block {
@@ -34,10 +35,14 @@ export default function MomentPage() {
   const [showGuide, setShowGuide] = useState(false);
   const qc = useQueryClient();
 
+  const lang = useLang();
   const { data, isLoading } = useQuery({
-    queryKey: ["moment", projectId, momentType],
+    queryKey: ["moment", projectId, momentType, lang],
     queryFn: () =>
-      http<MomentData>({ url: `/learn/projects/${projectId}/moments/${momentType}` }),
+      http<MomentData>({
+        url: `/learn/projects/${projectId}/moments/${momentType}`,
+        params: { lang },
+      }),
   });
 
   // N5/N9: solo el estudiante marca progreso -- el docente no "completa"

@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 
 import { useAuth } from "@/features/auth/useAuth";
 import { http } from "@/lib/http";
+import { useLang } from "@/lib/useLang";
 
 interface MomentResumen {
   id: string;
@@ -34,9 +35,11 @@ export default function ProjectPage() {
   const { session } = useAuth();
   const esEstudiante = session?.role === "student";
 
+  const lang = useLang();
   const { data, isLoading } = useQuery({
-    queryKey: ["project", projectId],
-    queryFn: () => http<ProjectData>({ url: `/learn/projects/${projectId}` }),
+    queryKey: ["project", projectId, lang],
+    queryFn: () =>
+      http<ProjectData>({ url: `/learn/projects/${projectId}`, params: { lang } }),
   });
 
   // N5: progreso lineal, decidido. Solo aplica al estudiante -- el backend

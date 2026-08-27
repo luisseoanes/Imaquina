@@ -15,6 +15,19 @@ i18n.use(initReactI18next).init({
 export function setLanguage(lang: "es" | "en") {
   localStorage.setItem("lang", lang);
   void i18n.changeLanguage(lang);
+  aplicarLangAlDocumento(lang);
 }
+
+/** `<html lang>` tiene que seguir al idioma elegido (WCAG 3.1.1, nivel A).
+ *
+ *  `index.html` lo trae fijo en "es": mientras no había selector (I1) daba
+ *  igual, pero ahora un usuario en inglés tendría el documento declarado como
+ *  español y el lector de pantalla leería inglés con voz española. */
+function aplicarLangAlDocumento(lang: string) {
+  document.documentElement.lang = lang;
+}
+
+// El idioma inicial sale de localStorage, no de `index.html`.
+aplicarLangAlDocumento(i18n.language);
 
 export default i18n;

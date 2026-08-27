@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "@/features/auth/useAuth";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 /** Cabecera mínima compartida por toda la app autenticada (N13): antes no
  *  había ningún sitio desde el que cerrar sesión — `useAuth().logout()`
@@ -23,6 +24,7 @@ export default function AppHeader() {
         )}
       </nav>
       <span className="ml-auto text-content-subtle">{t(`roles.${session.role}`)}</span>
+      <LanguageSwitcher />
       <Link to="/cuenta" className="text-content-subtle hover:underline">
         {t("nav.account")}
       </Link>

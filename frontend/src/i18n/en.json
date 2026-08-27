@@ -45,7 +45,12 @@
   "nav": {
     "admin": "Administration",
     "teacher": "Teacher panel",
-    "account": "My account"
+    "account": "My account",
+    "language": "Language",
+    "lang": {
+      "es": "ES",
+      "en": "EN"
+    }
   },
   "roles": {
     "student": "Student",

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { http } from "@/lib/http";
+import { useLang } from "@/lib/useLang";
 
 interface ProjectCard {
   id: string;
@@ -13,9 +14,12 @@ interface ProjectCard {
 
 export default function ProjectsPage() {
   const { t } = useTranslation();
+  // El idioma va en la queryKey, no sólo en la petición: así cambiarlo
+  // refetchea solo, sin invalidación manual desde el selector.
+  const lang = useLang();
   const { data, isLoading } = useQuery({
-    queryKey: ["projects"],
-    queryFn: () => http<ProjectCard[]>({ url: "/learn/projects" }),
+    queryKey: ["projects", lang],
+    queryFn: () => http<ProjectCard[]>({ url: "/learn/projects", params: { lang } }),
   });
 
   if (isLoading) return <p className="p-6">{t("common.loading")}</p>;
