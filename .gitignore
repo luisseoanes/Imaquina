@@ -36,3 +36,7 @@ CLAUDE.local.md
 # (receta en CLAUDE.md). Versionar cada revisión serían megas en el historial.
 docs/marca/paleta-imaquina-oscuro.pdf
 docs/marca/paleta-imaquina-completa*.png
+
+# Instaladores descargados a la raiz (Chrome para la auditoria responsive de
+# I3, p.ej.): 135 MB que no deben acabar en un `git add .`
+*.deb
