@@ -214,7 +214,7 @@ function VistaPrevia({
       </div>
       {isLoading && <p>{t("common.loading")}</p>}
       {data && (
-        <div className="prose prose-sm max-w-none">
+        <div>
           <h4>{data.title ?? t("studio.untitled")}</h4>
           {data.teacher_note && (
             <p className="rounded border border-note-line bg-note p-2 text-note-content">

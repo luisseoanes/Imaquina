@@ -88,7 +88,7 @@ export default function MomentPage() {
         </section>
       )}
 
-      <article className="prose mt-6 max-w-none">
+      <article className="mt-6">
         {data.blocks.map((b) => (
           <BlockView key={b.id} block={b} />
         ))}

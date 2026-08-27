@@ -104,7 +104,7 @@ export default function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm max-w-none rounded border px-2 py-1.5 min-h-[6rem] focus:outline-none focus:ring-1 focus:ring-brand",
+          "contenido-rico rounded border px-2 py-1.5 min-h-[6rem] focus:outline-none focus:ring-1 focus:ring-brand",
       },
     },
   });

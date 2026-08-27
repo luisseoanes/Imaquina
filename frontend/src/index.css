@@ -94,3 +94,31 @@ body {
 a {
   @apply text-brand-ink;
 }
+
+/* Estilos del texto enriquecido del contenido (S14).
+   `prose prose-sm` venía del plugin @tailwindcss/typography, que NUNCA se
+   instaló: la clase no existe en el CSS generado, así que no hacía nada y el
+   preflight de Tailwind (`ol,ul{list-style:none}`) dejaba las listas del
+   contenido sin viñetas ni numeración. Se resuelve aquí y no instalando el
+   plugin: son seis reglas para un esquema de seis etiquetas, y añadir una
+   dependencia obliga a regenerar el lock.
+   Lo usan el render del estudiante (`lib/richText.tsx`) y el editor del
+   Studio, para que se vea lo mismo escribiendo que leyendo. */
+.contenido-rico > * + * {
+  @apply mt-3;
+}
+.contenido-rico ul {
+  @apply list-disc pl-6;
+}
+.contenido-rico ol {
+  @apply list-decimal pl-6;
+}
+.contenido-rico li {
+  @apply mb-1;
+}
+.contenido-rico a {
+  @apply underline;
+}
+.contenido-rico code {
+  @apply rounded bg-surface-muted px-1 py-0.5 font-mono text-[0.9em];
+}
