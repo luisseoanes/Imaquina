@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppHeader from "@/components/AppHeader";
+import AccountPage from "@/features/auth/AccountPage";
 import LoginPage from "@/features/auth/LoginPage";
 import { useAuth } from "@/features/auth/useAuth";
 import LandingPage from "@/features/landing/LandingPage";
@@ -62,6 +63,7 @@ export default function App() {
         {/* La vista del proyecto es el eslabon que faltaba: el listado
             enlazaba aqui y no habia ruta, asi que el comodin de abajo
             devolvia al usuario al principio. */}
+        <Route path="/cuenta" element={<RequireAuth><AccountPage /></RequireAuth>} />
         <Route
           path="/projects/:projectId"
           element={<RequireAuth><ProjectPage /></RequireAuth>}

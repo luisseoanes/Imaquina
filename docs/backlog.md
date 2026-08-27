@@ -231,6 +231,24 @@ limit del chat — backend y frontend, con su UI mínima de administración/pane
       `RequireAdmin`) y `features/teacher/` (progreso por curso/proyecto, guard
       `RequireStaff`), rutas `/admin/*` y `/teacher/*`.
 
+- [x] **N15 · Cambiar y restablecer contraseñas.** No estaba en el backlog original y
+      era un agujero, no un pulido: N3 crea las cuentas con una contraseña que fija el
+      administrador y **nadie podía cambiarla nunca** — ni el dueño ni el propio
+      administrador. Son cuentas de menores con una credencial que un tercero conoce de
+      forma permanente. ✅ `POST /auth/me/password` (exige la actual; sin eso un access
+      token robado bastaría para dejar fuera al dueño) y `POST
+      /admin/users/{id}/reset-password` (guard `Admin`, scopeado a la institución: una
+      cuenta ajena da 404, no 403, para no confirmar que ese correo existe). **Las dos vías
+      revocan todos los refresh del usuario**; el cambio propio devuelve un par nuevo en la
+      respuesta, o quien acierta su contraseña se quedaría sin sesión. Ojo con el alcance:
+      el access token es stateless y sobrevive hasta 15 minutos — esto corta la renovación,
+      no el acceso inmediato. Frontend: `/cuenta` (enlazada desde `AppHeader`) y
+      restablecer inline en la lista de usuarios de administración. **No hay recuperación
+      por correo** y no la habrá: las cuentas de menores se crean sin buzón propio, así que
+      el login lo dice explícitamente y la única vía es el administrador. 11 tests de
+      integración (los dos de revocación, verificados en rojo) y 3 de frontend que navegan
+      la app entera.
+
 ## 4. F3 — Evaluación (R10) ✅ completo (23/08/2026)
 
 `assessment/models.py` está **completo** (Assessment, Question, Choice, Attempt, Answer y
@@ -313,8 +331,11 @@ Todo se construye y se testea contra `StubProvider`, sin depender de Luis.
 - [ ] **I7 · Persistir el idioma preferido.** `User.preferred_lang` existe y el login lo
       devuelve, pero **no hay endpoint para cambiarlo**: el idioma sólo vive en
       `localStorage` y se pierde al cambiar de equipo. ⇠ I1, B1.
-- [ ] **I2 · Completar `en.json`** con los textos de interfaz. Los textos de contenido los
-      carga el cliente desde el Studio, no van aquí. ⇠ I1.
+- [x] **I2 · Completar `en.json`** con los textos de interfaz. ✅ Estaba desactualizado,
+      como I5/I6: `es.json` y `en.json` tienen hoy las **mismas 178 claves**, cero huecos.
+      Las pocas cadenas idénticas entre idiomas son cognados reales (`Studio`, `editor`,
+      `video`, `audio`), no traducciones pendientes. Los textos de contenido los carga el
+      cliente desde el Studio, no van aquí. ⇠ I1.
 - [x] **I7b · Paleta de marca del PO.** ✅ Ámbar #FCB71B (marca) y grises con matiz oliva
       del logo, derivados de las piezas de Curiosear/Descubrir/Inventar/Innovar. Aprobada
       por el PO. Los 20 pares de la interfaz cumplen AA (`content-subtle` es el suelo,

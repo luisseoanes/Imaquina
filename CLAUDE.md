@@ -225,7 +225,11 @@ capa de repositorio** y no debe añadirse. Modelos nuevos deben quedar alcanzabl
 
 ## Frontend
 
-`package-lock.json` va versionado: `npm ci` instala exactamente eso. ESLint 10 con flat
+`package-lock.json` va versionado: `npm ci` instala exactamente eso. **Tras tocar
+dependencias, corre `npm ci` en limpio antes de commitear** — `npm install` puede dejar el
+lock sin una transitiva y `npm install` sigue funcionando, pero `npm ci` no: al añadir
+tiptap faltó `@floating-ui/dom` y el job `frontend` de CI quedó roto 21 commits, sin
+release ninguna, hasta que alguien montó el entorno desde cero. ESLint 10 con flat
 config en `eslint.config.js` (`npm run lint`, o `make web-lint`); tests con vitest + jsdom
 y **MSW en `onUnhandledRequest: "error"`** — una petición que ningún handler simule hace
 fallar el test en vez de salir a la red. Los handlers por defecto están en

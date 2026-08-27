@@ -71,12 +71,17 @@ export default function AppHeader() {
       </nav>
       <div className="ml-auto flex flex-wrap items-center gap-3">
         <LanguageToggle />
-        <span className="flex items-center gap-2 text-content-subtle">
+        <Link
+          to="/cuenta"
+          aria-label={t("nav.account")}
+          title={t("nav.account")}
+          className="flex items-center gap-2 text-content-subtle hover:text-content"
+        >
           <span className="flex size-7 items-center justify-center rounded-full bg-brand/15 text-brand-ink">
             <User size={14} aria-hidden />
           </span>
           <span className="hidden sm:inline">{t(`roles.${session.role}`)}</span>
-        </span>
+        </Link>
         <button
           onClick={logout}
           aria-label={t("auth.logout")}

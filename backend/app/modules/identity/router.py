@@ -165,6 +165,39 @@ async def me(tenant: Tenant, db: Db) -> MeOut:
     )
 
 
+class PasswordChangeIn(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8)
+
+
+@router.post("/me/password", response_model=AccessOut)
+async def change_password(payload: PasswordChangeIn, tenant: Tenant, db: Db) -> AccessOut:
+    """El usuario cambia su propia contraseña (N15).
+
+    Devuelve un par de tokens NUEVO a propósito: cambiar la contraseña revoca
+    todos los refresh del usuario —incluido el que tuviera este cliente— y sin
+    esto quien acaba de cambiarla se quedaría sin sesión al primer refresco. El
+    resto de dispositivos sí caen, que es justo lo que se busca.
+    """
+    user = await service.cambiar_password(
+        db,
+        tenant.user_id,
+        actual=payload.current_password,
+        nueva=payload.new_password,
+    )
+    valid_to = await _vigencia(db, user)
+    return AccessOut(
+        access_token=create_token(
+            subject=user.id,
+            institution_id=user.institution_id,
+            role=user.role,
+            token_type="access",
+            license_valid_to=valid_to,
+        ),
+        refresh_token=await service.emitir_refresh(db, user, license_valid_to=valid_to),
+    )
+
+
 # --- Alta y gestión de cuentas (N3) -----------------------------------------
 #
 # Guard `Admin`, no `Author`: crear cuentas es de un rol aparte, ni editor ni
@@ -205,6 +238,26 @@ async def create_user(payload: UserIn, admin: Admin, db: Db):
 async def update_user(user_id: UUID, payload: UserPatch, admin: Admin, db: Db):
     datos = payload.model_dump(exclude_unset=True)
     return await service.update_user(db, user_id, admin.require_institution(), **datos)
+
+
+class PasswordResetIn(BaseModel):
+    new_password: str = Field(min_length=8)
+
+
+@admin_router.post("/users/{user_id}/reset-password", status_code=204)
+async def reset_password(
+    user_id: UUID, payload: PasswordResetIn, admin: Admin, db: Db
+) -> None:
+    """Restablece la contraseña de una cuenta de la institución (N15).
+
+    Es la única vía cuando un estudiante olvida la suya: no hay correo de
+    recuperación —las cuentas de menores se crean sin buzón propio y §3 del
+    scope descarta el autoregistro—, así que el administrador la fija y la
+    comunica por el canal del colegio.
+    """
+    await service.reset_password(
+        db, user_id, admin.require_institution(), nueva=payload.new_password
+    )
 
 
 # --- Cursos y matrículas (N4) ------------------------------------------------

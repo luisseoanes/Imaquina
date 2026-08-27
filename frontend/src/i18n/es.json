@@ -34,7 +34,8 @@
     "password": "Contraseña",
     "invalid": "Correo o contraseña incorrectos",
     "licenseExpired": "La licencia de tu institución no está vigente",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "forgot": "Si olvidaste tu contraseña, pídele a la administración de tu institución que la restablezca."
   },
   "moments": {
     "intro": "Introducción",
@@ -70,7 +71,8 @@
   "nav": {
     "admin": "Administración",
     "teacher": "Panel docente",
-    "language": "Idioma"
+    "language": "Idioma",
+    "account": "Mi cuenta"
   },
   "roles": {
     "student": "Estudiante",
@@ -94,7 +96,10 @@
     "createCourse": "Crear curso",
     "pickStudent": "Elige un estudiante",
     "enroll": "Matricular",
-    "unenroll": "Quitar"
+    "unenroll": "Quitar",
+    "resetPassword": "Restablecer contraseña",
+    "newPassword": "Contraseña nueva",
+    "passwordReset": "Contraseña restablecida"
   },
   "chat": {
     "title": "Consultor técnico",
@@ -224,5 +229,15 @@
     "cancel": "Cancelar",
     "loading": "Cargando…",
     "error": "Ocurrió un error"
+  },
+  "account": {
+    "title": "Mi cuenta",
+    "currentPassword": "Contraseña actual",
+    "newPassword": "Contraseña nueva",
+    "repeatPassword": "Repetir la contraseña nueva",
+    "minLength": "Mínimo 8 caracteres.",
+    "noMatch": "Las dos contraseñas no coinciden.",
+    "change": "Cambiar contraseña",
+    "changed": "Contraseña cambiada. Las sesiones abiertas en otros dispositivos se cerraron."
   }
 }

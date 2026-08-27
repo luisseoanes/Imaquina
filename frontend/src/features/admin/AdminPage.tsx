@@ -15,6 +15,7 @@ import {
   useCreateCourse,
   useCreateUser,
   useEnroll,
+  useResetPassword,
   useSetUserActive,
   useUnenroll,
   useUsers,
@@ -78,6 +79,65 @@ function AltaDeUsuario() {
   );
 }
 
+/** Restablecer la contraseña de una cuenta (N15).
+ *
+ *  Es la única recuperación que hay: no se envía correo —las cuentas de
+ *  menores se crean sin buzón propio—, así que el administrador fija una y la
+ *  entrega por el canal del colegio. Se muestra en claro tras guardarla
+ *  porque si no, no habría forma de comunicarla.
+ */
+function ResetDeContrasena({ userId }: { userId: string }) {
+  const { t } = useTranslation();
+  const [abierto, setAbierto] = useState(false);
+  const [valor, setValor] = useState("");
+  const reset = useResetPassword();
+
+  if (!abierto) {
+    return (
+      <button
+        onClick={() => setAbierto(true)}
+        className="rounded border px-2 py-0.5 text-xs hover:underline"
+      >
+        {t("admin.resetPassword")}
+      </button>
+    );
+  }
+
+  return (
+    <span className="flex flex-wrap items-center gap-2">
+      <input
+        type="text"
+        value={valor}
+        autoFocus
+        placeholder={t("admin.newPassword")}
+        onChange={(e) => setValor(e.target.value)}
+        className="w-40 rounded border px-2 py-0.5 text-xs"
+      />
+      <button
+        disabled={valor.length < 8 || reset.isPending}
+        onClick={() => reset.mutate({ id: userId, new_password: valor })}
+        className="rounded bg-brand px-2 py-0.5 text-xs text-brand-content disabled:opacity-50"
+      >
+        {t("common.save")}
+      </button>
+      <button
+        onClick={() => {
+          setAbierto(false);
+          setValor("");
+          reset.reset();
+        }}
+        className="text-xs text-content-subtle hover:underline"
+      >
+        {t("common.cancel")}
+      </button>
+      {reset.isSuccess && <span className="text-xs text-success-content">{t("admin.passwordReset")}</span>}
+      {reset.error instanceof ApiError && (
+        <span className="text-xs text-danger">{reset.error.message}</span>
+      )}
+    </span>
+  );
+}
+
 function ListaDeUsuarios() {
   const { t } = useTranslation();
   const { data } = useUsers();
@@ -86,11 +146,12 @@ function ListaDeUsuarios() {
   return (
     <ul className="mb-8 divide-y divide-line overflow-hidden rounded-2xl border border-line shadow-sm">
       {data?.map((u) => (
-        <li key={u.id} className="flex items-center gap-3 p-3 text-sm">
+        <li key={u.id} className="flex flex-wrap items-center gap-3 p-3 text-sm">
           <span className="flex-1">
             {u.full_name} <span className="text-content-subtle">· {u.email}</span>
           </span>
           <Badge>{t(`roles.${u.role}`)}</Badge>
+          <ResetDeContrasena userId={u.id} />
           <button
             onClick={() => activar.mutate({ id: u.id, is_active: !u.is_active })}
             className="cursor-pointer"

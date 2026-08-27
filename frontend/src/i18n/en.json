@@ -34,7 +34,8 @@
     "password": "Password",
     "invalid": "Incorrect email or password",
     "licenseExpired": "Your institution's license is not active",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "forgot": "If you forgot your password, ask your institution’s administrator to reset it."
   },
   "moments": {
     "intro": "Introduction",
@@ -70,7 +71,8 @@
   "nav": {
     "admin": "Administration",
     "teacher": "Teacher panel",
-    "language": "Language"
+    "language": "Language",
+    "account": "My account"
   },
   "roles": {
     "student": "Student",
@@ -94,7 +96,10 @@
     "createCourse": "Create course",
     "pickStudent": "Pick a student",
     "enroll": "Enroll",
-    "unenroll": "Remove"
+    "unenroll": "Remove",
+    "resetPassword": "Reset password",
+    "newPassword": "New password",
+    "passwordReset": "Password reset"
   },
   "chat": {
     "title": "Technical advisor",
@@ -224,5 +229,15 @@
     "cancel": "Cancel",
     "loading": "Loading…",
     "error": "Something went wrong"
+  },
+  "account": {
+    "title": "My account",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "repeatPassword": "Repeat the new password",
+    "minLength": "At least 8 characters.",
+    "noMatch": "The two passwords do not match.",
+    "change": "Change password",
+    "changed": "Password changed. Sessions open on other devices were closed."
   }
 }
