@@ -59,9 +59,16 @@ export default function App() {
           path="/projects/:projectId/moments/:momentType"
           element={<RequireAuth><MomentPage /></RequireAuth>}
         />
+        {/* Dentro de RequireAuth, como /admin y /teacher: el Studio no montaba
+            AppHeader y desde él no había forma de cerrar sesión ni de volver
+            al resto de la app. */}
         <Route
           path="/studio/*"
-          element={<RequireAuthor><StudioPage /></RequireAuthor>}
+          element={
+            <RequireAuth>
+              <RequireAuthor><StudioPage /></RequireAuthor>
+            </RequireAuth>
+          }
         />
         <Route
           path="/admin/*"

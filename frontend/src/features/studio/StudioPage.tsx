@@ -19,25 +19,36 @@ export default function StudioPage() {
   const [lang, setLang] = useState<Lang>("es");
 
   return (
-    <main className="mx-auto max-w-5xl p-6">
-      <header className="mb-6 flex items-center gap-4">
-        <Link to="." className="text-2xl font-bold">
-          {t("studio.title")}
-        </Link>
-        <nav className="ml-auto flex gap-1" aria-label={t("studio.projects")}>
-          {IDIOMAS.map((codigo) => (
-            <button
-              key={codigo}
-              onClick={() => setLang(codigo)}
-              aria-pressed={lang === codigo}
-              className={`rounded px-3 py-1 text-sm uppercase ${
-                lang === codigo ? "bg-brand text-brand-content" : "border"
-              }`}
-            >
-              {codigo}
-            </button>
-          ))}
-        </nav>
+    <main className="mx-auto max-w-5xl p-4 sm:p-6">
+      <header className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+        {/* El título era un <Link> suelto: la página no tenía ningún <h1> y no
+            se podía navegar por encabezados. */}
+        <h1 className="text-2xl font-bold">
+          <Link to=".">{t("studio.title")}</Link>
+        </h1>
+        {/* Etiquetado a la vista y no sólo por aria: con AppHeader montado hay
+            DOS pares ES/EN en pantalla —interfaz y edición— y sin distinguirlos
+            no se sabe cuál es cuál. El aria-label decía "Proyectos", copiado de
+            otro sitio. */}
+        <div className="ml-auto flex items-center gap-2">
+          <span id="lang-edicion" className="text-sm text-content-subtle">
+            {t("studio.editingLang")}
+          </span>
+          <nav className="flex gap-1" aria-labelledby="lang-edicion">
+            {IDIOMAS.map((codigo) => (
+              <button
+                key={codigo}
+                onClick={() => setLang(codigo)}
+                aria-pressed={lang === codigo}
+                className={`rounded px-3 py-1 text-sm uppercase ${
+                  lang === codigo ? "bg-brand text-brand-content" : "border"
+                }`}
+              >
+                {codigo}
+              </button>
+            ))}
+          </nav>
+        </div>
       </header>
 
       <Routes>

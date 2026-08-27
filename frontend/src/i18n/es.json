@@ -201,7 +201,8 @@
       "pick": "Elegir",
       "selected": "Seleccionado",
       "altRequired": "Describe la imagen (accesibilidad)"
-    }
+    },
+    "editingLang": "Idioma de edición"
   },
   "common": {
     "save": "Guardar",

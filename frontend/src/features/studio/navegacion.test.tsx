@@ -97,6 +97,29 @@ describe("recorrido del editor en el Studio", () => {
     expect(await screen.findByDisplayValue("Introducción")).toBeInTheDocument();
   });
 
+  it("desde el Studio se puede cerrar sesión y volver al resto de la app", async () => {
+    // El Studio colgaba de RequireAuthor a secas, sin RequireAuth, así que no
+    // montaba AppHeader: una vez dentro no había forma de salir salvo editar
+    // la URL a mano.
+    renderApp();
+    await screen.findByRole("heading", { name: "Content Studio" });
+
+    expect(screen.getByRole("button", { name: "Cerrar sesión" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Mi cuenta" })).toBeInTheDocument();
+  });
+
+  it("distingue el idioma de la interfaz del idioma de edición", async () => {
+    // Con AppHeader montado hay dos pares ES/EN en pantalla; el del Studio es
+    // el de EDICIÓN y tiene que decirlo.
+    renderApp();
+    await screen.findByRole("heading", { name: "Content Studio" });
+
+    expect(screen.getByText("Idioma de edición")).toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { name: "Idioma de edición" }),
+    ).toBeInTheDocument();
+  });
+
   it("un docente no entra al Studio", async () => {
     server.use(mswHttp.get(`${API}/learn/projects`, () => HttpResponse.json([])));
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
