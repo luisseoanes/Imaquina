@@ -2,7 +2,9 @@
 
 > Documento de trabajo. Base: [`plataforma-imaquina-robotica.md`](plataforma-imaquina-robotica.md),
 > transcripción del PDF que entregó el cliente.
-> Stack objetivo: **Python + FastAPI** (backend) / **React** (frontend).
+> Stack objetivo: **Python + FastAPI** (backend). El cliente web está **sin decidir**:
+> se eliminó del repositorio el 27/08/2026 para rehacerlo desde cero, así que lo que
+> este documento proponía sobre framework, librerías, paleta o tipografía **ya no aplica**.
 > Fecha: agosto 2026.
 
 ---
@@ -57,7 +59,7 @@ El PDF documenta un **hosting compartido cPanel de Colombia Hosting** (MariaDB, 
 | **VPS (Hetzner / DigitalOcean) + Docker Compose** | Más control, más barato a escala, requiere ops | USD 12–40 |
 | AWS/GCP completo | Solo si el cliente lo exige por política | USD 80+ |
 
-Frontend React como estático en **Cloudflare Pages / Vercel** (gratis), apuntando `plataforma.imaquina.com.co` por CNAME. El dominio se queda donde está.
+El cliente web, como estático en **Cloudflare Pages / Vercel** (gratis), apuntando `plataforma.imaquina.com.co` por CNAME. El dominio se queda donde está.
 
 **Esto es una decisión que hay que cerrar con el cliente antes de escribir código de infraestructura**, porque cambia el presupuesto operativo.
 
@@ -134,10 +136,10 @@ Total MVP ≈ **16–19 semanas**. Es **~3–4 semanas más** que sin Content St
 ## 5. Arquitectura técnica
 
 ```
-React (Vite + TS)  ──HTTPS/JSON──▶  FastAPI  ──▶  PostgreSQL + pgvector
-   TanStack Query                    (async)       ├─ contenido, usuarios, intentos
-   react-i18next                       │           └─ embeddings del contenido
-   Tailwind + shadcn/ui                │
+Cliente web         ──HTTPS/JSON──▶  FastAPI  ──▶  PostgreSQL + pgvector
+   (sin decidir)                     (async)       ├─ contenido, usuarios, intentos
+                                       │           └─ embeddings del contenido
+                                       │
                                        ├──▶  Anthropic API (Claude) — chatbot
                                        └──▶  S3 / Cloudflare R2 — media (audio, video, img)
 ```
@@ -146,7 +148,7 @@ React (Vite + TS)  ──HTTPS/JSON──▶  FastAPI  ──▶  PostgreSQL + p
 
 | Pieza | Elección | Por qué |
 |---|---|---|
-| Framework | FastAPI + Pydantic v2 | Async nativo para el streaming del chat; OpenAPI gratis para el frontend |
+| Framework | FastAPI + Pydantic v2 | Async nativo para el streaming del chat; OpenAPI gratis para cualquier cliente |
 | ORM | SQLAlchemy 2.0 (async) + Alembic | Estándar; migraciones versionadas |
 | DB | PostgreSQL 16 + **pgvector** | Una sola DB para datos y RAG; evita añadir vector store aparte |
 | Auth | JWT (access corto + refresh) vía `python-jose`, hash `argon2` | La vigencia por calendario se valida en cada emisión de token |
@@ -157,11 +159,15 @@ React (Vite + TS)  ──HTTPS/JSON──▶  FastAPI  ──▶  PostgreSQL + p
 
 > Nota: antes de fijar el modelo y calcular costo por token, revisar precios y IDs vigentes — no estimar de memoria.
 
-### Frontend — React
+### Cliente web — sin decidir
 
-Vite + TypeScript, React Router, **TanStack Query** (server state), **react-i18next** (ES/EN desde el día 1), Tailwind + shadcn/ui, `react-hook-form` + `zod` para la evaluación. Cliente HTTP generado desde el OpenAPI de FastAPI (`orval` o similar) para no escribir tipos a mano.
+Se eliminó del repositorio el 27/08/2026 y se rehará desde cero. **No hay framework,
+paleta, tipografía ni convenciones heredadas**, y nada de lo que este documento proponía
+antes condiciona la decisión.
 
-Diseño **mobile-first responsive**: los estudiantes de bachillerato entran desde celular, y la sala de robótica rara vez tiene un PC por estudiante.
+Lo único que se mantiene como requisito de producto, porque sale del brief y no de una
+elección técnica: los estudiantes de bachillerato entran **desde el celular** y la sala de
+robótica rara vez tiene un PC por estudiante.
 
 ---
 
@@ -209,7 +215,7 @@ DocumentChunk (moment_id, lang, text, embedding vector(1024))
 
 ## 7. Content Studio (el cliente carga su propio contenido)
 
-Panel de administración dentro de la misma app React, protegido por rol `admin` / `editor`. No es un CMS genérico: es un editor **estructurado** sobre el modelo de §6, y esa restricción es intencional — evita que el contenido se degrade y garantiza que el chatbot pueda indexarlo.
+Panel de administración dentro de la misma aplicación, protegido por rol `admin` / `editor`. No es un CMS genérico: es un editor **estructurado** sobre el modelo de §6, y esa restricción es intencional — evita que el contenido se degrade y garantiza que el chatbot pueda indexarlo.
 
 ### Funcionalidades
 
@@ -230,7 +236,7 @@ Panel de administración dentro de la misma app React, protegido por rol `admin`
 
 - **Subida de media con presigned URLs.** Un video de 200 MB no puede pasar por FastAPI. El navegador sube directo a S3/R2 y solo registra el `s3_key`. Sin esto, el CMS tumba el servidor.
 - **Video: recomiendo embeds (YouTube/Vimeo no listado) en vez de hosting propio.** Alojar y transcodificar video es caro y lento; con embed el costo es cero y el streaming es de ellos. Si el cliente exige video propio, hay que presupuestar transcodificación aparte (Mux/Cloudflare Stream).
-- **Texto enriquecido con esquema acotado** (TipTap con nodos limitados: negrita, listas, enlaces, código). No permitir HTML libre — es superficie de XSS y rompe el diseño.
+- **Texto enriquecido con esquema acotado** (negrita, listas, enlaces, código y poco más). No permitir HTML libre — es superficie de XSS y rompe el diseño. El editor concreto lo elige quien haga el cliente; lo que no es negociable es que el esquema esté acotado.
 - **Reindexado automático al publicar.** Si el contenido cambia y el RAG no se actualiza, el chatbot responde con información vieja. Va como tarea en background al publicar, no manual: nadie se va a acordar de apretar "reindexar".
 - **Autoguardado + bloqueo optimista.** Si dos editores tocan el mismo proyecto, avisar en vez de perder trabajo.
 - **Validación al publicar, no al escribir.** Se puede guardar a medias; solo se exige completitud al publicar.
@@ -254,7 +260,7 @@ Esto no termina cuando el código funciona:
 2. El usuario pregunta desde un momento concreto → se envía `moment_id` como contexto prioritario.
 3. Búsqueda híbrida (vector + full-text de Postgres) → top-k chunks.
 4. Prompt de sistema con: rol (consultor de robótica), alcance permitido, instrucción de redirigir fuera de tema, nivel del estudiante según grado, idioma.
-5. Respuesta en streaming (SSE) al frontend.
+5. Respuesta en streaming (SSE) al cliente.
 
 **Guardrails (R9)** — en capas, no solo prompt:
 - Sistema explícito de dominio + instrucción de redirección amable.
@@ -299,8 +305,9 @@ Esto no termina cuando el código funciona:
 11. ~~¿Un estudiante puede reintentar una evaluación? ¿Cuántas veces?~~ **Resuelto
     (18/08/2026): lo define el docente** por evaluación (`max_attempts`).
 12. ¿Los datos de menores tienen requisitos de habeas data (Ley 1581 Colombia)? Muy probablemente sí → política de tratamiento de datos y consentimiento.
-13. ~~¿Hay identidad visual / manual de marca?~~ **Resuelto: sí**, paleta aprobada por el
-    PO el 18/08/2026 (ver `docs/marca/paleta-imaquina.html` y `docs/backlog.md` I7b).
+13. **¿Hay identidad visual / manual de marca?** Se aprobó una paleta el 18/08/2026, pero
+    se descartó junto con el cliente web el 27/08/2026. Vuelve a estar **abierta**: quien
+    retome la interfaz parte sin ninguna restricción de color ni tipografía.
 14. ~~¿Progreso lineal obligatorio (desbloquear momento a momento) o navegación libre?~~
     **Resuelto (18/08/2026): lineal obligatorio.**
 
@@ -323,16 +330,8 @@ imaquina/
 │  ├─ alembic/
 │  ├─ tests/
 │  └─ pyproject.toml    # uv
-├─ frontend/
-│  ├─ src/
-│  │  ├─ api/           # cliente generado del OpenAPI
-│  │  ├─ features/      # auth, projects, moment, chat, assessment, teacher
-│  │  │  └─ studio/     # Content Studio: editor, media, evaluación, preview
-│  │  ├─ components/ui/
-│  │  └─ i18n/          # es.json, en.json
-│  └─ package.json
 ├─ docs/
-├─ docker-compose.yml   # postgres+pgvector, api, web
+├─ docker-compose.yml   # postgres+pgvector, api, worker
 └─ README.md
 ```
 
@@ -343,7 +342,7 @@ imaquina/
 1. Enviar al cliente las preguntas de §9, la alerta de hosting de §2 y la decisión de Content Studio de §3 (con su costo de +3–4 semanas, para que la aprueben explícitamente).
 2. Pedir **1 proyecto completo** (los 6 momentos, con su multimedia) — ya no como insumo de producción, sino para **validar que el modelo de contenido de §6 cubre la realidad**. Si su contenido no encaja en la estructura de bloques, hay que saberlo antes de construir el editor, no después.
 3. Confirmar **quién carga el contenido** del lado del cliente y bloquear su agenda desde noviembre 2026.
-4. Levantar el esqueleto: `docker-compose` con Postgres+pgvector, FastAPI con `/health`, React con login. Un vertical slice mínimo que ya despliegue.
+4. Levantar el esqueleto: `docker-compose` con Postgres+pgvector y FastAPI con `/health`. Un vertical slice mínimo que ya despliegue.
 5. Modelar y migrar el esquema de §6.
 6. Construir el momento 1 punta a punta → primero el editor, luego la vista de estudiante. **El Content Studio es el entregable que desbloquea al cliente, así que va temprano.**
 

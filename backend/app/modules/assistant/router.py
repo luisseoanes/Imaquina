@@ -43,7 +43,7 @@ async def start_session(payload: StartIn, tenant: Tenant, db: Db):
 
 @router.get("/sessions")
 async def list_sessions(tenant: Tenant, db: Db, moment_id: UUID | None = None):
-    """C2/C6: para que el frontend reuse la sesión del momento en vez de
+    """C2: para que el cliente reuse la sesión del momento en vez de
     crear una nueva en cada montaje."""
     return await service.listar_sesiones(db, tenant, moment_id=moment_id)
 

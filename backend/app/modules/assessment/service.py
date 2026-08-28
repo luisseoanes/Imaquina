@@ -292,7 +292,7 @@ async def delete_choice(db: AsyncSession, choice_id: uuid.UUID) -> None:
 
 def _serializar_choice_para_estudiante(choice: Choice, lang: str) -> dict[str, Any]:
     """Como `_serializar_choice` pero SIN `is_correct` -- es la clave de
-    respuestas, filtrarla en el frontend no sirve (DevTools la lee igual)."""
+    respuestas, filtrarla en el cliente no sirve (DevTools la lee igual)."""
     tr = next((t for t in choice.translations if t.lang == lang), None)
     return {
         "id": str(choice.id),

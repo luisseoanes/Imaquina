@@ -71,7 +71,7 @@ async def _slug_libre(
         stmt = stmt.where(Project.id != excepto)
     if (await db.execute(stmt)).scalar_one_or_none():
         # El slug es unico en base de datos: sin esto saldria un IntegrityError
-        # crudo en vez de un error de negocio que el frontend sepa pintar.
+        # crudo en vez de un error de negocio que el cliente sepa pintar.
         raise Conflict(f"Ya existe un proyecto con el slug '{slug}'")
 
 

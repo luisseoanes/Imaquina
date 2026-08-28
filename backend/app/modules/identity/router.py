@@ -175,9 +175,9 @@ class MePatch(BaseModel):
 async def update_me(payload: MePatch, tenant: Tenant, db: Db) -> MeOut:
     """Persiste el idioma preferido (I7).
 
-    Vivía sólo en `localStorage`, así que se perdía al cambiar de equipo — y en
-    el aula de robótica los estudiantes no tienen un PC fijo, que es justo el
-    caso en el que un idioma pegado al navegador no sirve de nada.
+    La preferencia vive en la CUENTA y no en el navegador: en el aula de
+    robótica los estudiantes no tienen un PC fijo, que es justo el caso en el
+    que un idioma pegado al dispositivo no sirve de nada.
     """
     user = (
         await db.execute(select(User).where(User.id == tenant.user_id))

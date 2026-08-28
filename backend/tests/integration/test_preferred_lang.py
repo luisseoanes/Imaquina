@@ -1,9 +1,9 @@
 """Idioma preferido persistido en la cuenta (I7, R6).
 
 `User.preferred_lang` existía y el login lo devolvía, pero no había forma de
-cambiarlo: el idioma vivía sólo en `localStorage` y se perdía al cambiar de
-equipo. En el aula de robótica no hay un PC por estudiante, así que un idioma
-pegado al navegador es justo el que no sirve.
+cambiarlo. La preferencia tiene que vivir en la cuenta y no en el dispositivo:
+en el aula de robótica no hay un PC por estudiante, así que un idioma pegado al
+navegador es justo el que no sirve.
 """
 
 import uuid

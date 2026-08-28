@@ -3,7 +3,13 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 Plataforma de robótica educativa (36 proyectos × 6 momentos, bilingüe ES/EN, chatbot
-con RAG, evaluación exportable). Monolito modular: FastAPI async + React/Vite.
+con RAG, evaluación exportable). **Backend: FastAPI async, monolito modular.**
+
+> El frontend se eliminó del repositorio el 27/08/2026 para rehacerlo desde cero. No hay
+> cliente elegido, ni framework, ni paleta, ni tipografía, ni convenciones de UI: cuando
+> se retome, esas decisiones están abiertas y **este fichero no las condiciona**. Lo único
+> que sigue en pie es el contrato HTTP que expone el backend (`/api/v1`, OpenAPI en
+> `/docs`) y las reglas de negocio de más abajo, que son del servidor y no del cliente.
 
 Las decisiones y su porqué están en `docs/arquitectura.md` (léelo antes de tocar
 fronteras entre módulos, caché de prompts o el camino de lectura). Los códigos `R1`–`R10`
@@ -17,7 +23,7 @@ recuperación (chunking, ranking, top-k), los embeddings de `worker.reindex_proj
 `EMBEDDING_DIM` y el índice pgvector.
 
 Delante del puerto todo es backend normal: `assistant/router.py` (endpoint, SSE, permisos,
-rate limit), `assistant/service.py` (sesiones, historial, persistencia) y el chat en React.
+rate limit) y `assistant/service.py` (sesiones, historial, persistencia).
 **Esa mitad se construye y se testea entera contra `StubProvider`**, sin red y sin tocar
 nada de modelo. Para eso existe el puerto.
 
@@ -84,24 +90,9 @@ make test-unit     # sin infraestructura, siempre corre
 make test-int      # requiere Postgres; si no está, se salta solo
 make lint / fix    # ruff
 
-# frontend, mismos comandos que usa CI
-make web-install   # npm ci, exactamente segun package-lock.json
-make web-lint      # eslint
-make web-test      # vitest
-make web-build     # tsc -b && vite build && guarda de chunks
-
 # un test suelto: no hay target
 cd backend && uv run pytest tests/unit/test_security.py::test_nombre -q
-
-# frontend (desde frontend/)
-npm run dev        # 5173, proxy /api → :8000
-npm run build      # tsc -b && vite build
-npm run api:gen    # orval: regenera src/api/generated desde el OpenAPI vivo
 ```
-
-`npm run api:gen` **necesita el backend corriendo** en `localhost:8000`; el código
-generado está en `.gitignore`, así que tras clonar hay que regenerarlo antes de usar
-hooks de `src/api/generated`.
 
 Sin `ANTHROPIC_API_KEY`, `get_assistant_provider()` devuelve `StubProvider`: cero red,
 cero costo. Los tests lo dan por hecho — `tests/conftest.py` fuerza la key vacía.
@@ -110,10 +101,9 @@ cero costo. Los tests lo dan por hecho — `tests/conftest.py` fuerza la key vac
 
 **Los commits siguen Conventional Commits** — `.github/workflows/release.yml` los analiza
 en cada push a `master` y publica tag + release de GitHub sin intervención. Antes de
-publicar corren dos jobs en paralelo, `backend` (ruff + pytest contra un Postgres con
-pgvector) y `frontend` (eslint + vitest + build); el release **sólo arranca si los dos
-pasan**. Usan los mismos targets del Makefile que en local. Las reglas
-están en `.releaserc.json`:
+publicar corre el job `backend` (ruff + pytest contra un Postgres con pgvector) y el
+release **sólo arranca si pasa**. Usa los mismos targets del Makefile que en local. Las
+reglas están en `.releaserc.json`:
 
 - `feat:` → **minor** · `fix:` → **patch** · `feat!:` o pie `BREAKING CHANGE:` → **major**
 - **Todo lo demás no publica nada**: `docs`, `chore`, `refactor`, `test`, `ci`, `build`,
@@ -147,7 +137,8 @@ menores: cruzar instituciones es un incidente, no un bug.
 
 **La guía docente se filtra en el backend.** `learning/service.serialize_moment_for`
 elimina `teacher_note` salvo `tenant.is_staff`. El snapshot **sí** la contiene a propósito
-(una sola copia sirve a ambos roles); el filtro ocurre al servir. Nunca ocultarla en React.
+(una sola copia sirve a ambos roles); el filtro ocurre al servir. **Nunca la ocultes en el
+cliente**: ahí es cosmética, y quien abra las DevTools lee el JSON igual.
 
 **`AssistantProvider` (`assistant/provider.py`) es el único puerto del sistema.** No
 abstraigas Postgres, S3 ni nada más "por simetría" — `docs/arquitectura.md` §10 lo
@@ -164,7 +155,7 @@ Los embeddings son hoy un placeholder de ceros (`EMBEDDING_DIM`), pendiente de F
 **Errores de negocio como excepciones, no `HTTPException`.** Se lanza `NotFound`,
 `PermissionDenied`, `Conflict`, `LicenseExpired`, `ValidationFailed` (`core/errors.py`)
 y el handler global las traduce a `{"error": {"code", "message"}}` — formato que el
-cliente HTTP del frontend ya parsea.
+cliente HTTP consuma.
 
 **La licencia recorta la vigencia del token** (`core/security.create_token`): el `exp`
 nunca supera `license_valid_to`.
@@ -218,72 +209,3 @@ capa de repositorio** y no debe añadirse. Modelos nuevos deben quedar alcanzabl
 - **Los tests unitarios de servicios mienten sobre el ORM async**: construyen los objetos
   en memoria, así que las relaciones ya están cargadas y nunca ejercitan el lazy loading.
   Todo servicio que serialice relaciones necesita además un test de integración.
-- **Los tests de componente aislado no ven la navegación.** `ProjectsPage` enlazaba a una
-  ruta que no existía y el comodín devolvía al listado; ningún test lo detectó.
-  `features/projects/navegacion.test.tsx` renderiza `<App>` y navega de verdad: los
-  enlaces entre pantallas se prueban ahí, no en el componente.
-
-## Frontend
-
-`package-lock.json` va versionado: `npm ci` instala exactamente eso. **Tras tocar
-dependencias, corre `npm ci` en limpio antes de commitear** — `npm install` puede dejar el
-lock sin una transitiva y `npm install` sigue funcionando, pero `npm ci` no: al añadir
-tiptap faltó `@floating-ui/dom` y el job `frontend` de CI quedó roto 21 commits, sin
-release ninguna, hasta que alguien montó el entorno desde cero. ESLint 10 con flat
-config en `eslint.config.js` (`npm run lint`, o `make web-lint`); tests con vitest + jsdom
-y **MSW en `onUnhandledRequest: "error"`** — una petición que ningún handler simule hace
-fallar el test en vez de salir a la red. Los handlers por defecto están en
-`src/test/handlers.ts`; sobrescribe con `server.use(...)` en el test que lo necesite.
-
-`src/test/setup.ts` inicializa i18next de verdad, no un mock: los tests afirman sobre el
-texto que ve el usuario, así que una clave que falte en `es.json` sale como fallo.
-
-`tsc -b` type-chequea también los `*.test.ts(x)`, así que un test mal tipado rompe
-`npm run build`.
-
-**Mobile-first y color por tokens, siempre.** Los estudiantes entran desde el móvil y en
-el aula de robótica no hay un PC por cabeza: el estilo base es el de móvil y `sm:`/`md:`
-amplían, nunca al revés. Y **ningún color crudo en los componentes** — nada de
-`bg-gray-100` ni `text-red-600`. Se usan los tokens semánticos de `src/index.css`
-(`surface`, `content`, `content-muted`, `content-subtle`, `brand`, `note`, `success`,
-`danger`), que nombran la intención y no el color.
-
-> Los valores actuales son un **neutro provisional**: la paleta de marca la define el PO y
-> está pendiente. Cuando llegue se cambia el bloque `:root` de `src/index.css` y nada más.
-> Mínimo de contraste AA para texto: 4.5:1 — `content-subtle` es el suelo, con 4.8:1.
-
-Feature-sliced en `src/features/` (auth · projects · moment · chat · studio). El **Content
-Studio va en chunk aparte** con `lazy()` en `App.tsx`: los estudiantes son el 95% del
-tráfico y no deben descargar el editor. **Sin `manualChunks`** — la config heredada de
-Rollup convertía "studio" en el chunk común bajo rolldown y el entry acababa
-importándolo. `scripts/check-chunks.mjs` corre en `npm run build` y falla si el bundle de
-entrada vuelve a importar el chunk del Studio.
-
-**El estudiante no carga TipTap.** `lib/richText.tsx` renderiza el HTML del contenido
-recorriéndolo y reconstruyéndolo con React contra una **lista blanca** de etiquetas
-(`p, strong, em, s, code, ul, ol, li, br, a`), no montando un TipTap en `editable:false`
-como antes: eso metía 565 KB de editor en el bundle de entrada para gente que sólo lee, y
-`check-chunks.mjs` no lo veía porque sólo vigila el chunk del Studio. La garantía de
-seguridad sigue siendo la misma —lista blanca en el cliente, nunca
-`dangerouslySetInnerHTML`— y `lib/richText.test.tsx` la cubre (`<script>`, `onerror`,
-`javascript:`, `data:`). **Si añades una extensión a `richTextExtensions.ts`, añade su
-etiqueta a `PERMITIDAS` o dejará de renderizarse en el momento del estudiante.**
-
-El texto enriquecido se estiliza con `.contenido-rico` (`index.css`), no con `prose`:
-`@tailwindcss/typography` nunca se instaló, así que `prose` no existía en el CSS generado
-y el preflight (`ol,ul{list-style:none}`) dejaba las listas del contenido sin viñetas.
-
-Los datos del Studio se piden con hooks a mano sobre `http()` (`features/studio/api.ts`),
-no con el cliente de orval: el generado está gitignored y `api:gen` necesita el backend,
-así que importarlo rompería el build en CI y en un clon recién hecho. Estado de servidor con
-TanStack Query, sin Redux. Alias `@/` → `src/`. El chat consume SSE con `streamChat()` de
-`src/lib/http.ts` (no pasa por orval). Texto de UI siempre vía i18next (`es.json`/`en.json`),
-nunca literales en los componentes.
-
-## Exportar un doc HTML a PDF o imagen
-
-`docs/marca/paleta-imaquina.html` se exporta con `google-chrome --headless=new`. Dos cosas sin
-las que sale mal: **`print-color-adjust: exact`** —si no, el navegador descarta los fondos
-al imprimir y un diseño oscuro queda ilegible— y **`@page { margin: 0 }`** con el aire por
-dentro, o el fondo no llega al borde y queda un marco blanco. El tema se fuerza con
-`<html data-theme="dark">` en un envoltorio temporal; el fichero de `docs/` no se toca.

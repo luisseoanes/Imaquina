@@ -1,5 +1,0 @@
-# node_modules del host NO entra en la imagen: es de otro SO/arquitectura y
-# ademas lo tapa el volumen anonimo de docker-compose.
-node_modules/
-dist/
-.env

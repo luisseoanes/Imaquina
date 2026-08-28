@@ -2,7 +2,7 @@
 
 Decidido con el cliente: progreso lineal obligatorio -- un momento se
 desbloquea solo al completar el anterior. El backend es la frontera real, no
-el frontend (que ni debería enlazar a un momento bloqueado).
+el cliente (que ni debería enlazar a un momento bloqueado).
 """
 
 import uuid

@@ -1,7 +1,11 @@
 # Arquitectura de Software — Plataforma Imaquina
 
 > Complementa `scope-mvp.md`. Aquí van las decisiones de *cómo* se construye.
-> Stack: FastAPI + React + PostgreSQL. Equipo pequeño (1–3 devs).
+> Stack: FastAPI + PostgreSQL. Equipo pequeño (1–3 devs).
+>
+> **El cliente web se eliminó del repositorio el 27/08/2026** para rehacerlo desde
+> cero. Este documento ya no propone framework, librerías ni convenciones de UI:
+> esa decisión está abierta. Lo que sigue vigente es todo lo del servidor.
 
 ---
 
@@ -15,8 +19,8 @@ Si algún día el chatbot necesita escalar aparte, un módulo bien delimitado se
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  React SPA (Vite + TS)                              │
-│  estudiante · docente · Content Studio (lazy)       │
+│  Cliente web (sin decidir)                          │
+│  estudiante · docente · Content Studio              │
 └───────────────────┬─────────────────────────────────┘
                     │ HTTPS / JSON + SSE
 ┌───────────────────▼─────────────────────────────────┐
@@ -98,11 +102,11 @@ async def get_tenant(user: User = Depends(current_user)) -> TenantContext:
 
 Añadir además un test que recorra los endpoints y falle si alguno devuelve datos sin filtro de institución.
 
-### 3.3. La guía docente se filtra en el backend, nunca en el frontend
+### 3.3. La guía docente se filtra en el backend, nunca en el cliente
 
 El requisito R4 dice que el docente ve el mismo contenido más un botón con la guía didáctica. La tentación es mandar todo al cliente y ocultar con CSS o un `if`. **No.** Cualquier estudiante abre DevTools y lee la respuesta JSON.
 
-`TeacherNote` va en tabla aparte y el serializador **no la incluye** si el rol no es docente. La decisión se toma en el servicio, no en el componente React.
+`TeacherNote` va en tabla aparte y el serializador **no la incluye** si el rol no es docente. La decisión se toma en el servicio, no en el cliente: ocultarla en la interfaz es cosmético, quien abra las DevTools lee el JSON igual.
 
 ### 3.4. El proveedor de LLM detrás de una interfaz — y solo él
 
@@ -123,7 +127,7 @@ Dos razones concretas: puedes **stubearlo en los tests** (sin esto, cada test qu
 |---|---|
 | Modelo principal | **`claude-opus-5`** — 1M de contexto, $5/$25 por millón de tokens |
 | SDK | `anthropic` (oficial Python), cliente async |
-| Streaming | Sí, SSE al frontend. Obligatorio para percepción de velocidad |
+| Streaming | Sí, SSE al cliente. Obligatorio para percepción de velocidad |
 | Clasificador de guardrail | `claude-haiku-4-5` ($1/$5) — la llamada barata previa de "¿esto es sobre robótica?" |
 | Prompt caching | **Sí, y es la decisión de costo más importante** |
 
@@ -149,12 +153,15 @@ Redis ya está ahí para la cola, así que sirve también de caché de contenido
 
 ---
 
-## 6. Frontend
+## 6. Cliente web
 
-- **Estado de servidor con TanStack Query. Sin Redux.** Prácticamente todo el estado de esta app es datos del servidor; Redux te haría reimplementar caché e invalidación a mano.
-- **Cliente HTTP generado del OpenAPI de FastAPI** (`orval`). Tipos gratis y sincronizados; escribirlos a mano garantiza que se desincronicen.
-- **El Content Studio va en bundle aparte, con carga diferida.** Los estudiantes son el 95% del tráfico y no deben descargar el editor.
-- **Feature-sliced**: cada carpeta en `features/` lleva sus componentes, hooks y tipos. Se borra completa cuando la feature muere.
+Sin decidir: se eliminó del repositorio el 27/08/2026 y se rehará desde cero. La única
+interfaz que el servidor garantiza es el contrato HTTP (`/api/v1`, con su OpenAPI en
+`/docs`) y el SSE del chat.
+
+Lo único que **no** es negociable desde el cliente, porque no es suyo: la autorización, el
+aislamiento por institución (§3.2) y el filtrado de la guía docente (§3.3). Todo eso se
+resuelve en el servidor y ningún cliente puede relajarlo.
 
 ---
 
@@ -167,7 +174,7 @@ Redis ya está ahí para la cola, así que sirve también de caché de contenido
 | Contraseñas | `argon2` |
 | JWT | Access 15 min + refresh rotativo |
 | Vigencias | Validadas al emitir token, no solo al login |
-| Texto enriquecido | Esquema acotado (TipTap), nunca HTML libre → XSS |
+| Texto enriquecido | Esquema acotado en el servidor, nunca HTML libre → XSS |
 | Subidas | URL prefirmada con tipo MIME y tamaño restringidos |
 | Chat | Rate limit por usuario + moderación entrada/salida |
 | Datos personales | Retención acotada del historial; política de habeas data (Ley 1581) |
@@ -182,7 +189,6 @@ Pirámide práctica, sin dogma:
 - **API (unos pocos, críticos):** `httpx.AsyncClient` sobre login, permisos y publicación.
 - **Aislamiento de tenant:** un test dedicado que intente cruzar instituciones y espere 403/404.
 - **Chat:** contra el `AssistantProvider` stub. Cero red en CI.
-- **Frontend:** vitest + MSW para unitarios; Playwright solo para tres flujos: login, completar un momento, y enviar una evaluación.
 
 ---
 

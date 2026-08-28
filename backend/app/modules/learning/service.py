@@ -77,8 +77,8 @@ async def get_project_snapshot(
 def serialize_moment_for(moment: dict[str, Any], tenant: TenantContext) -> dict[str, Any]:
     """R4: el docente ve lo mismo que el estudiante MÁS la guía didáctica.
 
-    El filtro ocurre AQUÍ, en el backend. Ocultarla en el frontend con CSS o
-    un `if` de React no sirve: cualquier estudiante abre DevTools y lee el JSON.
+    El filtro ocurre AQUÍ, en el servidor. Ocultarla en el cliente con CSS o un
+    `if` no sirve: cualquier estudiante abre las DevTools y lee el JSON.
     """
     out = {k: v for k, v in moment.items() if k != "teacher_note"}
     if tenant.is_staff:

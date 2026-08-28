@@ -14,7 +14,6 @@ Plataforma de robótica educativa: 36 proyectos por grado (Transición → 11°)
 | Backend | FastAPI (async) · SQLAlchemy 2.0 · Alembic |
 | Base de datos | PostgreSQL 16 + pgvector |
 | Cola / caché | Redis + ARQ |
-| Frontend | React 18 · Vite · TypeScript · TanStack Query · Tailwind |
 | IA | Claude (`claude-opus-5`) con RAG y prompt caching |
 | Media | S3 / Cloudflare R2 con URLs prefirmadas |
 
@@ -36,9 +35,6 @@ uv run uvicorn app.main:app --reload   # http://localhost:8000/docs
 
 # 3. Worker (otra terminal)
 cd backend && uv run arq app.workers.worker.WorkerSettings
-
-# 4. Frontend (otra terminal)
-cd frontend && npm install && npm run dev   # http://localhost:5173
 ```
 
 Sin `ANTHROPIC_API_KEY`, el asistente usa `StubProvider`: cero red, cero costo. Todo lo demás funciona igual.
@@ -58,11 +54,6 @@ backend/app/
 │  ├─ assessment/  preguntas, intentos, calificación, export
 │  └─ assistant/   chat, RAG, guardrails · provider.py = el único puerto
 └─ workers/        ARQ: reindexado, exportaciones
-
-frontend/src/
-├─ lib/            http (fetch + SSE) · queryClient
-├─ i18n/           es.json · en.json
-└─ features/       auth · projects · moment · chat · studio (lazy)
 ```
 
 ## Las reglas que no se rompen
@@ -71,7 +62,7 @@ Son las decisiones de `docs/arquitectura.md` convertidas en invariantes revisabl
 
 1. **Un módulo puede leer modelos de otro, pero nunca escribe sobre ellos.** Cuando se pueda, se llama a su capa de servicio.
 2. **Toda consulta de datos por institución pasa por `TenantContext`.** Son datos de menores; el cruce entre colegios es un incidente, no un bug.
-3. **La guía docente se filtra en el backend** (`learning/service.serialize_moment_for`), nunca en React.
+3. **La guía docente se filtra en el backend** (`learning/service.serialize_moment_for`), nunca en el cliente: ahí es cosmético, quien abra las DevTools lee el JSON igual.
 4. **Los estudiantes leen del snapshot publicado**, no de las tablas normalizadas.
 5. **El reindexado del RAG es idempotente y automático al publicar.** Nadie se acuerda de apretar "reindexar".
 6. **Nada volátil en el prompt de sistema** — el caché es match de prefijo y una fecha lo invalida entero.
@@ -98,7 +89,7 @@ Los de integración usan Postgres real porque **los mocks de base de datos mient
 
 ### Qué protegen realmente
 
-- **`test_teacher_note.py`** — que la guía docente no llegue al JSON del estudiante (R4). No basta ocultarla en React.
+- **`test_teacher_note.py`** — que la guía docente no llegue al JSON del estudiante (R4). No basta ocultarla en el cliente.
 - **`test_tenant_isolation.py`** — incluye un guard estructural que falla si un modelo con datos de alumnos pierde su `institution_id`.
 - **`test_security.py`** — que la licencia **recorte** la duración del token: si vence el viernes, un refresh emitido el jueves no puede durar 30 días (R2).
 - **`test_assistant.py`** — que no haya nada volátil en el prompt de sistema; una fecha ahí invalida el prompt caching y dispara el costo.
@@ -110,7 +101,6 @@ make             # lista todos los targets
 make sync        # instala backend/.venv segun uv.lock
 make up          # Postgres + Redis
 make api         # backend
-make web         # frontend
 make worker      # cola de background
 make migrate     # alembic upgrade head
 make revision m="añade tabla X"
@@ -126,13 +116,18 @@ Windows — pero en Windows hay que llamarlo desde Git Bash o WSL.
 
 ## Estado
 
-Backend con esquema migrado, semillas de desarrollo y verificación automática antes de
-cada release. Del Content Studio funciona el backend de autoría —proyectos, los seis
-momentos, bloques, traducciones ES/EN y librería de media— y en el frontend el listado y
-el alta de proyectos.
+**El backend está completo**: autoría del Content Studio, publicación por snapshot,
+recorrido del estudiante con progreso lineal, cuentas y cursos, evaluación con export a
+Excel y el chat con sus sesiones, historial y rate limit. Esquema migrado, semillas de
+desarrollo y verificación automática antes de cada release.
 
-Falta el editor de bloques, la evaluación completa (F3) y los embeddings reales del RAG
-(F4, hoy un placeholder en `workers/worker.py`).
+**No hay cliente web.** Se eliminó del repositorio el 27/08/2026 para rehacerlo desde
+cero: no hay framework elegido, ni paleta, ni tipografía, ni convenciones de UI, y **nada
+de lo que había condiciona lo que venga**. El servidor expone su contrato en
+`/api/v1` con el OpenAPI en `/docs`; el chat va por SSE.
+
+Del lado del modelo quedan los embeddings reales del RAG y la calidad de la recuperación,
+que viven detrás de `AssistantProvider` (ver `CLAUDE.md`).
 
 **El estado detallado, con dependencias y orden de ejecución, está en
 [`docs/backlog.md`](docs/backlog.md)** — no se duplica aquí para que no diverja.

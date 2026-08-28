@@ -45,20 +45,5 @@ services:
       db: {condition: service_healthy}
       redis: {condition: service_healthy}
 
-  web:
-    build: ./frontend
-    environment:
-      # Fuera de Docker apunta a localhost:8000 (ver vite.config.ts); aqui
-      # tiene que ser el nombre del servicio en la red de compose.
-      VITE_API_PROXY_TARGET: http://api:8000
-    ports: ["5173:5173"]
-    volumes:
-      - ./frontend:/app
-      # Volumen anonimo: evita que el node_modules del host (u otro SO)
-      # tape el que se instalo dentro de la imagen.
-      - /app/node_modules
-    depends_on:
-      api: {condition: service_started}
-
 volumes:
   pgdata:

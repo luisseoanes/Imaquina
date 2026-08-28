@@ -1,7 +1,7 @@
 """Endpoints de autoria del Content Studio.
 
 Todo bajo el guard `Author` (editor/admin): el docente ve la guia didactica
-pero NO entra al editor. La autorizacion real vive aqui, no en React.
+pero NO entra al editor. La autorizacion real vive aqui, no en el cliente.
 """
 
 from datetime import datetime

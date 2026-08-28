@@ -1,7 +1,7 @@
 """Autoría del catálogo (S1).
 
 Dos cosas que se prueban aquí y no en unitarios: que el guard de rol es del
-servidor y no de React, y que borrar no puede llevarse por delante el snapshot
+servidor y no del cliente, y que borrar no puede llevarse por delante el snapshot
 del que se sirven los estudiantes.
 """
 

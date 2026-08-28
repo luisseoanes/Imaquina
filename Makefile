@@ -13,7 +13,7 @@
 UV ?= uv
 
 .DEFAULT_GOAL := help
-.PHONY: help require-uv sync lock up down testdb api web web-install web-lint web-test web-build worker seed migrate revision test test-unit test-int lint fix
+.PHONY: help require-uv sync lock up down testdb api worker seed migrate revision test test-unit test-int lint fix
 
 help:          ## Lista los comandos disponibles
 	@grep -hE '^[a-z-]+:.*##' $(MAKEFILE_LIST) | sort | awk -F':.*##' '{printf "  \033[36m%-12s\033[0m%s\n", $$1, $$2}'
@@ -43,21 +43,6 @@ api: require-uv    ## Backend en local
 
 worker: require-uv ## Worker de background
 	cd backend && $(UV) run arq app.workers.worker.WorkerSettings
-
-web:           ## Frontend en local (5173)
-	cd frontend && npm run dev
-
-web-install:   ## node_modules exactamente segun package-lock.json
-	cd frontend && npm ci
-
-web-lint:      ## eslint
-	cd frontend && npm run lint
-
-web-test:      ## vitest (una pasada)
-	cd frontend && npm test
-
-web-build:     ## tsc -b && vite build
-	cd frontend && npm run build
 
 seed: require-uv      ## Datos de desarrollo: institucion, licencia, 4 roles y un proyecto publicado
 	cd backend && $(UV) run python -m app.db.seeds

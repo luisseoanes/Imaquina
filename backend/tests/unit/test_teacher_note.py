@@ -1,6 +1,6 @@
-"""R4: la guia docente se filtra en el BACKEND, nunca en el frontend.
+"""R4: la guia docente se filtra en el BACKEND, nunca en el cliente.
 
-Ocultarla con CSS o un `if` de React no sirve: cualquier estudiante
+Ocultarla con CSS o un `if` en el cliente no sirve: cualquier estudiante
 abre DevTools y lee el JSON.
 """
 

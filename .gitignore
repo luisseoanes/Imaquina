@@ -13,12 +13,6 @@ venv/
 .env.local
 !.env.example
 
-# Node
-node_modules/
-dist/
-.vite/
-frontend/src/api/generated/
-
 # Editores / SO
 .vscode/
 .idea/
@@ -29,14 +23,6 @@ Thumbs.db
 CLAUDE.local.md
 .claude/settings.local.json
 
-# Artefacto de `tsc -b`
-*.tsbuildinfo
-
-# Exportaciones de la paleta: se regeneran desde docs/marca/paleta-imaquina.html
-# (receta en CLAUDE.md). Versionar cada revisión serían megas en el historial.
-docs/marca/paleta-imaquina-oscuro.pdf
-docs/marca/paleta-imaquina-completa*.png
-
-# Instaladores descargados a la raiz (Chrome para la auditoria responsive de
-# I3, p.ej.): 135 MB que no deben acabar en un `git add .`
+# Instaladores descargados a la raiz: cientos de MB que no deben acabar en un
+# `git add .`
 *.deb
