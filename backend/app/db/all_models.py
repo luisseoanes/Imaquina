@@ -11,3 +11,4 @@ from app.modules.identity.models import *  # noqa: F403
 from app.modules.learning.models import *  # noqa: F403
 from app.modules.media.models import *  # noqa: F403
 from app.modules.publishing.models import *  # noqa: F403
+from app.modules.studio.models import *  # noqa: F403
