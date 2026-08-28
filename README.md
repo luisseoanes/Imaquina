@@ -14,6 +14,7 @@ Plataforma de robótica educativa: 36 proyectos por grado (Transición → 11°)
 | Backend | FastAPI (async) · SQLAlchemy 2.0 · Alembic |
 | Base de datos | PostgreSQL 16 + pgvector |
 | Cola / caché | Redis + ARQ |
+| Cliente web | React 19 · Vite · TypeScript · TanStack Query · Tailwind |
 | IA | Claude (`claude-opus-5`) con RAG y prompt caching |
 | Media | S3 / Cloudflare R2 con URLs prefirmadas |
 
@@ -121,10 +122,10 @@ recorrido del estudiante con progreso lineal, cuentas y cursos, evaluación con 
 Excel y el chat con sus sesiones, historial y rate limit. Esquema migrado, semillas de
 desarrollo y verificación automática antes de cada release.
 
-**No hay cliente web.** Se eliminó del repositorio el 27/08/2026 para rehacerlo desde
-cero: no hay framework elegido, ni paleta, ni tipografía, ni convenciones de UI, y **nada
-de lo que había condiciona lo que venga**. El servidor expone su contrato en
-`/api/v1` con el OpenAPI en `/docs`; el chat va por SSE.
+**El cliente web está recién inicializado**: React 19 + Vite + TypeScript, con el
+enrutado, los guards por rol, la sesión, el cliente generado desde el OpenAPI, i18n y los
+tokens de diseño en su sitio. **Ninguna pantalla está desarrollada todavía**: cada ruta
+monta un marcador. Ver `frontend/README.md`.
 
 Del lado del modelo quedan los embeddings reales del RAG y la calidad de la recuperación,
 que viven detrás de `AssistantProvider` (ver `CLAUDE.md`).

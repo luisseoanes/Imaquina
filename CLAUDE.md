@@ -5,11 +5,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Plataforma de robótica educativa (36 proyectos × 6 momentos, bilingüe ES/EN, chatbot
 con RAG, evaluación exportable). **Backend: FastAPI async, monolito modular.**
 
-> El frontend se eliminó del repositorio el 27/08/2026 para rehacerlo desde cero. No hay
-> cliente elegido, ni framework, ni paleta, ni tipografía, ni convenciones de UI: cuando
-> se retome, esas decisiones están abiertas y **este fichero no las condiciona**. Lo único
-> que sigue en pie es el contrato HTTP que expone el backend (`/api/v1`, OpenAPI en
-> `/docs`) y las reglas de negocio de más abajo, que son del servidor y no del cliente.
+El cliente web se rehízo desde cero el 27/08/2026: **React 19 + Vite + TypeScript**, SPA
+contra `/api/v1`. Hoy es **andamiaje, no pantallas** — las rutas existen y compilan, cada
+vista es un marcador. Sus reglas están en `frontend/README.md`; lo que hay que saber para
+no romperlo desde aquí:
+
+- **El cliente de la API se genera del OpenAPI** (`make web-api`, necesita `make api`
+  corriendo) y **se versiona**. Si tocas un endpoint o su esquema, regenera: el generado
+  desactualizado compila igual y falla en runtime. Los nombres se limpian en
+  `orval.config.ts` — FastAPI produce operationIds como `login_api_v1_auth_login_post`, y
+  ahí se recortan a `login`. Ese fichero lleva dos listas: `RESERVADAS` (hay un endpoint
+  `export`, que no puede ser nombre de variable) y `AMBIGUAS` (`get_moment`,
+  `get_project` y `list_projects` existen en `learning` y en `studio` a la vez). **Si
+  añades un endpoint que colisione, `tsc` falla con "Duplicate identifier"**: se añade el
+  nombre a `AMBIGUAS` y se regenera.
+- **El color se nombra por intención**, nunca por valor: los tokens están en
+  `frontend/src/styles/tokens.css` y son el único sitio con un color escrito.
+- **La paleta definitiva sigue sin decidir** (`scope-mvp.md` §9.13). Los valores actuales
+  se derivaron de la referencia del dashboard y están para cambiarse.
 
 Las decisiones y su porqué están en `docs/arquitectura.md` (léelo antes de tocar
 fronteras entre módulos, caché de prompts o el camino de lectura). Los códigos `R1`–`R10`
