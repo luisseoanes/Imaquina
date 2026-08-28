@@ -142,7 +142,12 @@
       "image": "Image",
       "audio": "Audio",
       "video": "Video",
-      "embed": "Embed"
+      "embed": "Embed",
+      "checklist": "Checklist",
+      "video_chapters": "Video with chapters",
+      "inline_quiz": "Mini-quiz",
+      "blockly": "Code blocks",
+      "embed_interactive": "Interactive tool"
     },
     "moment": {
       "intro": "Introduction & inclusion",
@@ -248,7 +253,18 @@
       "mediaNone": "No media set",
       "mediaPickHint": "The block stores the reference; the server resolves the URL on publish.",
       "previewMobile": "Mobile view",
-      "previewDesktop": "Desktop view"
+      "previewDesktop": "Desktop view",
+      "checklistItems": "Checklist steps",
+      "addItem": "Add step",
+      "chapters": "Chapters",
+      "chaptersHint": "Start second + title for each chapter.",
+      "addChapter": "Add chapter",
+      "quizPrompt": "Question",
+      "quizCorrect": "Correct",
+      "addOption": "Add option",
+      "removeQuestion": "Remove question",
+      "addQuestion": "Add question",
+      "iframeSrcHint": "Tool URL (shown in a sandboxed iframe)."
     },
     "assessments": {
       "subtitle": "Question builder for the assessment moment.",
@@ -865,7 +881,10 @@
       "next": "Next moment",
       "backToProject": "Back to the project",
       "lockedTitle": "This moment is locked",
-      "unknown": "That moment does not exist in this project."
+      "unknown": "That moment does not exist in this project.",
+      "checklist": "{{done}}/{{total}} steps",
+      "checkYourUnderstanding": "Check your understanding",
+      "checkAnswers": "Check answers"
     },
     "momentState": {
       "not_started": "Not started",

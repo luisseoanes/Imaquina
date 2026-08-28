@@ -13,17 +13,37 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { RichText } from "@/shared/ui/RichText";
+import {
+  ChecklistBlock,
+  EmbedInteractiveBlock,
+  InlineQuizBlock,
+  VideoChaptersBlock,
+} from "@/shared/ui/InteractiveBlocks";
 import { Icon } from "@/shared/ui/panel-icons";
+
+export type BlockKind =
+  | "text"
+  | "image"
+  | "audio"
+  | "video"
+  | "embed"
+  | "checklist"
+  | "video_chapters"
+  | "inline_quiz"
+  | "blockly"
+  | "embed_interactive";
 
 /** Bloque tal y como lo sirve el camino de lectura (`learning`) y como lo
  *  devuelve la previsualización del Studio. `url`/`mime_type` los resuelve el
  *  backend a partir de `media_asset_id`. */
 export interface Block {
   id: string;
-  kind: "text" | "image" | "audio" | "video" | "embed";
+  kind: BlockKind;
   order: number;
   media_asset_id?: string | null;
   config?: Record<string, unknown>;
+  /** Estado del alumno en un bloque interactivo (sólo el camino de lectura). */
+  interaction?: Record<string, unknown> | null;
   body: string | null;
   caption: string | null;
   alt_text: string | null;
@@ -31,6 +51,14 @@ export interface Block {
   mime_type?: string | null;
   duration_seconds?: number | null;
 }
+
+const KINDS_INTERACTIVOS = new Set([
+  "checklist",
+  "video_chapters",
+  "inline_quiz",
+  "blockly",
+  "embed_interactive",
+]);
 
 /** Mismo criterio que `RichText`: http(s) o una ruta del propio origen. Lo que
  *  se descarta es el esquema ejecutable — un `javascript:` guardado en el CMS
@@ -77,13 +105,22 @@ function SinRecurso({ kind }: { kind: string }) {
   );
 }
 
-function BlockView({ block }: { block: Block }) {
+function BlockView({
+  block,
+  lang,
+  onSaveInteraction,
+}: {
+  block: Block;
+  lang: string;
+  onSaveInteraction?: (blockId: string, state: Record<string, unknown>) => void;
+}) {
   const { t } = useTranslation();
   // Un embed puede traer su fuente en `config` (proveedor + src, el camino del
   // editor nuevo). Para el resto: el asset de la librería manda y `body` es la
   // dirección escrita a mano.
   const configSrc =
-    block.kind === "embed" && typeof block.config?.src === "string"
+    (block.kind === "embed" || block.kind === "video_chapters") &&
+    typeof block.config?.src === "string"
       ? (block.config.src as string)
       : null;
   const src = configSrc
@@ -98,6 +135,27 @@ function BlockView({ block }: { block: Block }) {
     return block.body ? (
       <RichText html={block.body} className="text-[0.95rem] text-content" />
     ) : null;
+  }
+
+  if (KINDS_INTERACTIVOS.has(block.kind)) {
+    const config = block.config ?? {};
+    const onSave = onSaveInteraction
+      ? (state: Record<string, unknown>) => onSaveInteraction(block.id, state)
+      : undefined;
+    const common = { config, lang, interaction: block.interaction, onSave };
+    return (
+      <Figura block={block}>
+        {block.kind === "checklist" ? (
+          <ChecklistBlock {...common} />
+        ) : block.kind === "inline_quiz" ? (
+          <InlineQuizBlock {...common} />
+        ) : block.kind === "video_chapters" ? (
+          <VideoChaptersBlock {...common} src={src} />
+        ) : (
+          <EmbedInteractiveBlock {...common} />
+        )}
+      </Figura>
+    );
   }
 
   if (!src) return <SinRecurso kind={t(`studio.blockKind.${block.kind}`, block.kind)} />;
@@ -173,12 +231,25 @@ function BlockView({ block }: { block: Block }) {
   );
 }
 
-export function MomentBlocks({ blocks }: { blocks: Block[] }) {
+export function MomentBlocks({
+  blocks,
+  lang = "es",
+  onSaveInteraction,
+}: {
+  blocks: Block[];
+  lang?: string;
+  onSaveInteraction?: (blockId: string, state: Record<string, unknown>) => void;
+}) {
   const ordenados = [...blocks].sort((a, b) => a.order - b.order);
   return (
     <div className="space-y-5">
       {ordenados.map((b) => (
-        <BlockView key={b.id} block={b} />
+        <BlockView
+          key={b.id}
+          block={b}
+          lang={lang}
+          onSaveInteraction={onSaveInteraction}
+        />
       ))}
     </div>
   );

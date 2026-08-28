@@ -2,7 +2,8 @@
 
 import uuid
 
-from app.modules.publishing.service import build_snapshot
+from app.modules.publishing.service import build_snapshot, problemas_de_idioma
+from app.workers.worker import _texto_indexable
 
 
 class _Tr:
@@ -68,3 +69,52 @@ def test_solo_entran_los_idiomas_traducidos():
 
     assert snap["langs"] == ["es"]
     assert "en" not in snap["content"]
+
+
+def _proyecto_con_bloque(bloque):
+    momento = _Fake(
+        id=uuid.uuid4(),
+        type="intro",
+        order=0,
+        blocks=[bloque],
+        translations=[_Tr(lang="es", title="Intro", teacher_note=None,
+                          chatbot_opening_prompt=None)],
+    )
+    return _Fake(
+        id=uuid.uuid4(), slug="p", grade="5", kit=None, order=0,
+        moments=[momento],
+        translations=[_Tr(lang="es", title="P", summary=None)],
+    )
+
+
+def test_una_checklist_sin_pasos_traducidos_bloquea_la_publicacion():
+    completa = _Fake(
+        id=uuid.uuid4(), kind="checklist", order=0, media_asset_id=None,
+        translations=[],
+        config={"items": [{"id": "a", "text": {"es": "Conecta el motor"}}]},
+    )
+    vacia = _Fake(
+        id=uuid.uuid4(), kind="checklist", order=0, media_asset_id=None,
+        translations=[], config={"items": [{"id": "a", "text": {}}]},
+    )
+    assert problemas_de_idioma(_proyecto_con_bloque(completa), "es") == []
+    assert problemas_de_idioma(_proyecto_con_bloque(vacia), "es")
+
+
+def test_texto_indexable_saca_los_pasos_de_la_checklist_y_el_quiz():
+    checklist = {
+        "kind": "checklist",
+        "config": {"items": [{"text": {"es": "Paso uno"}}, {"text": {"es": "Paso dos"}}]},
+    }
+    quiz = {
+        "kind": "inline_quiz",
+        "config": {
+            "questions": [
+                {"prompt": {"es": "¿Qué es un LED?"},
+                 "options": [{"text": {"es": "Un diodo"}}, {"text": {"es": "Un motor"}}]}
+            ]
+        },
+    }
+    assert _texto_indexable(checklist, "es") == "Paso uno\nPaso dos"
+    assert "LED" in _texto_indexable(quiz, "es")
+    assert "diodo" in _texto_indexable(quiz, "es")

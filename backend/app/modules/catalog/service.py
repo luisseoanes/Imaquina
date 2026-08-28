@@ -381,6 +381,15 @@ async def _comprobar_media(db: AsyncSession, asset_id: uuid.UUID | None) -> None
 # Proveedores de embed que el cliente sabe montar en un iframe. Un proveedor
 # fuera de esta lista es HTML de terceros en la sesión de un menor.
 EMBED_PROVIDERS = ("youtube",)
+# Herramientas interactivas embebidas (simulador de circuitos, visor 3D…). El
+# cliente las monta con `sandbox` acotado; el editor sólo elige de la lista.
+EMBED_INTERACTIVE_PROVIDERS = ("falstad", "wokwi", "tinkercad", "viewstl", "geogebra")
+
+
+def _es_lista_de(config: Any, clave: str) -> bool:
+    return isinstance(config, dict) and (
+        clave not in config or isinstance(config[clave], list)
+    )
 
 
 def _validar_config(kind: str, config: Any) -> dict:
@@ -388,12 +397,13 @@ def _validar_config(kind: str, config: Any) -> dict:
 
     Guardar a medias está permitido (la completitud se exige al publicar), así
     que aquí sólo se rechaza lo que no tiene arreglo: una forma que no es un
-    objeto, o un proveedor de embed que el cliente no sabe pintar.
+    objeto, un proveedor no permitido, o una lista que no es una lista.
     """
     if config is None:
         return {}
     if not isinstance(config, dict):
         raise ValidationFailed("`config` debe ser un objeto")
+
     if kind == "embed":
         proveedor = config.get("provider")
         if proveedor is not None and proveedor not in EMBED_PROVIDERS:
@@ -401,6 +411,20 @@ def _validar_config(kind: str, config: Any) -> dict:
                 f"Proveedor de embed no permitido: '{proveedor}'. "
                 f"Permitidos: {', '.join(EMBED_PROVIDERS)}"
             )
+    elif kind == "embed_interactive":
+        proveedor = config.get("provider")
+        if proveedor is not None and proveedor not in EMBED_INTERACTIVE_PROVIDERS:
+            raise ValidationFailed(
+                f"Herramienta interactiva no permitida: '{proveedor}'. "
+                f"Permitidas: {', '.join(EMBED_INTERACTIVE_PROVIDERS)}"
+            )
+    elif kind == "checklist" and not _es_lista_de(config, "items"):
+        raise ValidationFailed("`config.items` debe ser una lista")
+    elif kind == "video_chapters" and not _es_lista_de(config, "chapters"):
+        raise ValidationFailed("`config.chapters` debe ser una lista")
+    elif kind == "inline_quiz" and not _es_lista_de(config, "questions"):
+        raise ValidationFailed("`config.questions` debe ser una lista")
+
     return config
 
 

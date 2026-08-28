@@ -57,6 +57,7 @@ def test_docente_no_puede_autorear():
         "Assignment",
         "Notification",
         "AuditEntry",
+        "BlockInteraction",
     ],
 )
 def test_tablas_con_datos_por_institucion_tienen_institution_id(modelo):

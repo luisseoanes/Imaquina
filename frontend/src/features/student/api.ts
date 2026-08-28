@@ -64,15 +64,28 @@ export const keys = {
 
 // --- Tipos -----------------------------------------------------------------
 
-export type BlockKind = "text" | "image" | "audio" | "video" | "embed";
+export type BlockKind =
+  | "text"
+  | "image"
+  | "audio"
+  | "video"
+  | "embed"
+  | "checklist"
+  | "video_chapters"
+  | "inline_quiz"
+  | "blockly"
+  | "embed_interactive";
 
 export interface Block {
   id: string;
   kind: BlockKind;
   order: number;
   media_asset_id: string | null;
-  /** Ajustes que no dependen del idioma (proveedor de embed, etc.). */
+  /** Ajustes que no dependen del idioma (proveedor de embed, estructura de un
+   *  bloque interactivo, etc.). */
   config?: Record<string, unknown>;
+  /** Estado del alumno en un bloque interactivo (checklist, mini-quiz…). */
+  interaction?: Record<string, unknown> | null;
   body: string | null;
   caption: string | null;
   alt_text: string | null;
@@ -207,6 +220,20 @@ export const useProgress = (projectId: string, opts?: Opts<ProgressMap>) =>
     queryFn: () => get<ProgressMap>(`/learn/projects/${projectId}/progress`),
     ...opts,
   });
+
+/** Guarda el estado del alumno en un bloque interactivo (checklist, mini-quiz…).
+ *  No cuenta para la nota; sólo evita perder el trabajo al salir y volver.
+ *  Optimista con un debounce implícito: cada cambio manda su estado completo. */
+export function useSaveInteraction() {
+  return useMutation({
+    mutationFn: (v: { blockId: string; state: Record<string, unknown> }) =>
+      send<{ block_id: string; state: unknown }>(
+        `/learn/blocks/${v.blockId}/interaction`,
+        "PUT",
+        { state: v.state },
+      ),
+  });
+}
 
 /** Completar desbloquea el siguiente momento, así que hay que invalidar el
  *  progreso Y el momento siguiente: si su 403 se queda en caché, el estudiante

@@ -18,10 +18,35 @@ import { RichTextEditor } from "@/shared/ui/RichTextEditor";
 import { MomentBlocks } from "@/shared/ui/MomentBlocks";
 import { useStudio } from "../StudioContext";
 import { MediaPickerModal } from "../components/MediaPickerModal";
+import {
+  ChaptersEditor,
+  ChecklistEditor,
+  EmbedInteractiveEditor,
+  InlineQuizEditor,
+} from "../components/BlockKindEditors";
 import { routes } from "@/shared/config/routes";
 import type { Block } from "../types";
 
-const BLOCK_KINDS = ["text", "image", "audio", "video", "embed"] as const;
+const BLOCK_KINDS = [
+  "text",
+  "image",
+  "audio",
+  "video",
+  "embed",
+  "checklist",
+  "video_chapters",
+  "inline_quiz",
+  "blockly",
+  "embed_interactive",
+] as const;
+
+const KINDS_INTERACTIVOS = new Set([
+  "checklist",
+  "video_chapters",
+  "inline_quiz",
+  "blockly",
+  "embed_interactive",
+]);
 
 export function MomentEditorView() {
   const { t } = useTranslation();
@@ -315,6 +340,8 @@ function BlockCard({
   );
   const [assetId, setAssetId] = useState<string | null>(block.media_asset_id);
   const [pickingMedia, setPickingMedia] = useState(false);
+  const [config, setConfig] = useState<Record<string, unknown>>(block.config ?? {});
+  const interactivo = KINDS_INTERACTIVOS.has(block.kind);
 
   return (
     <Card>
@@ -345,7 +372,44 @@ function BlockCard({
         </div>
       </div>
 
-      {block.kind === "text" ? (
+      {interactivo ? (
+        <>
+          {block.kind === "checklist" ? (
+            <ChecklistEditor config={config} lang={lang} onChange={setConfig} />
+          ) : block.kind === "inline_quiz" ? (
+            <InlineQuizEditor config={config} lang={lang} onChange={setConfig} />
+          ) : block.kind === "video_chapters" ? (
+            <>
+              <Field
+                label={t("studio.field.media")}
+                hint={t("studio.editor.mediaPickHint")}
+              >
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPickingMedia(true)}
+                    className="rounded-control bg-surface-muted px-3 py-2 text-sm text-content hover:bg-line"
+                  >
+                    {assetId
+                      ? t("studio.editor.mediaChange")
+                      : t("studio.editor.pickMedia")}
+                  </button>
+                  <span className="truncate text-xs text-content-subtle">
+                    {assetId ?? t("studio.editor.mediaNone")}
+                  </span>
+                </div>
+              </Field>
+              <ChaptersEditor config={config} lang={lang} onChange={setConfig} />
+            </>
+          ) : (
+            <EmbedInteractiveEditor
+              config={config}
+              onChange={setConfig}
+              withProvider={block.kind === "embed_interactive"}
+            />
+          )}
+        </>
+      ) : block.kind === "text" ? (
         <Field label={t("studio.field.body")} hint={t("studio.editor.richTextHint")}>
           <RichTextEditor
             value={body}
@@ -429,19 +493,23 @@ function BlockCard({
         variant="ghost"
         onClick={() =>
           onSave(
-            block.kind === "embed"
-              ? {
-                  config: { provider, src: embedSrc },
-                  caption: caption || null,
-                }
-              : block.kind === "text"
-                ? { body: body || null }
-                : {
-                    media_asset_id: assetId,
-                    body: body || null,
+            interactivo
+              ? block.kind === "video_chapters"
+                ? { config, media_asset_id: assetId }
+                : { config }
+              : block.kind === "embed"
+                ? {
+                    config: { provider, src: embedSrc },
                     caption: caption || null,
-                    alt_text: alt || null,
-                  },
+                  }
+                : block.kind === "text"
+                  ? { body: body || null }
+                  : {
+                      media_asset_id: assetId,
+                      body: body || null,
+                      caption: caption || null,
+                      alt_text: alt || null,
+                    },
           )
         }
       >

@@ -35,6 +35,15 @@ class BlockKind(StrEnum):
     AUDIO = "audio"
     VIDEO = "video"
     EMBED = "embed"
+    # Interactivos. Su contenido estructurado (con texto por idioma) vive en
+    # `ContentBlock.config`; ver `catalog.service._validar_config` para la forma
+    # de cada uno. El estado del alumno (marcas, respuestas) va en
+    # `learning.BlockInteraction`, nunca en el bloque.
+    CHECKLIST = "checklist"            # guía de armado paso a paso
+    VIDEO_CHAPTERS = "video_chapters"  # vídeo con capítulos navegables
+    INLINE_QUIZ = "inline_quiz"        # "comprueba tu comprensión", no cuenta nota
+    BLOCKLY = "blockly"                # espacio de trabajo de bloques de código
+    EMBED_INTERACTIVE = "embed_interactive"  # simulador / visor 3D en iframe
 
 
 class ProjectStatus(StrEnum):

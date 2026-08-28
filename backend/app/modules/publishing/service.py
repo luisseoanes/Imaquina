@@ -79,15 +79,55 @@ def _falta_en_el_bloque(block: Any, lang: str) -> str | None:
         return "texto" if not (tr and (tr.body or "").strip()) else None
     if block.kind == BlockKind.IMAGE:
         return "alt_text" if not (tr and (tr.alt_text or "").strip()) else None
+    config = getattr(block, "config", None) or {}
+
     if block.kind == BlockKind.EMBED:
         # Un embed sin fuente no pinta nada. La fuente puede venir en `config`
         # (proveedor + src, el camino nuevo) o, como antes, escrita a mano en
         # `body`; con cualquiera de las dos el bloque es servible.
-        config = getattr(block, "config", None) or {}
         tiene_config = bool(config.get("provider") and config.get("src"))
         tiene_body = bool(tr and (tr.body or "").strip())
         return None if (tiene_config or tiene_body) else "fuente del embed"
+
+    if block.kind == BlockKind.EMBED_INTERACTIVE:
+        return (
+            None
+            if (config.get("provider") and config.get("src"))
+            else "proveedor y fuente"
+        )
+
+    if block.kind == BlockKind.CHECKLIST:
+        items = config.get("items") or []
+        return (
+            None
+            if items and all(_texto_lang(it.get("text"), lang) for it in items)
+            else f"los pasos de la checklist en '{lang}'"
+        )
+
+    if block.kind == BlockKind.VIDEO_CHAPTERS:
+        tiene_video = bool(
+            block.media_asset_id
+            or (config.get("provider") and config.get("src"))
+            or (tr and (tr.body or "").strip())
+        )
+        return None if tiene_video else "el vídeo"
+
+    if block.kind == BlockKind.INLINE_QUIZ:
+        preguntas = config.get("questions") or []
+        ok = preguntas and all(
+            _texto_lang(q.get("prompt"), lang)
+            and any(o.get("correct") for o in (q.get("options") or []))
+            and all(_texto_lang(o.get("text"), lang) for o in (q.get("options") or []))
+            for q in preguntas
+        )
+        return None if ok else f"las preguntas del quiz en '{lang}'"
+
     return None
+
+
+def _texto_lang(mapa: Any, lang: str) -> bool:
+    """True si `mapa` es `{lang: texto}` y tiene texto no vacío en `lang`."""
+    return isinstance(mapa, dict) and bool((mapa.get(lang) or "").strip())
 
 
 def problemas_de_idioma(project: Project, lang: str) -> list[str]:

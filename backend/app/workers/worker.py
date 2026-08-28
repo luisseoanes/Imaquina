@@ -9,6 +9,31 @@ from app.core.config import settings
 from app.db.session import SessionLocal
 
 
+def _texto_indexable(block: dict, lang: str) -> str:
+    """El texto de un bloque que el RAG debe conocer, sea cual sea su tipo.
+
+    Para texto/imagen/embed es `body`; para los interactivos hay que sacar los
+    pasos de la checklist y los enunciados del quiz de `config`, o el chat no
+    sabría responder sobre ellos."""
+
+    def _t(mapa: object) -> str:
+        return (mapa.get(lang) or "").strip() if isinstance(mapa, dict) else ""
+
+    kind = block.get("kind")
+    config = block.get("config") or {}
+    if kind == "checklist":
+        return "\n".join(_t(it.get("text")) for it in config.get("items") or [])
+    if kind == "inline_quiz":
+        trozos: list[str] = []
+        for q in config.get("questions") or []:
+            trozos.append(_t(q.get("prompt")))
+            trozos += [_t(o.get("text")) for o in q.get("options") or []]
+        return "\n".join(p for p in trozos if p)
+    if kind == "video_chapters":
+        return "\n".join(_t(c.get("label")) for c in config.get("chapters") or [])
+    return (block.get("body") or "").strip()
+
+
 async def reindex_project(ctx: dict, project_id: str) -> dict:
     """IDEMPOTENTE: borra los chunks del proyecto y los regenera.
 
@@ -44,7 +69,7 @@ async def reindex_project(ctx: dict, project_id: str) -> dict:
         for lang in snapshot.get("langs", []):
             for moment in snapshot["content"][lang]["moments"]:
                 for block in moment["blocks"]:
-                    body = (block.get("body") or "").strip()
+                    body = _texto_indexable(block, lang)
                     if not body:
                         continue
                     pendientes.append((uuid.UUID(moment["id"]), lang, body))

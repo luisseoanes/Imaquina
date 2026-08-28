@@ -304,3 +304,57 @@ async def test_el_bloque_de_imagen_llega_al_estudiante_con_su_url(client, db):
     ).json()
     intro_ficha = next(m for m in proyecto["moments"] if m["type"] == "intro")
     assert next(b for b in intro_ficha["blocks"] if b["kind"] == "image")["url"]
+
+
+async def test_el_estado_de_un_bloque_interactivo_se_guarda_y_se_sirve(client, db):
+    """Un bloque de checklist: el alumno marca pasos, sale y vuelve, y el
+    momento se lo devuelve con lo que había marcado."""
+    inst = await _institucion_con_licencia(db)
+    editor_h = _h(_token_de(await _usuario(db, inst, "editor"), inst))
+
+    creado = (
+        await client.post(
+            f"{CATALOG}/projects",
+            headers=editor_h,
+            json={"slug": f"p-{uuid.uuid4().hex[:6]}", "grade": "5", "title": "P"},
+        )
+    ).json()
+    intro = next(m for m in creado["moments"] if m["type"] == "intro")
+    for m in creado["moments"]:
+        await client.patch(
+            f"{CATALOG}/moments/{m['id']}", headers=editor_h, json={"title": "T"}
+        )
+        await client.post(
+            f"{CATALOG}/moments/{m['id']}/blocks",
+            headers=editor_h,
+            json={"kind": "text", "body": "contenido"},
+        )
+    bloque = (
+        await client.post(
+            f"{CATALOG}/moments/{intro['id']}/blocks",
+            headers=editor_h,
+            json={
+                "kind": "checklist",
+                "config": {"items": [{"id": "a", "text": {"es": "Conecta el motor"}}]},
+            },
+        )
+    ).json()
+    await client.post(f"{PUBLISHING}/projects/{creado['id']}/publish", headers=editor_h)
+
+    est_h = _h(_token_de(await _usuario(db, inst, "student"), inst))
+
+    guardado = await client.put(
+        f"{LEARN}/blocks/{bloque['id']}/interaction",
+        headers=est_h,
+        json={"state": {"done": {"a": True}}},
+    )
+    assert guardado.status_code == 200
+
+    momento = (
+        await client.get(
+            f"{LEARN}/projects/{creado['id']}/moments/intro", headers=est_h
+        )
+    ).json()
+    checklist = next(b for b in momento["blocks"] if b["kind"] == "checklist")
+    assert checklist["interaction"] == {"done": {"a": True}}
+    assert checklist["config"]["items"][0]["text"]["es"] == "Conecta el motor"

@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter
+from pydantic import BaseModel
 
 from app.core.deps import Db, Staff, Tenant
 from app.modules.learning import service
@@ -26,6 +27,20 @@ async def get_moment(
     project_id: UUID, moment_type: str, tenant: Tenant, db: Db, lang: str = "es"
 ):
     return await service.get_moment_for(db, project_id, moment_type, tenant, lang=lang)
+
+
+class InteractionIn(BaseModel):
+    state: dict
+
+
+@router.put("/blocks/{block_id}/interaction")
+async def save_interaction(
+    block_id: UUID, payload: InteractionIn, tenant: Tenant, db: Db
+):
+    """Guarda el estado del alumno en un bloque interactivo (checklist marcada,
+    respuestas del quiz de comprensión, workspace de Blockly). No cuenta para
+    la nota ni desbloquea nada."""
+    return await service.guardar_interaccion(db, tenant, block_id, payload.state)
 
 
 # --- Progreso (N5) -----------------------------------------------------------

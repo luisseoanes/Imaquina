@@ -142,7 +142,12 @@
       "image": "Imagen",
       "audio": "Audio",
       "video": "Video",
-      "embed": "Embebido"
+      "embed": "Embebido",
+      "checklist": "Checklist",
+      "video_chapters": "Vídeo con capítulos",
+      "inline_quiz": "Mini-quiz",
+      "blockly": "Bloques de código",
+      "embed_interactive": "Herramienta interactiva"
     },
     "moment": {
       "intro": "Introducción e inclusión",
@@ -248,7 +253,18 @@
       "mediaNone": "Sin medio asignado",
       "mediaPickHint": "El bloque guarda la referencia; la URL la resuelve el servidor al publicar.",
       "previewMobile": "Ver en móvil",
-      "previewDesktop": "Ver en escritorio"
+      "previewDesktop": "Ver en escritorio",
+      "checklistItems": "Pasos de la checklist",
+      "addItem": "Añadir paso",
+      "chapters": "Capítulos",
+      "chaptersHint": "Segundo de inicio + título de cada capítulo.",
+      "addChapter": "Añadir capítulo",
+      "quizPrompt": "Pregunta",
+      "quizCorrect": "Correcta",
+      "addOption": "Añadir opción",
+      "removeQuestion": "Quitar pregunta",
+      "addQuestion": "Añadir pregunta",
+      "iframeSrcHint": "URL de la herramienta (se muestra en un iframe con permisos acotados)."
     },
     "assessments": {
       "subtitle": "Constructor de preguntas del momento de evaluación.",
@@ -865,7 +881,10 @@
       "next": "Siguiente momento",
       "backToProject": "Volver al proyecto",
       "lockedTitle": "Este momento está bloqueado",
-      "unknown": "Ese momento no existe en este proyecto."
+      "unknown": "Ese momento no existe en este proyecto.",
+      "checklist": "{{done}}/{{total}} pasos",
+      "checkYourUnderstanding": "Comprueba tu comprensión",
+      "checkAnswers": "Comprobar respuestas"
     },
     "momentState": {
       "not_started": "Sin empezar",

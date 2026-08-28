@@ -15,10 +15,13 @@ from app.core.deps import Role, TenantContext
 from app.core.errors import NotFound, PermissionDenied
 from app.modules.catalog.models import MOMENT_ORDER
 from app.modules.identity.models import Course, Enrollment, User
-from app.modules.learning.models import Progress, ProgressState
+from app.modules.learning.models import BlockInteraction, Progress, ProgressState
 from app.modules.media import service as media
 from app.modules.publishing.models import ProjectVersion
 from app.modules.publishing.service import contenido_en
+
+# Tipos de bloque cuyo estado del alumno se persiste y se sirve con el momento.
+INTERACTIVE_KINDS = ("checklist", "inline_quiz", "blockly")
 
 
 async def list_published_projects(
@@ -178,7 +181,70 @@ async def get_moment_for(
 
     salida = {**serialize_moment_for(moment, tenant), "lang": servido}
     await resolver_media(db, [salida])
+    if not tenant.is_staff:
+        await _adjuntar_interacciones(db, tenant, [salida])
     return salida
+
+
+async def _adjuntar_interacciones(
+    db: AsyncSession, tenant: TenantContext, moments: list[dict[str, Any]]
+) -> None:
+    """Pega en cada bloque interactivo el estado guardado de ESTE alumno.
+
+    Muta los dicts en el sitio; seguro porque cuelgan de un snapshot leído como
+    valor suelto, no de una instancia del ORM (igual que `resolver_media`)."""
+    bloques = {
+        b["id"]: b
+        for m in moments
+        for b in m.get("blocks", [])
+        if b.get("kind") in INTERACTIVE_KINDS
+    }
+    if not bloques:
+        return
+
+    ids = [uuid.UUID(bid) for bid in bloques]
+    filas = (
+        await db.execute(
+            select(BlockInteraction.block_id, BlockInteraction.state).where(
+                BlockInteraction.user_id == tenant.user_id,
+                BlockInteraction.block_id.in_(ids),
+            )
+        )
+    ).all()
+    estado = {str(bid): st for bid, st in filas}
+    for bid, bloque in bloques.items():
+        bloque["interaction"] = estado.get(bid)
+
+
+async def guardar_interaccion(
+    db: AsyncSession,
+    tenant: TenantContext,
+    block_id: uuid.UUID,
+    state: dict[str, Any],
+) -> dict[str, Any]:
+    """Upsert del estado del alumno en un bloque interactivo. No valida contra
+    el contenido: es un borrador que no cuenta para nada (ver el docstring del
+    modelo)."""
+    fila = (
+        await db.execute(
+            select(BlockInteraction).where(
+                BlockInteraction.user_id == tenant.user_id,
+                BlockInteraction.block_id == block_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if fila is None:
+        fila = BlockInteraction(
+            user_id=tenant.user_id,
+            block_id=block_id,
+            institution_id=tenant.require_institution(),
+            state=state,
+        )
+        db.add(fila)
+    else:
+        fila.state = state
+    await db.flush()
+    return {"block_id": str(block_id), "state": state}
 
 
 # --- Progreso del estudiante (N5) -------------------------------------------

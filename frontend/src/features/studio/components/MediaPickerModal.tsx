@@ -14,6 +14,7 @@ const FAMILIA_POR_KIND: Record<string, string> = {
   image: "image",
   audio: "audio",
   video: "video",
+  video_chapters: "video",
 };
 
 export function MediaPickerModal({

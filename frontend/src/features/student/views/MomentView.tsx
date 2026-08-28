@@ -22,7 +22,13 @@ import { routes } from "@/shared/config/routes";
 import { useDocumentTitle } from "@/shared/hooks/useDocumentTitle";
 import { Button, Card, PastelBadge, QueryState } from "@/shared/ui/panel";
 import { Icon } from "@/shared/ui/panel-icons";
-import { useCompleteMoment, useMoment, useProgress, useProject } from "../api";
+import {
+  useCompleteMoment,
+  useMoment,
+  useProgress,
+  useProject,
+  useSaveInteraction,
+} from "../api";
 import { AssessmentPlayer } from "../components/AssessmentPlayer";
 import { ChatPanel } from "../components/ChatPanel";
 import { MomentBlocks } from "@/shared/ui/MomentBlocks";
@@ -47,6 +53,7 @@ export function MomentView() {
   const proyecto = useProject(projectId, lang, { enabled: !!projectId });
   const progreso = useProgress(projectId, { enabled: !!projectId });
   const completar = useCompleteMoment(projectId);
+  const guardarInteraccion = useSaveInteraction();
 
   if (!tipo) {
     return <Bloqueado projectId={projectId} motivo={t("student.moment.unknown")} />;
@@ -109,7 +116,13 @@ export function MomentView() {
                   </p>
                 </Card>
               ) : (
-                <MomentBlocks blocks={momento.data.blocks} />
+                <MomentBlocks
+                  blocks={momento.data.blocks}
+                  lang={lang}
+                  onSaveInteraction={(blockId, state) =>
+                    guardarInteraccion.mutate({ blockId, state })
+                  }
+                />
               )}
 
               {tipo === "assess" ? (

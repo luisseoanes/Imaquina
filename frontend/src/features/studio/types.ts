@@ -41,7 +41,7 @@ export interface ProjectDetail extends Project {
 export interface Block {
   id: string;
   moment_id: string;
-  kind: "text" | "image" | "audio" | "video" | "embed";
+  kind: "text" | "image" | "audio" | "video" | "embed" | "checklist" | "video_chapters" | "inline_quiz" | "blockly" | "embed_interactive";
   order: number;
   media_asset_id: string | null;
   config: Record<string, unknown>;
@@ -69,7 +69,7 @@ export interface PreviewMoment {
 
 export interface PreviewBlock {
   id: string;
-  kind: "text" | "image" | "audio" | "video" | "embed";
+  kind: "text" | "image" | "audio" | "video" | "embed" | "checklist" | "video_chapters" | "inline_quiz" | "blockly" | "embed_interactive";
   order: number;
   media_asset_id?: string | null;
   config?: Record<string, unknown>;
