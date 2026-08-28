@@ -10,7 +10,8 @@
     "teacher": "Teacher panel",
     "admin": "Administration",
     "studio": "Content Studio",
-    "account": "My account"
+    "account": "My account",
+    "language": "Language"
   },
   "common": {
     "loading": "Loading…",
@@ -23,6 +24,22 @@
     "login": "Sign in",
     "logout": "Sign out",
     "email": "Email",
-    "password": "Password"
+    "password": "Password",
+    "signInTitle": "Sign in",
+    "signInSubtitle": "Use the account from your school",
+    "headline": "Create, inspire and teach <acento>the future with robotics</acento>",
+    "subheadline": "A platform for building educational content and creating incredible learning experiences.",
+    "emailPlaceholder": "name@school.edu",
+    "emailInvalid": "Enter a valid email address.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "invalidCredentials": "That email and password do not match.",
+    "licenseExpired": "Your school's licence is not active. Talk to whoever manages it.",
+    "forgotPassword": "Forgot your password? Ask your school administrator to reset it.",
+    "partners": "In collaboration with",
+    "terms": "Terms",
+    "contact": "Contact"
   }
 }

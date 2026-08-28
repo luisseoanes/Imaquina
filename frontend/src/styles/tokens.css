@@ -1,71 +1,87 @@
-/* Tokens de diseño — la única fuente de color, radio y sombra de la app.
+/* Tokens de diseño — la única fuente de color, tipografía y forma de la app.
  *
  * Los componentes nombran INTENCIONES (`surface`, `content`, `brand`), nunca
  * colores. Cambiar el tema es reescribir este fichero y nada más; si un
  * componente pone `bg-yellow-400` a mano, ese contrato se rompe.
  *
- * Los valores son un punto de partida derivado de la referencia visual del
- * dashboard: fondo claro con tarjetas blancas, acento ámbar y tinta muy
- * oscura para las superficies destacadas. Están para ser ajustados cuando
- * llegue la identidad definitiva.
+ * Valores derivados del prototipo de acceso: crema cálido de fondo, ámbar de
+ * marca, tinta casi negra y azulada para el texto.
  */
 @theme {
   /* --- Superficies ------------------------------------------------------ */
-  --color-canvas: oklch(0.97 0.005 95);      /* fondo de la ventana */
-  --color-surface: oklch(1 0 0);             /* tarjetas y paneles */
-  --color-surface-muted: oklch(0.96 0.004 95);
-  --color-surface-inverse: oklch(0.24 0.03 265); /* paneles oscuros */
-  --color-line: oklch(0.91 0.005 95);
+  --color-canvas: oklch(0.98 0.012 90);       /* crema del fondo de página */
+  --color-surface: oklch(1 0 0);              /* tarjetas y paneles */
+  --color-surface-muted: oklch(0.97 0.006 90);
+  --color-surface-inverse: oklch(0.21 0.02 265);
+  --color-line: oklch(0.92 0.008 90);
+  --color-line-strong: oklch(0.86 0.01 90);
 
   /* --- Texto ------------------------------------------------------------ */
   --color-content: oklch(0.24 0.02 265);
-  --color-content-muted: oklch(0.52 0.015 265);
-  --color-content-subtle: oklch(0.62 0.015 265);
+  --color-content-muted: oklch(0.52 0.014 265);
+  --color-content-subtle: oklch(0.63 0.012 265);
   --color-content-inverse: oklch(0.98 0 0);
 
   /* --- Marca ------------------------------------------------------------ */
-  /* `brand` es FONDO (botón ámbar con tinta oscura encima). Para TEXTO sobre
-     claro hace falta `brand-ink`: el ámbar puro sobre blanco no llega a 4.5:1. */
-  --color-brand: oklch(0.85 0.16 90);
-  --color-brand-hover: oklch(0.81 0.16 90);
-  --color-brand-ink: oklch(0.52 0.11 75);
-  --color-brand-content: oklch(0.24 0.03 265);
+  /* `brand` es FONDO: el ámbar lleva tinta oscura encima, como el logotipo.
+     Para TEXTO sobre claro hace falta `brand-ink` — el ámbar puro sobre blanco
+     da 1.8:1 y es ilegible. */
+  --color-brand: oklch(0.85 0.166 88);
+  --color-brand-strong: oklch(0.8 0.17 84);
+  --color-brand-soft: oklch(0.95 0.06 95);
+  --color-brand-wash: oklch(0.985 0.022 95);
+  --color-brand-ink: oklch(0.55 0.12 72);
+  --color-brand-content: oklch(0.21 0.02 265);
 
   /* --- Estados ---------------------------------------------------------- */
-  --color-success: oklch(0.62 0.14 150);
-  --color-success-surface: oklch(0.95 0.04 150);
-  --color-warning: oklch(0.75 0.15 70);
-  --color-warning-surface: oklch(0.96 0.05 85);
-  --color-danger: oklch(0.58 0.19 25);
-  --color-danger-surface: oklch(0.95 0.04 25);
-  --color-info: oklch(0.62 0.13 240);
-  --color-info-surface: oklch(0.95 0.03 240);
+  --color-success: oklch(0.6 0.14 150);
+  --color-danger: oklch(0.55 0.19 25);
+  --color-danger-surface: oklch(0.96 0.03 25);
+
+  /* --- Tipografía ------------------------------------------------------- */
+  /* Nunito para titulares: geométrica redondeada, cálida, la voz de una marca
+     que enseña robótica a niños. Inter para interfaz y formularios, donde
+     manda la legibilidad y el display competiría. */
+  --font-display: "Nunito Variable", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Inter Variable", system-ui, -apple-system, sans-serif;
 
   /* --- Forma ------------------------------------------------------------ */
-  --radius-card: 1.25rem;
-  --radius-control: 0.75rem;
+  --radius-card: 1.75rem;
+  --radius-control: 0.875rem;
   --radius-pill: 9999px;
 
   --shadow-card: 0 1px 2px oklch(0.24 0.03 265 / 0.04),
-                 0 8px 24px oklch(0.24 0.03 265 / 0.06);
+                 0 12px 40px oklch(0.24 0.03 265 / 0.08);
+  --shadow-float: 0 2px 4px oklch(0.24 0.03 265 / 0.04),
+                  0 24px 64px oklch(0.24 0.03 265 / 0.12);
 }
 
-/* Modo oscuro: se redefinen los MISMOS tokens, así que ningún componente
- * necesita saber que existe. Se activa por preferencia del sistema o con
- * `data-theme` explícito en <html>. */
+/* Modo oscuro: se redefinen los MISMOS tokens, así que ningún componente sabe
+ * que existe. Por preferencia del sistema o con `data-theme` explícito. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-canvas: oklch(0.18 0.02 265);
-    --color-surface: oklch(0.22 0.02 265);
-    --color-surface-muted: oklch(0.26 0.02 265);
-    --color-surface-inverse: oklch(0.95 0.01 265);
-    --color-line: oklch(0.32 0.02 265);
+    --color-canvas: oklch(0.17 0.015 265);
+    --color-surface: oklch(0.21 0.018 265);
+    --color-surface-muted: oklch(0.25 0.018 265);
+    --color-surface-inverse: oklch(0.96 0.01 265);
+    --color-line: oklch(0.3 0.018 265);
+    --color-line-strong: oklch(0.38 0.02 265);
 
     --color-content: oklch(0.96 0.005 265);
-    --color-content-muted: oklch(0.76 0.015 265);
-    --color-content-subtle: oklch(0.64 0.015 265);
-    --color-content-inverse: oklch(0.24 0.03 265);
+    --color-content-muted: oklch(0.76 0.014 265);
+    --color-content-subtle: oklch(0.65 0.014 265);
+    --color-content-inverse: oklch(0.21 0.02 265);
 
-    --color-brand-ink: oklch(0.85 0.16 90);
+    /* Sobre fondo oscuro el ámbar ya contrasta: no hace falta oscurecerlo. */
+    --color-brand-ink: oklch(0.85 0.166 88);
+    --color-brand-soft: oklch(0.3 0.05 88);
+    --color-brand-wash: oklch(0.22 0.025 88);
+
+    --color-danger: oklch(0.75 0.15 25);
+    --color-danger-surface: oklch(0.27 0.05 25);
   }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }

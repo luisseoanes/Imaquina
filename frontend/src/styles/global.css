@@ -1,14 +1,47 @@
 @import "tailwindcss";
+
+/* Tipografías self-hosted: sin llamadas a un CDN externo, sin salto de
+ * layout al cargar y sin exponer a los estudiantes a un tercero. */
+@import "@fontsource-variable/nunito";
+@import "@fontsource-variable/inter";
+
 @import "./tokens.css";
 
-/* El fondo se pinta explícito: si el body queda transparente, hereda el del
- * host y el tema oscuro se ve a medias. */
-body {
-  @apply bg-canvas text-content antialiased;
+/* La variante `dark:` sigue la misma lógica que los tokens: preferencia del
+ * sistema salvo que `data-theme` diga otra cosa. Sin esto, `dark:` miraría
+ * sólo `prefers-color-scheme` y el conmutador manual no lo afectaría. */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]) *, :root:not([data-theme="light"])) {
+      @slot;
+    }
+  }
+  &:where(:root[data-theme="dark"] *, :root[data-theme="dark"]) {
+    @slot;
+  }
 }
 
-/* Foco visible en todo lo interactivo. El `:focus-visible` del navegador solo
- * aparece con teclado, que es justo cuando hace falta. */
+/* El fondo se pinta explícito: un body transparente hereda el del host y el
+ * tema oscuro se ve a medias. */
+body {
+  @apply bg-canvas text-content font-sans antialiased;
+}
+
+h1, h2, h3 {
+  @apply font-display;
+}
+
+/* Foco visible en todo lo interactivo. `:focus-visible` sólo aparece con
+ * teclado, que es justo cuando hace falta. */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
   @apply outline-2 outline-offset-2 outline-brand-ink;
+}
+
+/* Quien pide menos movimiento no debería recibir ninguno. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

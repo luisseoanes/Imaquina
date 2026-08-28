@@ -12,21 +12,42 @@ tercero— va en `public/` y no aquí: esos se sirven tal cual, sin hash.
 
 ## Qué hay
 
-- `logos/` — marcas de los kits de robótica. Las variantes `-claro` / `-oscuro`
-  son para fondo claro y fondo oscuro, no dos temas de la app.
+- `brand/` — la marca propia. `imaquina-horizontal.svg` es el logotipo.
+- `logos/` — marcas de **colaboradores**, no la nuestra. Las variantes
+  `-claro` / `-oscuro` dicen **sobre qué fondo van**, no de qué color es el
+  logo: `ubbu-oscuro.png` es casi blanco (luminosidad media 245) porque está
+  hecho para fondo oscuro. `whalesbot` y `enjoyai` son de tono medio y sirven
+  en los dos.
 - `illustrations/` — ilustraciones de robots.
 
 ## Antes de usarlos, léete esto
 
-**Los `robot-*.svg` no son vectores.** Llevan un PNG de 810×810 embebido en
-base64: pesan entre 368 KB y 620 KB cada uno, **2,4 MB los cinco**, no escalan
-como vector y base64 infla un 33 % sobre el bitmap original. Metidos en una
-pantalla tal cual son más peso que todo el resto del bundle junto.
+**Los `robot-*.svg` y el logotipo no son vectores.** Llevan un PNG embebido en
+base64: los robots pesan entre 366 KB y 620 KB cada uno y el logotipo 493 KB.
+No escalan como vector, y base64 infla un 33 % sobre el bitmap original. Lo
+mismo con `logos/foodcash-*.svg`. Sólo `logos/ubbu-claro.svg` es vector de
+verdad (4 KB).
 
-Lo mismo con `logos/foodcash-claro.svg` y `foodcash-oscuro.svg`.
+Se nota: la pantalla de acceso transfiere **906 KB en móvil**, y el 80 % son el
+logotipo y el robot de turno.
 
-Antes de usarlos conviene exportarlos a WebP o AVIF a la resolución en la que
-se vayan a ver. Como referencia: la versión WebP de `robot-2` que había pesaba
-**48 KB** frente a los 620 KB del SVG, y a más resolución.
+**Conviene exportarlos a WebP**, y no pierdes la transparencia por hacerlo.
+Medido sobre `robot-1` rasterizado a 900 px:
 
-`logos/ubbu-claro.svg` sí es vector de verdad (4 KB).
+| | Peso | ¿Transparente? |
+|---|---|---|
+| SVG actual | 366 KB | sí |
+| WebP 900 px | **29 KB** | **sí** (canal alfa 0–255) |
+
+Con eso la pantalla de acceso bajaría de ~900 KB a ~200 KB.
+
+### Los robots venían con fondo blanco
+
+Cada `robot-*.svg` traía dos `<rect fill="#ffffff">` cubriendo el lienzo
+entero, así que sobre cualquier fondo que no fuera blanco aparecía un recuadro.
+Se quitaron. **Si vuelves a exportar un robot desde el original, comprueba que
+no reaparezcan**: se ven al instante poniendo la ilustración sobre un color.
+
+Ojo al hacerlo: no todo `<rect>` blanco sobra. Los que están dentro de un
+`<mask>` definen qué parte se ve, y borrarlos rompe la ilustración. Sólo se
+quitan los que están fuera de `<defs>` y cubren el `viewBox` completo.

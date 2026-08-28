@@ -8,7 +8,7 @@
  *  Las pantallas son marcadores (`data-pending`) hasta que se desarrollen, así
  *  que se comprueba CUÁL se monta, no qué pinta.
  */
-import { render, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 
@@ -39,9 +39,11 @@ const DOCENTE: Session = { role: "teacher", lang: "es" };
 const EDITOR: Session = { role: "editor", lang: "es" };
 
 describe("router", () => {
-  it("sin sesión, cualquier ruta privada lleva al login", () => {
-    const { container } = renderizarEn(routes.dashboard);
-    expect(pantallaMontada(container)).toBe("LoginPage");
+  it("sin sesión, cualquier ruta privada lleva al acceso", () => {
+    renderizarEn(routes.dashboard);
+    // La pantalla de acceso ya está desarrollada, así que no lleva marcador:
+    // se identifica por su encabezado, que es lo que ve el usuario.
+    expect(screen.getByRole("heading", { name: "Iniciar sesión" })).toBeInTheDocument();
   });
 
   it("con sesión, la raíz monta el panel", () => {

@@ -10,7 +10,8 @@
     "teacher": "Panel docente",
     "admin": "Administración",
     "studio": "Content Studio",
-    "account": "Mi cuenta"
+    "account": "Mi cuenta",
+    "language": "Idioma"
   },
   "common": {
     "loading": "Cargando…",
@@ -22,7 +23,23 @@
   "auth": {
     "login": "Iniciar sesión",
     "logout": "Cerrar sesión",
-    "email": "Correo",
-    "password": "Contraseña"
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "signInTitle": "Iniciar sesión",
+    "signInSubtitle": "Entra con la cuenta de tu institución",
+    "headline": "Crea, inspira y enseña <acento>el futuro con robótica</acento>",
+    "subheadline": "Plataforma de creación de contenido educativo para construir experiencias de aprendizaje increíbles.",
+    "emailPlaceholder": "nombre@institucion.edu.co",
+    "emailInvalid": "Escribe un correo electrónico válido.",
+    "showPassword": "Mostrar la contraseña",
+    "hidePassword": "Ocultar la contraseña",
+    "signIn": "Entrar",
+    "signingIn": "Entrando…",
+    "invalidCredentials": "El correo o la contraseña no coinciden.",
+    "licenseExpired": "La licencia de tu institución no está vigente. Habla con quien la administra.",
+    "forgotPassword": "¿Olvidaste tu contraseña? Pídele a la administración de tu institución que la restablezca.",
+    "partners": "Con la colaboración de",
+    "terms": "Términos",
+    "contact": "Contacto"
   }
 }

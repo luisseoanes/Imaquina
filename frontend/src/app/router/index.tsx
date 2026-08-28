@@ -6,7 +6,7 @@ import { AppLayout } from "@/app/layouts/AppLayout";
 import { routes } from "@/shared/config/routes";
 import { RouteFallback } from "@/shared/ui/RouteFallback";
 
-import { LoginPage } from "@/features/auth/LoginPage";
+import { SignInPage } from "@/features/auth/SignInPage";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { CoursesPage } from "@/features/courses/CoursesPage";
 import { CourseDetailPage } from "@/features/courses/CourseDetailPage";
@@ -25,7 +25,7 @@ export function AppRouter() {
   return (
     <Suspense fallback={<RouteFallback />}>
       <Routes>
-        <Route path={routes.login} element={<LoginPage />} />
+        <Route path={routes.login} element={<SignInPage />} />
 
         <Route element={<RequireAuth />}>
           <Route element={<AppLayout />}>
