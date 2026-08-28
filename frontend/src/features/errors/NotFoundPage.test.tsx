@@ -39,17 +39,21 @@ describe("página no encontrada", () => {
     expect(salida).toHaveAttribute("href", routes.login);
   });
 
-  it("con sesión ofrece lo mismo: el inicio de sesión", () => {
-    // Es la única pantalla construida, así que es la salida en los dos casos.
+  it("con sesión la salida es la herramienta del rol, no el acceso ni la raíz", () => {
+    // Mandar al inicio de sesión a quien ya tiene sesión abierta parece que le
+    // echaron; y `/` es esta misma pantalla, así que enlazarla no sale de aquí.
     renderizarEn("/ruta-que-no-existe", { role: "student", lang: "es" });
 
-    const salida = screen.getByRole("link", { name: /Ir al inicio de sesión/ });
-    expect(salida).toHaveAttribute("href", routes.login);
+    const salida = screen.getByRole("link", { name: /Volver al panel/ });
+    expect(salida).toHaveAttribute("href", routes.student);
   });
 
-  it("la raíz también muestra el 404", () => {
-    renderizarEn(routes.dashboard, { role: "student", lang: "es" });
-    expect(screen.getByRole("heading", { name: "Esta página no existe" })).toBeInTheDocument();
+  it("un editor vuelve al Studio desde el 404", () => {
+    renderizarEn("/ruta-que-no-existe", { role: "editor", lang: "es" });
+    expect(screen.getByRole("link", { name: /Volver al panel/ })).toHaveAttribute(
+      "href",
+      routes.studio,
+    );
   });
 
   it("pone su propio título de pestaña", () => {

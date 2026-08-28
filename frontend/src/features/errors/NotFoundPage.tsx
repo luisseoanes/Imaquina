@@ -6,6 +6,8 @@ import { useRandomRobot } from "@/features/auth/useRandomRobot";
 import { BrandBackdrop } from "@/shared/ui/BrandBackdrop";
 import { BrandLogo } from "@/shared/ui/BrandLogo";
 import { routes } from "@/shared/config/routes";
+import { homeForRole } from "@/shared/config/roles";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { useDocumentTitle } from "@/shared/hooks/useDocumentTitle";
 
 /** Pantalla para una dirección que no existe.
@@ -13,20 +15,25 @@ import { useDocumentTitle } from "@/shared/hooks/useDocumentTitle";
  *  Una página de error es un sitio para dar dirección, no para lamentarse: dice
  *  qué pasó, por qué pudo pasar y ofrece una salida concreta.
  *
- *  La salida es siempre el inicio de sesión, haya sesión o no: es la única
- *  pantalla construida y la puerta de entrada al producto.
+ *  La salida depende de si hay sesión: quien ya entró vuelve a LA HERRAMIENTA DE
+ *  SU ROL, y quien no, al acceso. Dos cosas que no se pueden simplificar:
+ *  mandar al inicio de sesión a alguien con la sesión abierta parece que le
+ *  echaron, y mandarlo a `/` sería mandarlo a esta misma pantalla, porque la
+ *  raíz es el 404.
  */
 export function NotFoundPage() {
   const { t } = useTranslation();
   useDocumentTitle("notFound.pageTitle");
   const robot = useRandomRobot();
+  const { session } = useAuth();
+  const salida = session ? homeForRole(session.role) : routes.login;
 
   return (
     <div className="relative flex min-h-svh flex-col overflow-hidden bg-canvas">
       <BrandBackdrop />
 
       <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 py-8 sm:px-8">
-        <Link to={routes.login} className="inline-block self-start">
+        <Link to={salida} className="inline-block self-start">
           <BrandLogo className="h-12 w-auto sm:h-14" />
         </Link>
 
@@ -47,12 +54,12 @@ export function NotFoundPage() {
             </p>
 
             <Link
-              to={routes.login}
+              to={salida}
               className="mt-8 inline-flex items-center justify-center gap-2 rounded-control
                          bg-brand px-5 py-3.5 text-[1.05rem] font-semibold text-brand-content
                          shadow-sm transition hover:bg-brand-strong active:scale-[0.99]"
             >
-              {t("notFound.toSignIn")}
+              {t(session ? "notFound.toDashboard" : "notFound.toSignIn")}
               <IconoFlecha />
             </Link>
           </div>
