@@ -18,7 +18,7 @@ export function homeForRole(role: Role): string {
   if (isAdmin(role)) return routes.admin;
   if (canAuthor(role)) return routes.studio;
   if (isStaff(role)) return routes.teacher;
-  return routes.courses;
+  return routes.student;
 }
 
 /** Los seis momentos, en el orden fijo del backend (R7). El cliente no

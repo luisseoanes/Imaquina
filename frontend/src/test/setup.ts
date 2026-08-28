@@ -1,8 +1,13 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll } from "vitest";
 
 import { server } from "./server";
+
+// Los tests montan `<App>` entero con rutas diferidas y varias peticiones MSW
+// en vuelo; con los workers en paralelo, 1 s (el valor por defecto) se queda
+// corto en máquinas cargadas y `findBy*` falla de forma intermitente.
+configure({ asyncUtilTimeout: 3000 });
 
 // i18n de verdad, no un mock: los tests afirman sobre el texto que ve el
 // usuario, así que una clave que falte en es.json sale como fallo del test y

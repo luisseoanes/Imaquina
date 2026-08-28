@@ -20,6 +20,7 @@ import { NotFoundPage } from "@/features/errors/NotFoundPage";
 const TeacherPage = lazy(() => import("@/features/teacher/TeacherPage"));
 const AdminPage = lazy(() => import("@/features/admin/AdminPage"));
 const StudioPage = lazy(() => import("@/features/studio/StudioPage"));
+const StudentPage = lazy(() => import("@/features/student/StudentPage"));
 
 export function AppRouter() {
   return (
@@ -39,6 +40,7 @@ export function AppRouter() {
             <Route path="/courses/:projectId/:momentType" element={<MomentPage />} />
             <Route path={routes.assignments} element={<AssignmentsPage />} />
             <Route path={routes.account} element={<AccountPage />} />
+            <Route path={`${routes.student}/*`} element={<StudentPage />} />
 
             <Route element={<RequireStaff />}>
               <Route path={`${routes.teacher}/*`} element={<TeacherPage />} />

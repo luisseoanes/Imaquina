@@ -9,6 +9,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AdminContext } from "./AdminContext";
 import { AdminLayout } from "./AdminLayout";
 
+import { AuditView } from "./views/AuditView";
 import { CourseDetailView } from "./views/CourseDetailView";
 import { CoursesView } from "./views/CoursesView";
 import { DashboardView } from "./views/DashboardView";
@@ -30,6 +31,7 @@ export function AdminPage() {
             <Route path="courses" element={<CoursesView />} />
             <Route path="courses/:courseId" element={<CourseDetailView />} />
             <Route path="moderation" element={<ModerationView />} />
+            <Route path="audit" element={<AuditView />} />
             <Route path="settings" element={<SettingsView />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>

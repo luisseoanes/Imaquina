@@ -388,7 +388,9 @@
       "progress": "Progreso",
       "grading": "Calificación",
       "content": "Contenido",
-      "settings": "Configuración"
+      "settings": "Configuración",
+      "assignments": "Tareas",
+      "agenda": "Agenda"
     },
     "dashboard": {
       "title": "Tu panel docente",
@@ -471,6 +473,37 @@
         "es": "Español",
         "en": "Inglés"
       }
+    },
+    "assignments": {
+      "subtitle": "Encarga un proyecto a tus cursos con fecha de entrega.",
+      "new": "Nueva tarea",
+      "empty": "Aún no has creado tareas.",
+      "draft": "Borrador",
+      "courses": "Cursos",
+      "title": "Título de la tarea",
+      "instructions": "Instrucciones",
+      "dueDate": "Fecha de entrega",
+      "publishNow": "Publicar ahora (visible para los alumnos)",
+      "dueOn": "Entrega: {{date}}",
+      "noDue": "Sin fecha de entrega",
+      "tracking": "Seguimiento",
+      "publish": "Publicar",
+      "unpublish": "Ocultar",
+      "confirmDelete": "¿Eliminar esta tarea?",
+      "moments": "momentos",
+      "time": {
+        "done": "A tiempo",
+        "pending": "Pendiente",
+        "late": "Atrasado",
+        "no_due": "Sin fecha"
+      }
+    },
+    "agenda": {
+      "subtitle": "Tus próximas entregas, ordenadas por fecha.",
+      "empty": "No hay entregas próximas.",
+      "overdue": "Vencida",
+      "today": "Hoy",
+      "inDays": "En {{count}} días"
     }
   },
   "admin": {
@@ -499,7 +532,8 @@
       "users": "Usuarios",
       "courses": "Cursos",
       "moderation": "Moderación del chat",
-      "settings": "Configuración"
+      "settings": "Configuración",
+      "audit": "Auditoría"
     },
     "dashboard": {
       "title": "Panel de administración",
@@ -594,6 +628,80 @@
       "newPassword": "Contraseña nueva",
       "changePassword": "Cambiar contraseña",
       "pwDone": "Contraseña cambiada."
+    },
+    "audit": {
+      "subtitle": "Quién hizo qué: altas, bajas, calificaciones y publicaciones.",
+      "allActions": "Todas las acciones",
+      "empty": "Sin registros.",
+      "when": "Cuándo",
+      "who": "Quién",
+      "what": "Qué",
+      "action": {
+        "user.create": "Alta de cuenta",
+        "user.deactivate": "Desactivación",
+        "user.activate": "Activación",
+        "user.update": "Edición de cuenta",
+        "user.reset_password": "Reset de contraseña",
+        "grade.change": "Cambio de nota",
+        "project.publish": "Publicación",
+        "project.unpublish": "Despublicación",
+        "assignment.create": "Nueva tarea"
+      }
+    }
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "markAll": "Marcar todas como leídas",
+    "empty": "No tienes notificaciones."
+  },
+  "search": {
+    "empty": "Sin resultados.",
+    "type": {
+      "projects": "Proyectos",
+      "lessons": "Lecciones",
+      "resources": "Recursos",
+      "courses": "Cursos",
+      "users": "Usuarios"
+    }
+  },
+  "account": {
+    "title": "Mi cuenta",
+    "subtitle": "Tus datos, idioma y contraseña.",
+    "profile": "Perfil",
+    "role": "Rol",
+    "email": "Correo",
+    "name": "Nombre",
+    "language": "Idioma de la interfaz",
+    "lang": {
+      "es": "Español",
+      "en": "Inglés"
+    },
+    "password": "Cambiar contraseña",
+    "currentPassword": "Contraseña actual",
+    "newPassword": "Contraseña nueva",
+    "passwordHint": "Mínimo 8 caracteres.",
+    "changePassword": "Cambiar contraseña",
+    "pwDone": "Contraseña cambiada.",
+    "back": "Volver",
+    "roleName": {
+      "student": "Estudiante",
+      "teacher": "Docente",
+      "editor": "Editor",
+      "admin": "Administrador"
+    }
+  },
+  "student": {
+    "hi": "Hola, {{name}}",
+    "agenda": {
+      "title": "Mis tareas",
+      "subtitle": "Lo que tienes que entregar.",
+      "empty": "No tienes tareas asignadas.",
+      "dueOn": "Entrega el {{date}}",
+      "noDue": "Sin fecha",
+      "moments": "momentos",
+      "done": "Completada",
+      "late": "Atrasada",
+      "pending": "Pendiente"
     }
   }
 }

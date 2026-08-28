@@ -14,6 +14,8 @@ import { routes } from "@/shared/config/routes";
 import { useAuth } from "@/shared/hooks/useAuth";
 import { useMe } from "@/shared/hooks/useMe";
 import { Icon } from "@/shared/ui/panel-icons";
+import { GlobalSearch } from "@/shared/ui/GlobalSearch";
+import { NotificationsBell } from "@/shared/ui/NotificationsBell";
 import { GROUP_ORDER, NAV, NAV_HOME } from "./nav";
 import type { NavItem } from "./nav";
 import { useTeacher } from "./TeacherContext";
@@ -206,30 +208,14 @@ function Topbar({ onMenu }: { onMenu: () => void }) {
         </p>
       </div>
 
-      <div className="relative min-w-0 flex-1 lg:max-w-xl">
-        <Icon
-          name="search"
-          className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-content-subtle"
-        />
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("teacher.header.search")}
-          aria-label={t("teacher.header.search")}
-          className="w-full rounded-pill border border-line bg-surface py-2.5 pl-10 pr-4 text-sm text-content transition duration-150 placeholder:text-content-subtle focus:border-brand-ink"
-        />
-      </div>
+      <GlobalSearch
+        value={search}
+        onChange={setSearch}
+        placeholder={t("teacher.header.search")}
+      />
 
       <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
-        <button
-          type="button"
-          aria-label={t("teacher.header.notifications")}
-          className="relative rounded-full p-2 text-content-muted transition duration-150 hover:bg-surface-muted hover:text-content"
-        >
-          <Icon name="bell" className="h-5 w-5" />
-          <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-brand" />
-        </button>
+        <NotificationsBell />
 
         <LangToggle />
 

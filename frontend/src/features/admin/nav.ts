@@ -24,6 +24,7 @@ export const NAV: NavItem[] = [
   { key: "courses", to: routes.adminCourses, icon: "book", group: "manage" },
 
   { key: "moderation", to: routes.adminModeration, icon: "eye", group: "watch" },
+  { key: "audit", to: routes.adminAudit, icon: "layers", group: "watch" },
 
   { key: "settings", to: routes.adminSettings, icon: "settings", group: "system" },
 ];

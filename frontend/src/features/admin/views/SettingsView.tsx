@@ -14,7 +14,7 @@ import {
   TextInput,
 } from "@/shared/ui/panel";
 import { Icon } from "@/shared/ui/panel-icons";
-import { useChangeOwnPassword } from "../api";
+import { useChangeOwnPassword } from "@/shared/hooks/useChangeOwnPassword";
 
 export function SettingsView() {
   const { t, i18n } = useTranslation();

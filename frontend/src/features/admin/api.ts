@@ -17,7 +17,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UseQueryOptions } from "@tanstack/react-query";
 
 import httpClient from "@/shared/api/httpClient";
-import { tokens } from "@/shared/api/tokens";
 import { env } from "@/shared/config/env";
 import type { Role } from "@/shared/config/roles";
 
@@ -164,20 +163,24 @@ export const useAdminDashboard = () =>
     queryFn: () => get<DashboardData>("/studio/dashboard"),
   });
 
-// --- Cuenta propia ----------------------------------------------------------
+// --- Auditoría ---------------------------------------------------------------
 
-/** Cambiar la contraseña propia. El backend devuelve un par de tokens NUEVO
- *  (cambiarla revoca los refresh anteriores) y hay que guardarlo o el próximo
- *  refresco cierra la sesión. */
-export const useChangeOwnPassword = () =>
-  useMutation({
-    mutationFn: async (b: { current_password: string; new_password: string }) => {
-      const res = await send<{ access_token: string; refresh_token: string }>(
-        "/auth/me/password",
-        "POST",
-        b,
-      );
-      tokens.set(res);
-      return res;
-    },
+export interface AuditEntry {
+  id: string;
+  action: string;
+  actor: string | null;
+  target_type: string | null;
+  target_id: string | null;
+  summary: string;
+  meta: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export const useAudit = (action: string) =>
+  useQuery({
+    queryKey: ["admin", "audit", action],
+    queryFn: () =>
+      get<{ total: number; items: AuditEntry[] }>(
+        `/admin/audit${action ? `?action=${action}` : ""}`,
+      ),
   });

@@ -80,6 +80,13 @@ describe("Panel del docente", () => {
     ).toBeInTheDocument();
   });
 
+  it("Tareas: muestra el estado vacío", async () => {
+    renderAt("/teacher/assignments");
+    expect(
+      await screen.findByText(/no has creado tareas/i),
+    ).toBeInTheDocument();
+  });
+
   it("un estudiante no entra al panel del docente", async () => {
     localStorage.clear();
     login("student");

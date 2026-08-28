@@ -20,6 +20,8 @@ export const NAV_HOME: NavItem = {
 };
 
 export const NAV: NavItem[] = [
+  { key: "assignments", to: routes.teacherAssignments, icon: "calendar", group: "track" },
+  { key: "agenda", to: routes.teacherAgenda, icon: "clock", group: "track" },
   { key: "courses", to: routes.teacherCourses, icon: "users", group: "track" },
   { key: "progress", to: routes.teacherProgress, icon: "bar-chart", group: "track" },
   { key: "grading", to: routes.teacherGrading, icon: "check-square", group: "track" },

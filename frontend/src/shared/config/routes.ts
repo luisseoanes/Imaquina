@@ -17,10 +17,16 @@ export const routes = {
   messages: "/messages",
   account: "/account",
 
+  // Estudiante (Fase 1: sólo la agenda).
+  student: "/student",
+  studentAgenda: "/student/agenda",
+
   // Panel del docente (rol teacher/editor/admin). Índice = resumen.
   teacher: "/teacher",
   teacherCourses: "/teacher/courses",
   teacherCourse: (id: string) => `/teacher/courses/${id}`,
+  teacherAssignments: "/teacher/assignments",
+  teacherAgenda: "/teacher/agenda",
   teacherProgress: "/teacher/progress",
   teacherGrading: "/teacher/grading",
   teacherContent: "/teacher/content",
@@ -33,6 +39,7 @@ export const routes = {
   adminCourses: "/admin/courses",
   adminCourse: (id: string) => `/admin/courses/${id}`,
   adminModeration: "/admin/moderation",
+  adminAudit: "/admin/audit",
   adminSettings: "/admin/settings",
 
   // Content Studio (rol editor/admin). El índice es el panel; el resto son

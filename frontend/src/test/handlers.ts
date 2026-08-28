@@ -52,7 +52,15 @@ export const handlers = [
   http.get(`${API}/courses`, () => HttpResponse.json([])),
   http.get(`${API}/learn/projects`, () => HttpResponse.json([])),
 
+  // Notificaciones y búsqueda (transversal)
+  http.get(`${API}/notifications/unread-count`, () => HttpResponse.json({ unread: 0 })),
+  http.get(`${API}/notifications`, () => HttpResponse.json({ items: [], unread: 0 })),
+  http.get(`${API}/search`, () => HttpResponse.json({})),
+  http.get(`${API}/assignments`, () => HttpResponse.json([])),
+  http.get(`${API}/assignments/mine`, () => HttpResponse.json([])),
+
   // Panel de administración
   http.get(`${API}/admin/users`, () => HttpResponse.json([])),
   http.get(`${API}/studio/assistant/rejections`, () => HttpResponse.json([])),
+  http.get(`${API}/admin/audit`, () => HttpResponse.json({ total: 0, items: [] })),
 ];

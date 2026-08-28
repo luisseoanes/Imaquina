@@ -388,7 +388,9 @@
       "progress": "Progress",
       "grading": "Grading",
       "content": "Content",
-      "settings": "Settings"
+      "settings": "Settings",
+      "assignments": "Assignments",
+      "agenda": "Agenda"
     },
     "dashboard": {
       "title": "Your teacher panel",
@@ -471,6 +473,37 @@
         "es": "Spanish",
         "en": "English"
       }
+    },
+    "assignments": {
+      "subtitle": "Assign a project to your courses with a due date.",
+      "new": "New assignment",
+      "empty": "You haven't created any assignments yet.",
+      "draft": "Draft",
+      "courses": "Courses",
+      "title": "Assignment title",
+      "instructions": "Instructions",
+      "dueDate": "Due date",
+      "publishNow": "Publish now (visible to students)",
+      "dueOn": "Due: {{date}}",
+      "noDue": "No due date",
+      "tracking": "Tracking",
+      "publish": "Publish",
+      "unpublish": "Hide",
+      "confirmDelete": "Delete this assignment?",
+      "moments": "moments",
+      "time": {
+        "done": "On time",
+        "pending": "Pending",
+        "late": "Late",
+        "no_due": "No due date"
+      }
+    },
+    "agenda": {
+      "subtitle": "Your upcoming due dates, sorted by date.",
+      "empty": "No upcoming due dates.",
+      "overdue": "Overdue",
+      "today": "Today",
+      "inDays": "In {{count}} days"
     }
   },
   "admin": {
@@ -499,7 +532,8 @@
       "users": "Users",
       "courses": "Courses",
       "moderation": "Chat moderation",
-      "settings": "Settings"
+      "settings": "Settings",
+      "audit": "Audit log"
     },
     "dashboard": {
       "title": "Administration panel",
@@ -594,6 +628,80 @@
       "newPassword": "New password",
       "changePassword": "Change password",
       "pwDone": "Password changed."
+    },
+    "audit": {
+      "subtitle": "Who did what: accounts, grades and publishing.",
+      "allActions": "All actions",
+      "empty": "No entries.",
+      "when": "When",
+      "who": "Who",
+      "what": "What",
+      "action": {
+        "user.create": "Account created",
+        "user.deactivate": "Deactivation",
+        "user.activate": "Activation",
+        "user.update": "Account edited",
+        "user.reset_password": "Password reset",
+        "grade.change": "Grade change",
+        "project.publish": "Published",
+        "project.unpublish": "Unpublished",
+        "assignment.create": "New assignment"
+      }
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAll": "Mark all as read",
+    "empty": "No notifications."
+  },
+  "search": {
+    "empty": "No results.",
+    "type": {
+      "projects": "Projects",
+      "lessons": "Lessons",
+      "resources": "Resources",
+      "courses": "Courses",
+      "users": "Users"
+    }
+  },
+  "account": {
+    "title": "My account",
+    "subtitle": "Your details, language and password.",
+    "profile": "Profile",
+    "role": "Role",
+    "email": "Email",
+    "name": "Name",
+    "language": "Interface language",
+    "lang": {
+      "es": "Spanish",
+      "en": "English"
+    },
+    "password": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "passwordHint": "At least 8 characters.",
+    "changePassword": "Change password",
+    "pwDone": "Password changed.",
+    "back": "Back",
+    "roleName": {
+      "student": "Student",
+      "teacher": "Teacher",
+      "editor": "Editor",
+      "admin": "Administrator"
+    }
+  },
+  "student": {
+    "hi": "Hi, {{name}}",
+    "agenda": {
+      "title": "My assignments",
+      "subtitle": "What you need to hand in.",
+      "empty": "You have no assignments.",
+      "dueOn": "Due {{date}}",
+      "noDue": "No due date",
+      "moments": "moments",
+      "done": "Completed",
+      "late": "Late",
+      "pending": "Pending"
     }
   }
 }

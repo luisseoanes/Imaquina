@@ -75,6 +75,11 @@ describe("Panel de administración", () => {
     ).toBeInTheDocument();
   });
 
+  it("Auditoría: muestra el registro vacío", async () => {
+    renderAt("/admin/audit");
+    expect(await screen.findByText(/sin registros/i)).toBeInTheDocument();
+  });
+
   it("un docente no entra a administración", async () => {
     localStorage.clear();
     login("teacher");

@@ -75,6 +75,7 @@ describe("router", () => {
       ["teacher", "[data-teacher-root]"],
       ["editor", "[data-studio-root]"],
       ["admin", "[data-admin-root]"],
+      ["student", "[data-student-root]"],
     ] as const) {
       localStorage.clear();
       server.use(

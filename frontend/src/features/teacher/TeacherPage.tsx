@@ -11,6 +11,8 @@ import type { Lang } from "@/shared/config/roles";
 import { TeacherContext } from "./TeacherContext";
 import { TeacherLayout } from "./TeacherLayout";
 
+import { AgendaView } from "./views/AgendaView";
+import { AssignmentsView } from "./views/AssignmentsView";
 import { CourseDetailView } from "./views/CourseDetailView";
 import { CoursesView } from "./views/CoursesView";
 import { DashboardView } from "./views/DashboardView";
@@ -34,6 +36,8 @@ export function TeacherPage() {
         <TeacherLayout>
           <Routes>
             <Route index element={<DashboardView />} />
+            <Route path="assignments" element={<AssignmentsView />} />
+            <Route path="agenda" element={<AgendaView />} />
             <Route path="courses" element={<CoursesView />} />
             <Route path="courses/:courseId" element={<CourseDetailView />} />
             <Route path="progress" element={<ProgressView />} />

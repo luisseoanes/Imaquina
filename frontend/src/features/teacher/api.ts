@@ -253,3 +253,72 @@ export const useExportStatus = (assessmentId: string, enabled: boolean) =>
     refetchInterval: (q) =>
       q.state.data?.status === "listo" ? false : 2500,
   });
+
+// --- Asignaciones -----------------------------------------------------------
+
+export interface Assignment {
+  id: string;
+  course_id: string;
+  course_name: string;
+  project_id: string;
+  project_title: string;
+  title: string;
+  instructions: string | null;
+  due_at: string | null;
+  is_published: boolean;
+  created_at: string;
+}
+
+export interface TrackingRow {
+  user_id: string;
+  full_name: string;
+  completed_moments: number;
+  total_moments: number;
+  status: "completed" | "in_progress" | "not_started";
+  timeliness: "done" | "pending" | "late" | "no_due";
+}
+
+export const useAssignments = () =>
+  useQuery({
+    queryKey: ["teacher", "assignments"],
+    queryFn: () => get<Assignment[]>("/assignments"),
+  });
+
+export const useAssignmentTracking = (id: string, enabled: boolean) =>
+  useQuery({
+    queryKey: ["teacher", "assignment-tracking", id],
+    queryFn: () =>
+      get<{
+        assignment: { id: string; title: string; due_at: string | null };
+        rows: TrackingRow[];
+      }>(`/assignments/${id}/tracking`),
+    enabled,
+  });
+
+export function useAssignmentMutations() {
+  const qc = useQueryClient();
+  const invalidate = () =>
+    qc.invalidateQueries({ queryKey: ["teacher", "assignments"] });
+  return {
+    create: useMutation({
+      mutationFn: (b: {
+        course_ids: string[];
+        project_id: string;
+        title: string;
+        instructions?: string | null;
+        due_at?: string | null;
+        is_published?: boolean;
+      }) => send<Assignment[]>("/assignments", "POST", b),
+      onSuccess: invalidate,
+    }),
+    update: useMutation({
+      mutationFn: ({ id, ...b }: { id: string } & Record<string, unknown>) =>
+        send<Assignment>(`/assignments/${id}`, "PATCH", b),
+      onSuccess: invalidate,
+    }),
+    remove: useMutation({
+      mutationFn: (id: string) => send<void>(`/assignments/${id}`, "DELETE"),
+      onSuccess: invalidate,
+    }),
+  };
+}
