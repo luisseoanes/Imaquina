@@ -43,5 +43,13 @@
     "contact": "Contact",
     "pageTitle": "Sign In",
     "visitPartner": "Visit the {{name}} website (opens in a new tab)"
+  },
+  "notFound": {
+    "pageTitle": "Page Not Found",
+    "code": "404",
+    "title": "This page does not exist",
+    "body": "The link may be misspelled, or the page may have moved.",
+    "toSignIn": "Go to sign in",
+    "toDashboard": "Back to dashboard"
   }
 }

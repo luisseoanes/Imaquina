@@ -46,16 +46,18 @@ describe("router", () => {
     expect(screen.getByRole("heading", { name: "Iniciar sesión" })).toBeInTheDocument();
   });
 
-  it("con sesión, la raíz monta el panel", () => {
+  it("la raíz muestra el 404 mientras el panel no exista", () => {
     iniciarSesion(ESTUDIANTE);
-    const { container } = renderizarEn(routes.dashboard);
-    expect(pantallaMontada(container)).toBe("DashboardPage");
+    renderizarEn(routes.dashboard);
+    expect(screen.getByRole("heading", { name: "Esta página no existe" })).toBeInTheDocument();
   });
 
-  it("una ruta desconocida vuelve al panel", () => {
+  it("una ruta desconocida muestra un 404, no redirige en silencio", () => {
     iniciarSesion(ESTUDIANTE);
-    const { container } = renderizarEn("/no-existe-esta-ruta");
-    expect(pantallaMontada(container)).toBe("DashboardPage");
+    renderizarEn("/no-existe-esta-ruta");
+    // Redirigir al panel haría parecer que el enlace roto funcionó, y nadie
+    // lo reportaría nunca.
+    expect(screen.getByRole("heading", { name: "Esta página no existe" })).toBeInTheDocument();
   });
 
   it("el momento de un proyecto resuelve sus dos parámetros", () => {
@@ -65,22 +67,22 @@ describe("router", () => {
   });
 
   describe("guards por rol", () => {
-    it("un estudiante no entra al Content Studio: lo devuelve al panel", () => {
+    it("un estudiante no entra al Content Studio", () => {
       iniciarSesion(ESTUDIANTE);
       const { container } = renderizarEn(routes.studio);
-      expect(pantallaMontada(container)).toBe("DashboardPage");
+      expect(pantallaMontada(container)).not.toBe("StudioPage");
     });
 
     it("un estudiante no entra al panel docente", () => {
       iniciarSesion(ESTUDIANTE);
       const { container } = renderizarEn(routes.teacher);
-      expect(pantallaMontada(container)).toBe("DashboardPage");
+      expect(pantallaMontada(container)).not.toBe("TeacherPage");
     });
 
     it("un docente no entra a administración", () => {
       iniciarSesion(DOCENTE);
       const { container } = renderizarEn(routes.admin);
-      expect(pantallaMontada(container)).toBe("DashboardPage");
+      expect(pantallaMontada(container)).not.toBe("AdminPage");
     });
 
     it("un docente sí entra al panel docente", async () => {

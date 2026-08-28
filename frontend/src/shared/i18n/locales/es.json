@@ -43,5 +43,13 @@
     "contact": "Contacto",
     "pageTitle": "Inicio de Sesión",
     "visitPartner": "Visitar el sitio de {{name}} (se abre en una pestaña nueva)"
+  },
+  "notFound": {
+    "pageTitle": "Página No Encontrada",
+    "code": "404",
+    "title": "Esta página no existe",
+    "body": "El enlace puede estar mal escrito o la página haber cambiado de sitio.",
+    "toSignIn": "Ir al inicio de sesión",
+    "toDashboard": "Volver al panel"
   }
 }
