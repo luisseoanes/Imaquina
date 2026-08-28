@@ -11,6 +11,7 @@ import { ApiError } from "@/shared/api/ApiError";
 import { LANGS, homeForRole } from "@/shared/config/roles";
 import { setLanguage } from "@/shared/i18n";
 import { useAuth } from "@/shared/hooks/useAuth";
+import { useAccountLang } from "@/shared/hooks/useAccountLang";
 import { useChangeOwnPassword } from "@/shared/hooks/useChangeOwnPassword";
 import { useMe } from "@/shared/hooks/useMe";
 import { BrandLogo } from "@/shared/ui/BrandLogo";
@@ -22,6 +23,7 @@ export function AccountPage() {
   const { session, logout } = useAuth();
   const { data: me } = useMe();
   const changePw = useChangeOwnPassword();
+  const guardarIdioma = useAccountLang();
 
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
@@ -102,7 +104,12 @@ export function AccountPage() {
               <button
                 key={l}
                 type="button"
-                onClick={() => setLanguage(l)}
+                onClick={() => {
+                  setLanguage(l);
+                  // Si el PATCH falla, la interfaz ya cambió —que es lo que se
+                  // pidió— y sólo se pierde la persistencia.
+                  guardarIdioma.mutate(l);
+                }}
                 aria-pressed={i18n.language === l}
                 className={`rounded-control px-3 py-2 text-sm font-semibold transition duration-150 ${
                   i18n.language === l
