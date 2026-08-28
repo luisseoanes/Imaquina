@@ -3,11 +3,11 @@
 Derivado de [`scope-mvp.md`](scope-mvp.md) y contrastado con el código a 23/08/2026.
 Cubre **sólo el backend**. Lo que queda fuera está en §7.
 
-> **El frontend se eliminó del repositorio el 27/08/2026** para rehacerlo desde cero, y
-> con él todos los ítems de cliente que había aquí (S11–S17, N8–N14, A8–A10, C6, I1–I5,
-> I7 y I9, más B2 y N16). No se listan como pendientes porque el trabajo no está
-> pendiente: está descartado. Cuando se retome el cliente, el backlog nuevo se escribe
-> desde cero contra el contrato HTTP que ya expone el backend.
+> **El cliente web se rehízo desde cero el 27/08/2026**, y con él se descartaron todos
+> los ítems de cliente que había aquí (S11–S17, N8–N14, A8–A10, C6, I1–I5, I7 e I9, más
+> B2 y N16). No se listan como pendientes porque no lo están: ese trabajo ya no cuenta.
+> El backlog del cliente nuevo está sin escribir; hoy hay dos pantallas construidas
+> —acceso y 404— y el resto de rutas son marcadores.
 
 **Las secciones están en orden de ejecución.** Dentro de cada una, los ítems también:
 si uno depende de otro, lleva `⇠ depende de`. Los identificadores (`B`, `S`, `N`, `A`,
@@ -257,7 +257,7 @@ Todo se construye y se testea contra `StubProvider`, sin depender de Luis.
 | Embeddings reales, prompt de sistema, chunking/ranking/top-k, calidad del RAG, `is_in_domain` | Luis — ver `CLAUDE.md` § Frontera del trabajo de modelo. **Recordado el 27/08/2026**: siguen siendo un vector de ceros, así que el chat responde sin recuperar nada. |
 | Infra, hosting, servidor, despliegue | PO |
 | Carga de los 34 proyectos restantes y los textos en inglés | Cliente, con el Content Studio |
-| **Todo el cliente web**: framework, paleta, tipografía, componentes, i18n de la interfaz, accesibilidad y responsive | Sin decidir. Se eliminó del repositorio el 27/08/2026 para rehacerlo desde cero; no hay ninguna decisión heredada que respetar. |
+| **Las pantallas del cliente web** más allá del acceso y el 404 | Sin planificar. El stack ya está decidido (React + Vite, ver `frontend/CLAUDE.md`); lo que falta es el backlog de pantallas, que se escribirá contra el contrato que el backend ya expone. |
 | App nativa, offline, gamificación, LMS, dashboards de directivos, aprobación multinivel | Fuera del MVP (`scope-mvp.md` §3) |
 
 ## 8. Preguntas que bloqueaban ítems concretos — resueltas 18/08/2026

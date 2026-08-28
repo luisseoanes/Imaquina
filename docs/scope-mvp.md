@@ -2,9 +2,7 @@
 
 > Documento de trabajo. Base: [`plataforma-imaquina-robotica.md`](plataforma-imaquina-robotica.md),
 > transcripción del PDF que entregó el cliente.
-> Stack objetivo: **Python + FastAPI** (backend). El cliente web está **sin decidir**:
-> se eliminó del repositorio el 27/08/2026 para rehacerlo desde cero, así que lo que
-> este documento proponía sobre framework, librerías, paleta o tipografía **ya no aplica**.
+> Stack objetivo: **Python + FastAPI** (backend) / **React + Vite** (cliente web).
 > Fecha: agosto 2026.
 
 ---
@@ -136,8 +134,8 @@ Total MVP ≈ **16–19 semanas**. Es **~3–4 semanas más** que sin Content St
 ## 5. Arquitectura técnica
 
 ```
-Cliente web         ──HTTPS/JSON──▶  FastAPI  ──▶  PostgreSQL + pgvector
-   (sin decidir)                     (async)       ├─ contenido, usuarios, intentos
+React + Vite (SPA)  ──HTTPS/JSON──▶  FastAPI  ──▶  PostgreSQL + pgvector
+   TanStack Query                    (async)       ├─ contenido, usuarios, intentos
                                        │           └─ embeddings del contenido
                                        │
                                        ├──▶  Anthropic API (Claude) — chatbot
@@ -159,15 +157,16 @@ Cliente web         ──HTTPS/JSON──▶  FastAPI  ──▶  PostgreSQL + 
 
 > Nota: antes de fijar el modelo y calcular costo por token, revisar precios y IDs vigentes — no estimar de memoria.
 
-### Cliente web — sin decidir
+### Cliente web — React
 
-Se eliminó del repositorio el 27/08/2026 y se rehará desde cero. **No hay framework,
-paleta, tipografía ni convenciones heredadas**, y nada de lo que este documento proponía
-antes condiciona la decisión.
+Rehecho desde cero el 27/08/2026. **React 19 + Vite + TypeScript**, con React Router,
+**TanStack Query** para el estado de servidor, **react-i18next** (ES/EN desde el día 1),
+Tailwind con tokens semánticos, y `react-hook-form` + `zod` en los formularios. El cliente
+HTTP se genera del OpenAPI de FastAPI con `orval`, para no escribir tipos a mano.
 
-Lo único que se mantiene como requisito de producto, porque sale del brief y no de una
-elección técnica: los estudiantes de bachillerato entran **desde el celular** y la sala de
-robótica rara vez tiene un PC por estudiante.
+Diseño **mobile-first**, y esto sale del brief y no de una preferencia técnica: los
+estudiantes de bachillerato entran desde el celular y la sala de robótica rara vez tiene
+un PC por estudiante.
 
 ---
 

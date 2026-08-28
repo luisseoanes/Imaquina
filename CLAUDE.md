@@ -5,24 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Plataforma de robótica educativa (36 proyectos × 6 momentos, bilingüe ES/EN, chatbot
 con RAG, evaluación exportable). **Backend: FastAPI async, monolito modular.**
 
-El cliente web se rehízo desde cero el 27/08/2026: **React 19 + Vite + TypeScript**, SPA
-contra `/api/v1`. Hoy es **andamiaje, no pantallas** — las rutas existen y compilan, cada
-vista es un marcador. Sus reglas están en `frontend/README.md`; lo que hay que saber para
-no romperlo desde aquí:
-
-- **El cliente de la API se genera del OpenAPI** (`make web-api`, necesita `make api`
-  corriendo) y **se versiona**. Si tocas un endpoint o su esquema, regenera: el generado
-  desactualizado compila igual y falla en runtime. Los nombres se limpian en
-  `orval.config.ts` — FastAPI produce operationIds como `login_api_v1_auth_login_post`, y
-  ahí se recortan a `login`. Ese fichero lleva dos listas: `RESERVADAS` (hay un endpoint
-  `export`, que no puede ser nombre de variable) y `AMBIGUAS` (`get_moment`,
-  `get_project` y `list_projects` existen en `learning` y en `studio` a la vez). **Si
-  añades un endpoint que colisione, `tsc` falla con "Duplicate identifier"**: se añade el
-  nombre a `AMBIGUAS` y se regenera.
-- **El color se nombra por intención**, nunca por valor: los tokens están en
-  `frontend/src/styles/tokens.css` y son el único sitio con un color escrito.
-- **La paleta definitiva sigue sin decidir** (`scope-mvp.md` §9.13). Los valores actuales
-  se derivaron de la referencia del dashboard y están para cambiarse.
+Hay un cliente web en **React 19 + Vite + TypeScript** con sus propias reglas en
+[`frontend/CLAUDE.md`](frontend/CLAUDE.md), que se carga solo al tocar ficheros de ahí.
+Lo único que hay que saber desde el backend: **el cliente HTTP se genera del OpenAPI**
+(`make web-api`) y va versionado, así que si tocas un endpoint o su esquema hay que
+regenerarlo — el generado desactualizado compila igual y falla en runtime.
 
 Las decisiones y su porqué están en `docs/arquitectura.md` (léelo antes de tocar
 fronteras entre módulos, caché de prompts o el camino de lectura). Los códigos `R1`–`R10`
@@ -64,9 +51,11 @@ imagen de Docker instalan exactamente lo mismo. `pyproject.toml` solo declara ra
   contenedores cuelgan del nombre del directorio, así que `make up` crea unos nuevos y
   hay que rehacer `make testdb && make migrate && make seed`.
 
-Arranque desde cero: `make sync && make up && make migrate && make seed`. El detalle
-—puertos, credenciales de las semillas y los fallos que más se repiten— está en
-[`docs/desarrollo.md`](docs/desarrollo.md).
+Arranque desde cero: `make sync && make up && make migrate && make seed`. Los puertos,
+las credenciales de las semillas y **los fallos que más se repiten** —incluido el
+`S3_ENDPOINT_URL=` vacío del `.env`, que hace fallar un test sólo en local— están en
+[`docs/desarrollo.md`](docs/desarrollo.md). Léelo antes de pelearte con un error de
+entorno.
 
 `make seed` (`app/db/seeds.py`) crea institución, licencia vigente, un usuario por rol y
 un proyecto publicado. Es idempotente y **se niega a correr si `ENV != local`** (crea
@@ -104,6 +93,14 @@ make worker        # worker ARQ de background
 make test-unit     # sin infraestructura, siempre corre
 make test-int      # requiere Postgres; si no está, se salta solo
 make lint / fix    # ruff
+
+# cliente web, los mismos comandos que usa CI
+make web-install   # npm ci, exactamente segun package-lock.json
+make web           # vite en :5173, proxy /api -> :8000
+make web-lint      # oxlint
+make web-test      # vitest
+make web-build     # tsc -b && vite build
+make web-api       # regenera el cliente del OpenAPI (necesita `make api` corriendo)
 
 # un test suelto: no hay target
 cd backend && uv run pytest tests/unit/test_security.py::test_nombre -q
@@ -228,3 +225,16 @@ capa de repositorio** y no debe añadirse. Modelos nuevos deben quedar alcanzabl
 - **Los tests unitarios de servicios mienten sobre el ORM async**: construyen los objetos
   en memoria, así que las relaciones ya están cargadas y nunca ejercitan el lazy loading.
   Todo servicio que serialice relaciones necesita además un test de integración.
+- **Frontend**: vitest + Testing Library + MSW con `onUnhandledRequest: "error"` — una
+  petición que ningún handler simule hace fallar el test en vez de salir a la red.
+  `app/router/router.test.tsx` monta `<App>` y navega de verdad: los guards y los enlaces
+  entre pantallas se prueban ahí, no en el componente aislado.
+- **Lo visual se comprueba en Chrome, no leyendo clases.** `jsdom` no calcula layout: un
+  elemento que se sale de la pantalla en 390px pasa todos los tests de vitest.
+  `frontend/scripts/audit-responsive.mjs` conduce Chrome por CDP y sale con código 1 si el
+  documento scrollea en horizontal (necesita la app y la API levantadas, por eso no está
+  en `npm run build`). Para el resto —contraste, tema oscuro, foco— vale el mismo patrón:
+  `--headless=new --remote-debugging-port=9222` y `Emulation.setEmulatedMedia` para
+  `prefers-color-scheme`. Ojo con `el.focus()` por script: no dispara `:focus-visible` y da
+  un falso positivo de "no hay foco visible"; hay que mandar un Tab real con
+  `Input.dispatchKeyEvent`.

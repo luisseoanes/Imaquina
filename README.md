@@ -3,6 +3,7 @@
 Plataforma de robótica educativa: 36 proyectos por grado (Transición → 11°), seis momentos metodológicos por proyecto, chatbot consultor técnico y evaluación exportable. Bilingüe ES/EN.
 
 - **Levantar el proyecto en local:** [`docs/desarrollo.md`](docs/desarrollo.md)
+- **Preguntas abiertas con el cliente:** [`docs/preguntas-cliente.md`](docs/preguntas-cliente.md)
 - **Alcance y fases:** [`docs/scope-mvp.md`](docs/scope-mvp.md)
 - **Decisiones de arquitectura:** [`docs/arquitectura.md`](docs/arquitectura.md)
 - **Brief original del cliente:** [`docs/plataforma-imaquina-robotica.md`](docs/plataforma-imaquina-robotica.md)
@@ -123,10 +124,10 @@ recorrido del estudiante con progreso lineal, cuentas y cursos, evaluación con 
 Excel y el chat con sus sesiones, historial y rate limit. Esquema migrado, semillas de
 desarrollo y verificación automática antes de cada release.
 
-**El cliente web está recién inicializado**: React 19 + Vite + TypeScript, con el
-enrutado, los guards por rol, la sesión, el cliente generado desde el OpenAPI, i18n y los
-tokens de diseño en su sitio. **Ninguna pantalla está desarrollada todavía**: cada ruta
-monta un marcador. Ver `frontend/README.md`.
+**El cliente web tiene sus dos primeras pantallas**: acceso (`/login`) y 404, sobre un
+andamiaje ya completo — enrutado con guards por rol, sesión, cliente generado desde el
+OpenAPI, i18n y tokens de diseño. El resto de rutas existen y compilan, pero montan
+marcadores. Ver [`frontend/CLAUDE.md`](frontend/CLAUDE.md).
 
 Del lado del modelo quedan los embeddings reales del RAG y la calidad de la recuperación,
 que viven detrás de `AssistantProvider` (ver `CLAUDE.md`).

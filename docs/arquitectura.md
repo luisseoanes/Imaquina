@@ -1,11 +1,7 @@
 # Arquitectura de Software — Plataforma Imaquina
 
 > Complementa `scope-mvp.md`. Aquí van las decisiones de *cómo* se construye.
-> Stack: FastAPI + PostgreSQL. Equipo pequeño (1–3 devs).
->
-> **El cliente web se eliminó del repositorio el 27/08/2026** para rehacerlo desde
-> cero. Este documento ya no propone framework, librerías ni convenciones de UI:
-> esa decisión está abierta. Lo que sigue vigente es todo lo del servidor.
+> Stack: FastAPI + PostgreSQL, con un cliente web en React. Equipo pequeño (1–3 devs).
 
 ---
 
@@ -19,7 +15,7 @@ Si algún día el chatbot necesita escalar aparte, un módulo bien delimitado se
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  Cliente web (sin decidir)                          │
+│  Cliente web (React + Vite, SPA)                    │
 │  estudiante · docente · Content Studio              │
 └───────────────────┬─────────────────────────────────┘
                     │ HTTPS / JSON + SSE
@@ -155,13 +151,24 @@ Redis ya está ahí para la cola, así que sirve también de caché de contenido
 
 ## 6. Cliente web
 
-Sin decidir: se eliminó del repositorio el 27/08/2026 y se rehará desde cero. La única
-interfaz que el servidor garantiza es el contrato HTTP (`/api/v1`, con su OpenAPI en
-`/docs`) y el SSE del chat.
+SPA en **React + Vite + TypeScript** contra `/api/v1`. Se rehízo desde cero el
+27/08/2026; el detalle de sus convenciones vive en `frontend/CLAUDE.md`, aquí solo lo que
+afecta a la frontera con el servidor.
 
-Lo único que **no** es negociable desde el cliente, porque no es suyo: la autorización, el
-aislamiento por institución (§3.2) y el filtrado de la guía docente (§3.3). Todo eso se
-resuelve en el servidor y ningún cliente puede relajarlo.
+- **El cliente HTTP se genera del OpenAPI**, no se escribe a mano. El backend publica un
+  contrato tipado y escribir esas firmas garantiza que se desincronicen sin que nadie se
+  entere hasta runtime.
+- **Estado de servidor con TanStack Query, sin Redux.** Casi todo el estado de esta
+  aplicación son datos del servidor; Redux obligaría a reimplementar caché e invalidación
+  a mano.
+- **Por capas, dependencia en un solo sentido**: composición → dominio → transversal. Una
+  feature nunca importa de otra, que es lo que permite borrarla entera sin perseguir
+  referencias.
+
+Lo que **no** es negociable desde el cliente, porque no es suyo: la autorización, el
+aislamiento por institución (§3.2) y el filtrado de la guía docente (§3.3). Se resuelve en
+el servidor y ningún cliente puede relajarlo — los guards de ruta deciden qué pintar, no
+qué se permite.
 
 ---
 

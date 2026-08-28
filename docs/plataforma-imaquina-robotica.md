@@ -1,8 +1,8 @@
 # Plataforma Imaquina Robótica — brief del cliente
 
-> Transcripción de [`marca/plataforma-imaquina-robotica.pdf`](marca/plataforma-imaquina-robotica.pdf)
-> (Jason Castro Parra, 29 de julio de 2026, 4 páginas). El PDF original se conserva:
-> las páginas 2–4 son capturas de pantalla y esto es su contenido en texto.
+> Transcripción del PDF original de Jason Castro Parra (29 de julio de 2026, 4 páginas).
+> **El PDF ya no está en el repositorio**: sus páginas 2–4 eran capturas de pantalla y
+> esto es su contenido en texto, así que este documento es ahora la única copia.
 >
 > Este documento es **la fuente**, no la propuesta. El alcance derivado está en
 > [`scope-mvp.md`](scope-mvp.md), donde estos requisitos aparecen numerados `R1`–`R10`.

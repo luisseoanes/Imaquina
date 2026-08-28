@@ -12,7 +12,9 @@ tercero— va en `public/` y no aquí: esos se sirven tal cual, sin hash.
 
 ## Qué hay
 
-- `brand/` — la marca propia. `imaquina-horizontal.svg` es el logotipo.
+- `brand/` — la marca propia, con las dos versiones del logotipo. El sufijo
+  dice **sobre qué fondo va**, igual que en `logos/`: `-claro` para fondo claro
+  y `-oscuro` (que es la versión clara del logo) para fondo oscuro.
 - `logos/` — marcas de **colaboradores**, no la nuestra. Las variantes
   `-claro` / `-oscuro` dicen **sobre qué fondo van**, no de qué color es el
   logo: `ubbu-oscuro.png` es casi blanco (luminosidad media 245) porque está
@@ -22,8 +24,9 @@ tercero— va en `public/` y no aquí: esos se sirven tal cual, sin hash.
 
 ## Antes de usarlos, léete esto
 
-**Los `robot-*.svg` y el logotipo no son vectores.** Llevan un PNG embebido en
-base64: los robots pesan entre 366 KB y 620 KB cada uno y el logotipo 493 KB.
+**Los `robot-*.svg` y el logotipo claro no son vectores.** Llevan un PNG
+embebido en base64: los robots pesan entre 366 KB y 620 KB cada uno y el
+logotipo 493 KB (la versión oscura, que ya es PNG, 389 KB).
 No escalan como vector, y base64 infla un 33 % sobre el bitmap original. Lo
 mismo con `logos/foodcash-*.svg`. Sólo `logos/ubbu-claro.svg` es vector de
 verdad (4 KB).
