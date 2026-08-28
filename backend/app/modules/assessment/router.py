@@ -133,6 +133,15 @@ async def list_attempts(assessment_id: UUID, staff: Staff, db: Db):
     return await service.list_attempts(db, staff.require_institution(), assessment_id)
 
 
+@router.get("/moments/{moment_id}/review")
+async def review(moment_id: UUID, staff: Staff, db: Db, lang: str = "es"):
+    """A4/A5: la evaluación de un momento + sus intentos enviados, con nombre
+    de estudiante y respuestas. Para el panel de calificación del docente."""
+    return await service.review_rows(
+        db, staff.require_institution(), moment_id, lang=lang
+    )
+
+
 @router.post("/{assessment_id}/export", status_code=202)
 async def export(assessment_id: UUID, staff: Staff):
     """A6: genera el XLSX en background (openpyxl) y lo sube al bucket bajo

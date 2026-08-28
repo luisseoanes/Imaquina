@@ -609,6 +609,71 @@ async def list_attempts(
     return [_serializar_attempt(a) for a in filas]
 
 
+async def review_rows(
+    db: AsyncSession,
+    staff_institution_id: uuid.UUID,
+    moment_id: uuid.UUID,
+    *,
+    lang: str = "es",
+) -> dict[str, Any]:
+    """A4/A5: todo lo que el docente necesita para calificar la evaluación de
+    un momento.
+
+    Se pide por `moment_id` (no `assessment_id`) porque el docente llega
+    navegando el proyecto publicado, igual que el resto del camino de lectura.
+    Devuelve la evaluación con sus preguntas y los intentos ENVIADOS de su
+    institución, con el nombre del estudiante y sus respuestas. Sólo LEE — la
+    calificación se hace aparte con `grade_answer`.
+
+    Lee `identity.User` (regla de dependencia §2: leer otro módulo está bien;
+    escribirlo, no).
+    """
+    from app.modules.identity.models import User
+
+    assessment = (
+        await db.execute(
+            select(Assessment)
+            .where(Assessment.moment_id == moment_id)
+            .options(
+                selectinload(Assessment.questions)
+                .selectinload(Question.choices)
+                .selectinload(Choice.translations),
+                selectinload(Assessment.questions).selectinload(Question.translations),
+            )
+        )
+    ).scalar_one_or_none()
+    if assessment is None:
+        raise NotFound("Este momento no tiene evaluación")
+
+    filas = (
+        await db.execute(
+            select(Attempt, User.full_name)
+            .join(User, User.id == Attempt.student_id)
+            .where(
+                Attempt.assessment_id == assessment.id,
+                Attempt.institution_id == staff_institution_id,
+                Attempt.status.in_(
+                    (AttemptStatus.SUBMITTED, AttemptStatus.GRADED)
+                ),
+            )
+            .options(selectinload(Attempt.answers))
+            .order_by(Attempt.submitted_at.desc())
+        )
+    ).all()
+
+    return {
+        "assessment": _serializar_assessment(assessment, lang),
+        "attempts": [
+            {
+                **_serializar_attempt(attempt),
+                "student_id": str(attempt.student_id),
+                "student_name": full_name,
+            }
+            for attempt, full_name in filas
+        ],
+    }
+
+
 async def export_url(assessment_id: uuid.UUID) -> dict[str, Any]:
     """A6: `head_object` sobre la key determinista que usa el worker. `db` no
     se toca -- el estado de verdad es "¿existe el fichero en el bucket?"."""
