@@ -2,6 +2,7 @@
 
 Plataforma de robótica educativa: 36 proyectos por grado (Transición → 11°), seis momentos metodológicos por proyecto, chatbot consultor técnico y evaluación exportable. Bilingüe ES/EN.
 
+- **Levantar el proyecto en local:** [`docs/desarrollo.md`](docs/desarrollo.md)
 - **Alcance y fases:** [`docs/scope-mvp.md`](docs/scope-mvp.md)
 - **Decisiones de arquitectura:** [`docs/arquitectura.md`](docs/arquitectura.md)
 - **Brief original del cliente:** [`docs/plataforma-imaquina-robotica.md`](docs/plataforma-imaquina-robotica.md)

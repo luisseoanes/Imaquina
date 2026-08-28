@@ -64,7 +64,9 @@ imagen de Docker instalan exactamente lo mismo. `pyproject.toml` solo declara ra
   contenedores cuelgan del nombre del directorio, así que `make up` crea unos nuevos y
   hay que rehacer `make testdb && make migrate && make seed`.
 
-Arranque desde cero: `make sync && make up && make migrate && make seed`.
+Arranque desde cero: `make sync && make up && make migrate && make seed`. El detalle
+—puertos, credenciales de las semillas y los fallos que más se repiten— está en
+[`docs/desarrollo.md`](docs/desarrollo.md).
 
 `make seed` (`app/db/seeds.py`) crea institución, licencia vigente, un usuario por rol y
 un proyecto publicado. Es idempotente y **se niega a correr si `ENV != local`** (crea
