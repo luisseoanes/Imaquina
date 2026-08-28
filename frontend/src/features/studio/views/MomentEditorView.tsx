@@ -1,0 +1,341 @@
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useParams } from "react-router-dom";
+
+import { useMoment, useMomentMutations, useMomentPreview } from "../api";
+import {
+  Button,
+  Card,
+  Field,
+  PageHeader,
+  QueryState,
+  Select,
+  TextArea,
+  TextInput,
+} from "@/shared/ui/panel";
+import { useStudio } from "../StudioContext";
+import { routes } from "@/shared/config/routes";
+import type { Block } from "../types";
+
+const BLOCK_KINDS = ["text", "image", "audio", "video", "embed"] as const;
+
+export function MomentEditorView() {
+  const { t } = useTranslation();
+  const { projectId = "", momentId = "" } = useParams();
+  const { lang } = useStudio();
+
+  const { data, isLoading, error } = useMoment(momentId, lang, {
+    enabled: !!momentId,
+  });
+  const m = useMomentMutations(momentId, lang);
+
+  const [title, setTitle] = useState("");
+  const [note, setNote] = useState("");
+  const [prompt, setPrompt] = useState("");
+  const [newKind, setNewKind] = useState<(typeof BLOCK_KINDS)[number]>("text");
+  const [previewAs, setPreviewAs] = useState<"student" | "teacher" | null>(null);
+
+  useEffect(() => {
+    if (data) {
+      setTitle(data.title ?? "");
+      setNote(data.teacher_note ?? "");
+      setPrompt(data.chatbot_opening_prompt ?? "");
+    }
+  }, [data]);
+
+  const saveMoment = () =>
+    m.updateMoment.mutate({
+      title,
+      teacher_note: note || null,
+      chatbot_opening_prompt: prompt || null,
+    });
+
+  return (
+    <div>
+      <Link
+        to={routes.studioProject(projectId)}
+        className="mb-3 inline-block text-sm text-content-muted hover:text-content"
+      >
+        ← {t("studio.editor.backToProject")}
+      </Link>
+      <QueryState isLoading={isLoading} error={error}>
+        {data ? (
+          <>
+            <PageHeader
+              title={t(`studio.moment.${data.type}`, data.type)}
+              description={t("studio.editor.momentSubtitle")}
+              actions={
+                <>
+                  {data.type === "assess" ? (
+                    <Link
+                      to={routes.studioAssessments}
+                      className="rounded-control bg-surface-muted px-3.5 py-2 text-sm font-medium text-content hover:bg-line"
+                    >
+                      {t("studio.editor.openAssessment")}
+                    </Link>
+                  ) : null}
+                  <Button onClick={saveMoment} disabled={m.updateMoment.isPending}>
+                    {t("common.save")}
+                  </Button>
+                </>
+              }
+            />
+
+            <div className="grid gap-5 lg:grid-cols-3">
+              <div className="space-y-3 lg:col-span-2">
+                <Card>
+                  <Field label={`${t("studio.field.title")} (${lang.toUpperCase()})`}>
+                    <TextInput value={title} onChange={(e) => setTitle(e.target.value)} />
+                  </Field>
+                  <Field
+                    label={t("studio.field.teacherNote")}
+                    hint={t("studio.editor.teacherNoteHint")}
+                  >
+                    <TextArea value={note} onChange={(e) => setNote(e.target.value)} />
+                  </Field>
+                  <Field
+                    label={t("studio.field.openingPrompt")}
+                    hint={t("studio.editor.openingPromptHint")}
+                  >
+                    <TextArea
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                    />
+                  </Field>
+                </Card>
+
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base font-semibold text-content">
+                    {t("studio.editor.blocks")}
+                  </h2>
+                  <div className="flex gap-2">
+                    <Select
+                      value={newKind}
+                      onChange={(e) =>
+                        setNewKind(e.target.value as (typeof BLOCK_KINDS)[number])
+                      }
+                    >
+                      {BLOCK_KINDS.map((k) => (
+                        <option key={k} value={k}>
+                          {t(`studio.blockKind.${k}`, k)}
+                        </option>
+                      ))}
+                    </Select>
+                    <Button
+                      variant="ghost"
+                      onClick={() => m.createBlock.mutate({ kind: newKind })}
+                    >
+                      {t("studio.editor.addBlock")}
+                    </Button>
+                  </div>
+                </div>
+
+                {data.blocks.length === 0 ? (
+                  <p className="text-sm text-content-muted">
+                    {t("studio.editor.noBlocks")}
+                  </p>
+                ) : (
+                  data.blocks.map((b, idx) => (
+                    <BlockCard
+                      key={b.id}
+                      block={b}
+                      lang={lang}
+                      first={idx === 0}
+                      last={idx === data.blocks.length - 1}
+                      onSave={(fields) => m.updateBlock.mutate({ id: b.id, ...fields })}
+                      onDelete={() => m.deleteBlock.mutate(b.id)}
+                      onMove={(dir) => {
+                        const ids = data.blocks.map((x) => x.id);
+                        const j = idx + dir;
+                        if (j < 0 || j >= ids.length) return;
+                        const a = ids[idx]!;
+                        ids[idx] = ids[j]!;
+                        ids[j] = a;
+                        m.reorderBlocks.mutate(ids);
+                      }}
+                    />
+                  ))
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <Card>
+                  <h2 className="mb-2 text-base font-semibold text-content">
+                    {t("studio.editor.preview")}
+                  </h2>
+                  <p className="mb-3 text-sm text-content-muted">
+                    {t("studio.editor.previewHint")}
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      className="rounded-control bg-surface-muted px-3 py-2 text-sm text-content hover:bg-line"
+                      onClick={() => setPreviewAs("student")}
+                    >
+                      {t("studio.editor.previewStudent")}
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-control bg-surface-muted px-3 py-2 text-sm text-content hover:bg-line"
+                      onClick={() => setPreviewAs("teacher")}
+                    >
+                      {t("studio.editor.previewTeacher")}
+                    </button>
+                  </div>
+                </Card>
+              </div>
+            </div>
+
+            {previewAs ? (
+              <PreviewModal
+                momentId={momentId}
+                lang={lang}
+                as={previewAs}
+                onClose={() => setPreviewAs(null)}
+              />
+            ) : null}
+          </>
+        ) : null}
+      </QueryState>
+    </div>
+  );
+}
+
+function PreviewModal({
+  momentId,
+  lang,
+  as,
+  onClose,
+}: {
+  momentId: string;
+  lang: string;
+  as: "student" | "teacher";
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const { data, isLoading, error } = useMomentPreview(
+    momentId,
+    lang as "es" | "en",
+    as,
+  );
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
+      <button
+        type="button"
+        aria-label={t("common.cancel")}
+        onClick={onClose}
+        className="absolute inset-0 bg-content/40"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative z-10 max-h-[80vh] w-full max-w-2xl overflow-auto rounded-card bg-surface p-5 shadow-card"
+      >
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-base font-semibold text-content">
+            {as === "student"
+              ? t("studio.editor.previewStudent")
+              : t("studio.editor.previewTeacher")}
+          </h2>
+          <button type="button" onClick={onClose} className="text-content-muted">
+            ✕
+          </button>
+        </div>
+        <QueryState isLoading={isLoading} error={error}>
+          <pre className="whitespace-pre-wrap break-words rounded-control bg-canvas p-3 text-xs text-content">
+            {JSON.stringify(data, null, 2)}
+          </pre>
+        </QueryState>
+      </div>
+    </div>
+  );
+}
+
+function BlockCard({
+  block,
+  lang,
+  first,
+  last,
+  onSave,
+  onDelete,
+  onMove,
+}: {
+  block: Block;
+  lang: string;
+  first: boolean;
+  last: boolean;
+  onSave: (fields: Record<string, string | null>) => void;
+  onDelete: () => void;
+  onMove: (dir: -1 | 1) => void;
+}) {
+  const { t } = useTranslation();
+  const [body, setBody] = useState(block.body ?? "");
+  const [caption, setCaption] = useState(block.caption ?? "");
+  const [alt, setAlt] = useState(block.alt_text ?? "");
+
+  return (
+    <Card>
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-xs uppercase text-content-subtle">
+          {t(`studio.blockKind.${block.kind}`, block.kind)} · {lang.toUpperCase()}
+        </span>
+        <div className="flex gap-2 text-sm">
+          {!first ? (
+            <button type="button" onClick={() => onMove(-1)} aria-label="↑">
+              ↑
+            </button>
+          ) : null}
+          {!last ? (
+            <button type="button" onClick={() => onMove(1)} aria-label="↓">
+              ↓
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="text-danger"
+            onClick={() => {
+              if (confirm(t("studio.action.confirmDelete"))) onDelete();
+            }}
+          >
+            {t("studio.action.delete")}
+          </button>
+        </div>
+      </div>
+
+      {block.kind === "text" ? (
+        <Field label={t("studio.field.body")} hint={t("studio.editor.richTextHint")}>
+          <TextArea rows={5} value={body} onChange={(e) => setBody(e.target.value)} />
+        </Field>
+      ) : (
+        <>
+          <Field label={t("studio.field.mediaRef")} hint={t("studio.editor.mediaRefHint")}>
+            <TextArea
+              rows={2}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+            />
+          </Field>
+          <Field label={t("studio.field.caption")}>
+            <TextInput value={caption} onChange={(e) => setCaption(e.target.value)} />
+          </Field>
+          <Field label={t("studio.field.altText")} hint={t("studio.editor.altHint")}>
+            <TextInput value={alt} onChange={(e) => setAlt(e.target.value)} />
+          </Field>
+        </>
+      )}
+
+      <Button
+        variant="ghost"
+        onClick={() =>
+          onSave({
+            body: body || null,
+            caption: caption || null,
+            alt_text: alt || null,
+          })
+        }
+      >
+        {t("common.save")}
+      </Button>
+    </Card>
+  );
+}

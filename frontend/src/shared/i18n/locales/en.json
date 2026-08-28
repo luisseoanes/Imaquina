@@ -51,5 +51,426 @@
     "body": "The link may be misspelled, or the page may have moved.",
     "toSignIn": "Go to sign in",
     "toDashboard": "Back to dashboard"
+  },
+  "studio": {
+    "searchPlaceholder": "Search content, lessons, resources…",
+    "exit": "Leave the Studio",
+    "workingLang": "Working language",
+    "nav": {
+      "dashboard": "Dashboard",
+      "contents": "My Content",
+      "lessons": "Lessons",
+      "resources": "Resources",
+      "projects": "Projects",
+      "assessments": "Assessments",
+      "paths": "Learning Paths",
+      "media": "Media Library",
+      "templates": "Templates",
+      "tags": "Tags",
+      "collections": "Collections",
+      "analytics": "Performance Analytics",
+      "students": "Students & Activity",
+      "settings": "Settings"
+    },
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "in_review": "In review"
+    },
+    "col": {
+      "title": "Title",
+      "name": "Name",
+      "area": "Area",
+      "kind": "Kind",
+      "type": "Type",
+      "status": "Status",
+      "langs": "Languages",
+      "updated": "Last edited",
+      "usedIn": "In use"
+    },
+    "field": {
+      "slug": "Identifier (slug)",
+      "area": "Area",
+      "title": "Title",
+      "grade": "Grade",
+      "kit": "Kit",
+      "summary": "Summary",
+      "body": "Content",
+      "description": "Description",
+      "minutes": "Estimated time (min)",
+      "url": "URL",
+      "color": "Color",
+      "caption": "Caption",
+      "altText": "Alt text",
+      "mediaRef": "Media reference",
+      "teacherNote": "Teacher guide",
+      "openingPrompt": "Chatbot opening prompt"
+    },
+    "action": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "confirmDelete": "Delete this for good?"
+    },
+    "resourceKind": {
+      "link": "Link",
+      "file": "File",
+      "doc": "Document"
+    },
+    "templateKind": {
+      "project": "Project",
+      "lesson": "Lesson"
+    },
+    "refType": {
+      "project": "Project",
+      "lesson": "Lesson",
+      "resource": "Resource",
+      "assessment": "Assessment"
+    },
+    "mediaFamily": {
+      "image": "Images",
+      "audio": "Audio",
+      "video": "Video",
+      "application": "Documents"
+    },
+    "blockKind": {
+      "text": "Text",
+      "image": "Image",
+      "audio": "Audio",
+      "video": "Video",
+      "embed": "Embed"
+    },
+    "moment": {
+      "intro": "Introduction & inclusion",
+      "inquiry": "Inquiry",
+      "design": "Design",
+      "build": "Build",
+      "communicate": "Communicate",
+      "assess": "Assessment"
+    },
+    "questionKind": {
+      "mcq": "Multiple choice",
+      "true_false": "True / False",
+      "open": "Open",
+      "numeric": "Numeric"
+    },
+    "dashboard": {
+      "title": "Hi, Creator!",
+      "subtitle": "Welcome to the Imaquina Robotics content workspace.",
+      "projects": "Projects",
+      "lessons": "Lessons",
+      "resources": "Resources",
+      "students": "Students reached",
+      "publishedCount": "{{count}} published",
+      "recent": "Recent content",
+      "noRecent": "No content yet.",
+      "performance": "Performance",
+      "submittedAttempts": "Submitted assessments",
+      "avgScore": "Average score",
+      "completedMoments": "Completed moments",
+      "quickCreate": "Create new content",
+      "newProject": "New project",
+      "newLesson": "New lesson",
+      "uploadMedia": "Upload media",
+      "pageTitle": "Overview"
+    },
+    "contents": {
+      "subtitle": "All your content in one place.",
+      "all": "All",
+      "recent": "Recent content",
+      "thisMonth": "{{count}} this month"
+    },
+    "lessons": {
+      "subtitle": "Standalone content that isn't a 6-moment project.",
+      "new": "New lesson",
+      "edit": "Edit lesson",
+      "empty": "You haven't created any lessons yet.",
+      "bodyHint": "Constrained rich text: bold, lists, links, code."
+    },
+    "resources": {
+      "subtitle": "Links, files and supporting documents.",
+      "new": "New resource",
+      "empty": "No resources yet."
+    },
+    "projects": {
+      "subtitle": "The robotics projects: 6 moments each.",
+      "new": "New project",
+      "empty": "No projects yet.",
+      "openEditor": "Open editor",
+      "duplicate": "Duplicate",
+      "duplicateSlug": "Slug for the duplicated project",
+      "momentsHint": "The 6 moments are created automatically with the project."
+    },
+    "editor": {
+      "moments": "Moments",
+      "untitled": "Untitled",
+      "blockCount": "{{count}} blocks",
+      "translationState": "Translation state",
+      "complete": "Complete",
+      "incomplete": "Needs translation",
+      "backToProject": "Back to project",
+      "momentSubtitle": "Fill in the title, teacher guide, opening prompt and blocks.",
+      "openAssessment": "Open assessment builder",
+      "blocks": "Content blocks",
+      "addBlock": "Add block",
+      "noBlocks": "This moment has no blocks yet.",
+      "teacherNoteHint": "Teacher-only (R4). Never shown to students.",
+      "openingPromptHint": "The question the chatbot opens the moment with (R8).",
+      "richTextHint": "Constrained HTML: p, strong, em, s, code, ul, ol, li, br, a.",
+      "mediaRef": "Media reference",
+      "mediaRefHint": "Paste the library asset URL or the embed link here.",
+      "altHint": "Required to publish (accessibility).",
+      "preview": "Preview",
+      "previewHint": "How the moment will look before publishing.",
+      "previewStudent": "View as student",
+      "previewTeacher": "View as teacher"
+    },
+    "assessments": {
+      "subtitle": "Question builder for the assessment moment.",
+      "pickProject": "Pick a project…",
+      "pickHint": "Pick a project to edit its assessment.",
+      "noMoment": "This project has no assessment moment.",
+      "settings": "Settings",
+      "maxAttempts": "Max attempts",
+      "passScore": "Pass score",
+      "teamMode": "Team mode",
+      "questions": "Questions",
+      "addQuestion": "Add question",
+      "noQuestions": "No questions yet.",
+      "prompt": "Question prompt",
+      "correctNumeric": "Correct answer",
+      "addChoice": "Add choice"
+    },
+    "paths": {
+      "subtitle": "Curated sequences of projects and lessons.",
+      "new": "New path",
+      "edit": "Edit path",
+      "empty": "No paths yet.",
+      "itemCount": "{{count}} items",
+      "editItems": "Edit sequence"
+    },
+    "media": {
+      "subtitle": "Reusable library. Binaries upload straight to the bucket.",
+      "upload": "Upload a file",
+      "uploadHint": "The file uploads straight to storage, not through the server.",
+      "file": "File",
+      "altRequired": "Required for accessibility.",
+      "doUpload": "Upload",
+      "empty": "The library is empty.",
+      "usedIn": "in {{count}} block(s)"
+    },
+    "templates": {
+      "subtitle": "Reusable structures to start projects from the same mold.",
+      "new": "New template",
+      "empty": "No templates yet.",
+      "apply": "Use template",
+      "applySlug": "Slug for the new project",
+      "payloadHint": "JSON structure: title, summary and moments by type.",
+      "badJson": "The template JSON is not valid."
+    },
+    "tags": {
+      "subtitle": "Tags to classify the catalog.",
+      "new": "New tag",
+      "empty": "No tags yet.",
+      "colorHint": "Semantic palette token, not a raw color."
+    },
+    "collections": {
+      "subtitle": "Thematic groupings of content.",
+      "new": "New collection",
+      "empty": "No collections yet.",
+      "itemCount": "{{count}} items",
+      "editItems": "Edit items"
+    },
+    "analytics": {
+      "subtitle": "Aggregated performance of published content.",
+      "attempts": "Attempts"
+    },
+    "students": {
+      "subtitle": "Activity of your institution's students.",
+      "lastActivity": "Last activity"
+    },
+    "settings": {
+      "subtitle": "Editor workspace preferences.",
+      "account": "Account",
+      "role": "Role",
+      "uiLang": "Interface language",
+      "lang": {
+        "es": "Spanish",
+        "en": "English"
+      },
+      "workingLangHint": "Which translation the editor opens with. Doesn't change the interface language."
+    },
+    "publish": {
+      "validate": "Validate",
+      "publish": "Publish",
+      "ok": "No problems. Ready to publish.",
+      "problems": "Fix before publishing"
+    },
+    "group": {
+      "create": "Create content",
+      "manage": "Manage",
+      "insight": "Analytics",
+      "system": "Settings"
+    },
+    "header": {
+      "notifications": "Notifications",
+      "menu": "Open menu",
+      "closeMenu": "Close menu",
+      "greeting": "Hi, {{name}}!",
+      "greetingSub": "Welcome to the Imaquina Robotics content workspace.",
+      "defaultName": "Creator"
+    },
+    "help": {
+      "title": "Help center",
+      "body": "Need a hand creating amazing content?",
+      "cta": "Go to the help center"
+    },
+    "kpi": {
+      "totalContent": "Total content",
+      "publishedLessons": "Published lessons",
+      "activeProjects": "Active projects",
+      "studentsReached": "Students reached"
+    },
+    "quick": {
+      "title": "Create new content",
+      "lessonTitle": "New lesson",
+      "lessonBody": "Build a theory or hands-on lesson step by step.",
+      "projectTitle": "New project",
+      "projectBody": "Design a robotics project from scratch.",
+      "resourceTitle": "Upload resource",
+      "resourceBody": "Share files, templates or guides.",
+      "assessmentTitle": "New assessment",
+      "assessmentBody": "Design quizzes, tests or assessments."
+    },
+    "perf": {
+      "title": "Content performance",
+      "published": "Published content",
+      "completedMoments": "Completed moments",
+      "submittedAttempts": "Submitted assessments",
+      "avgScore": "Average score"
+    },
+    "aside": {
+      "creator": "Creator",
+      "editProfile": "Edit profile",
+      "upcoming": "Waiting to publish",
+      "upcomingEmpty": "Nothing in draft.",
+      "reminders": "Reminders",
+      "reviewTitle": "Review pending assessments",
+      "reviewBody": "{{count}} assessments submitted"
+    }
+  },
+  "teacher": {
+    "header": {
+      "readingLang": "Reading language",
+      "closeMenu": "Close menu",
+      "menu": "Open menu",
+      "notifications": "Notifications",
+      "search": "Search courses, students, projects…",
+      "exit": "Leave the panel",
+      "greeting": "Hi, {{name}}!",
+      "greetingSub": "This is your panel to follow students and grade.",
+      "defaultName": "Teacher"
+    },
+    "help": {
+      "title": "Help center",
+      "body": "Questions about tracking or grading?",
+      "cta": "Go to the help center"
+    },
+    "group": {
+      "track": "Tracking",
+      "content": "Content",
+      "system": "Settings"
+    },
+    "nav": {
+      "dashboard": "Panel",
+      "courses": "My courses",
+      "progress": "Progress",
+      "grading": "Grading",
+      "content": "Content",
+      "settings": "Settings"
+    },
+    "dashboard": {
+      "title": "Your teacher panel",
+      "subtitle": "Track your groups and grade assessments.",
+      "courses": "My courses",
+      "publishedProjects": "Available projects",
+      "grades": "Grading",
+      "gradesValue": "Open",
+      "shortcuts": "Shortcuts",
+      "progressBody": "See which moment each student is on.",
+      "gradingBody": "Review and score submitted assessments.",
+      "contentBody": "Browse projects with the teacher guide.",
+      "myCourses": "My courses"
+    },
+    "courses": {
+      "subtitle": "The groups you're in charge of.",
+      "empty": "You don't have any courses assigned yet.",
+      "grade": "Grade {{grade}}"
+    },
+    "course": {
+      "seeProgress": "See progress",
+      "noStudents": "This course has no enrolled students."
+    },
+    "col": {
+      "student": "Student",
+      "grade": "Grade",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "progress": {
+      "subtitle": "Per-moment progress of each student in a project.",
+      "pickCourse": "Pick a course…",
+      "pickProject": "Pick a project…",
+      "pickHint": "Pick a course and a project to see progress.",
+      "completed": "Completed",
+      "inProgress": "In progress",
+      "notStarted": "Not started",
+      "summary": "{{done}} of {{total}} moments completed"
+    },
+    "grading": {
+      "subtitle": "Assessments submitted by your students.",
+      "pickProject": "Pick a project…",
+      "pickHint": "Pick a project to review its assessment.",
+      "noAssessment": "This project has no assessment.",
+      "attemptCount": "{{count}} submitted attempts",
+      "passScore": "pass at {{score}}",
+      "export": "Export XLSX",
+      "exporting": "Generating…",
+      "download": "Download XLSX",
+      "noAttempts": "No submitted attempts yet.",
+      "answer": "Answer",
+      "correct": "Correct",
+      "incorrect": "Incorrect",
+      "points": "{{n}} pts",
+      "score": "Score (max {{max}})",
+      "feedback": "Feedback"
+    },
+    "attemptStatus": {
+      "in_progress": "In progress",
+      "submitted": "To grade",
+      "graded": "Graded"
+    },
+    "content": {
+      "subtitle": "Published projects, with the teacher guide.",
+      "empty": "No published projects yet.",
+      "open": "Open",
+      "teacherGuide": "Teacher guide",
+      "openingPrompt": "Chatbot opening prompt",
+      "noBlocks": "This moment has no content."
+    },
+    "settings": {
+      "subtitle": "Your panel preferences.",
+      "roleLabel": "Teacher",
+      "language": "Interface language",
+      "languageHint": "Change the language you see the platform in.",
+      "lang": {
+        "es": "Spanish",
+        "en": "English"
+      }
+    }
   }
 }

@@ -88,14 +88,20 @@ describe("router", () => {
     it("un docente sí entra al panel docente", async () => {
       iniciarSesion(DOCENTE);
       const { container } = renderizarEn(routes.teacher);
-      // Va diferido con `lazy()`: hay que esperar a que resuelva el import.
-      await waitFor(() => expect(pantallaMontada(container)).toBe("TeacherPage"));
+      // Ya no es un marcador `data-pending`: es una app anidada con su router.
+      await waitFor(() =>
+        expect(container.querySelector("[data-teacher-root]")).not.toBeNull(),
+      );
     });
 
     it("un editor sí entra al Content Studio", async () => {
       iniciarSesion(EDITOR);
       const { container } = renderizarEn(routes.studio);
-      await waitFor(() => expect(pantallaMontada(container)).toBe("StudioPage"));
+      // El Studio ya no es un marcador `data-pending`: es una app anidada con
+      // su propio router. Marca su raíz con `data-studio-root`.
+      await waitFor(() =>
+        expect(container.querySelector("[data-studio-root]")).not.toBeNull(),
+      );
     });
   });
 });

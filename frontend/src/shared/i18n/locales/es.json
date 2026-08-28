@@ -51,5 +51,426 @@
     "body": "El enlace puede estar mal escrito o la página haber cambiado de sitio.",
     "toSignIn": "Ir al inicio de sesión",
     "toDashboard": "Volver al panel"
+  },
+  "studio": {
+    "searchPlaceholder": "Buscar contenidos, lecciones, recursos…",
+    "exit": "Salir del Studio",
+    "workingLang": "Idioma de trabajo",
+    "nav": {
+      "dashboard": "Dashboard",
+      "contents": "Mis Contenidos",
+      "lessons": "Lecciones",
+      "resources": "Recursos",
+      "projects": "Proyectos",
+      "assessments": "Evaluaciones",
+      "paths": "Rutas de Aprendizaje",
+      "media": "Biblioteca de Medios",
+      "templates": "Plantillas",
+      "tags": "Etiquetas",
+      "collections": "Colecciones",
+      "analytics": "Analítica de Rendimiento",
+      "students": "Estudiantes y Actividad",
+      "settings": "Configuración"
+    },
+    "status": {
+      "draft": "Borrador",
+      "published": "Publicado",
+      "in_review": "En revisión"
+    },
+    "col": {
+      "title": "Título",
+      "name": "Nombre",
+      "area": "Área",
+      "kind": "Tipo",
+      "type": "Tipo",
+      "status": "Estado",
+      "langs": "Idiomas",
+      "updated": "Última edición",
+      "usedIn": "En uso"
+    },
+    "field": {
+      "slug": "Identificador (slug)",
+      "area": "Área",
+      "title": "Título",
+      "grade": "Grado",
+      "kit": "Kit",
+      "summary": "Resumen",
+      "body": "Contenido",
+      "description": "Descripción",
+      "minutes": "Duración estimada (min)",
+      "url": "URL",
+      "color": "Color",
+      "caption": "Pie",
+      "altText": "Texto alternativo",
+      "mediaRef": "Referencia de medio",
+      "teacherNote": "Guía docente",
+      "openingPrompt": "Pregunta de apertura del chatbot"
+    },
+    "action": {
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "publish": "Publicar",
+      "unpublish": "Despublicar",
+      "confirmDelete": "¿Seguro que quieres eliminar esto?"
+    },
+    "resourceKind": {
+      "link": "Enlace",
+      "file": "Archivo",
+      "doc": "Documento"
+    },
+    "templateKind": {
+      "project": "Proyecto",
+      "lesson": "Lección"
+    },
+    "refType": {
+      "project": "Proyecto",
+      "lesson": "Lección",
+      "resource": "Recurso",
+      "assessment": "Evaluación"
+    },
+    "mediaFamily": {
+      "image": "Imágenes",
+      "audio": "Audio",
+      "video": "Video",
+      "application": "Documentos"
+    },
+    "blockKind": {
+      "text": "Texto",
+      "image": "Imagen",
+      "audio": "Audio",
+      "video": "Video",
+      "embed": "Embebido"
+    },
+    "moment": {
+      "intro": "Introducción e inclusión",
+      "inquiry": "Indagación",
+      "design": "Diseño",
+      "build": "Construcción",
+      "communicate": "Comunicación",
+      "assess": "Evaluación"
+    },
+    "questionKind": {
+      "mcq": "Opción múltiple",
+      "true_false": "Verdadero / Falso",
+      "open": "Abierta",
+      "numeric": "Numérica"
+    },
+    "dashboard": {
+      "title": "¡Hola, Creador!",
+      "subtitle": "Bienvenido al panel de creación de contenido de Imaquina Robótica.",
+      "projects": "Proyectos",
+      "lessons": "Lecciones",
+      "resources": "Recursos",
+      "students": "Estudiantes impactados",
+      "publishedCount": "{{count}} publicados",
+      "recent": "Contenido reciente",
+      "noRecent": "Todavía no hay contenido.",
+      "performance": "Rendimiento",
+      "submittedAttempts": "Evaluaciones enviadas",
+      "avgScore": "Calificación promedio",
+      "completedMoments": "Momentos completados",
+      "quickCreate": "Crear nuevo contenido",
+      "newProject": "Nuevo proyecto",
+      "newLesson": "Nueva lección",
+      "uploadMedia": "Subir recurso",
+      "pageTitle": "Resumen"
+    },
+    "contents": {
+      "subtitle": "Todo tu contenido en un solo lugar.",
+      "all": "Todos",
+      "recent": "Contenido reciente",
+      "thisMonth": "{{count}} este mes"
+    },
+    "lessons": {
+      "subtitle": "Contenido autónomo que no es un proyecto de 6 momentos.",
+      "new": "Nueva lección",
+      "edit": "Editar lección",
+      "empty": "Aún no has creado lecciones.",
+      "bodyHint": "Texto enriquecido acotado: negrita, listas, enlaces, código."
+    },
+    "resources": {
+      "subtitle": "Enlaces, archivos y documentos de apoyo.",
+      "new": "Nuevo recurso",
+      "empty": "Aún no hay recursos."
+    },
+    "projects": {
+      "subtitle": "Los proyectos de robótica: 6 momentos por proyecto.",
+      "new": "Nuevo proyecto",
+      "empty": "Aún no hay proyectos.",
+      "openEditor": "Abrir editor",
+      "duplicate": "Duplicar",
+      "duplicateSlug": "Slug del proyecto duplicado",
+      "momentsHint": "Los 6 momentos se crean automáticamente con el proyecto."
+    },
+    "editor": {
+      "moments": "Momentos",
+      "untitled": "Sin título",
+      "blockCount": "{{count}} bloques",
+      "translationState": "Estado de traducción",
+      "complete": "Completo",
+      "incomplete": "Falta traducir",
+      "backToProject": "Volver al proyecto",
+      "momentSubtitle": "Rellena el título, la guía docente, la pregunta de apertura y los bloques.",
+      "openAssessment": "Abrir constructor de evaluación",
+      "blocks": "Bloques de contenido",
+      "addBlock": "Añadir bloque",
+      "noBlocks": "Este momento aún no tiene bloques.",
+      "teacherNoteHint": "Solo la ve el docente (R4). Nunca se muestra al estudiante.",
+      "openingPromptHint": "La pregunta con la que el chatbot abre el momento (R8).",
+      "richTextHint": "HTML acotado: p, strong, em, s, code, ul, ol, li, br, a.",
+      "mediaRef": "Referencia de medio",
+      "mediaRefHint": "Pega aquí la URL del asset de la biblioteca o el enlace de embed.",
+      "altHint": "Obligatorio para publicar (accesibilidad).",
+      "preview": "Vista previa",
+      "previewHint": "Cómo se verá el momento antes de publicar.",
+      "previewStudent": "Ver como estudiante",
+      "previewTeacher": "Ver como docente"
+    },
+    "assessments": {
+      "subtitle": "Constructor de preguntas del momento de evaluación.",
+      "pickProject": "Elige un proyecto…",
+      "pickHint": "Elige un proyecto para editar su evaluación.",
+      "noMoment": "Este proyecto no tiene momento de evaluación.",
+      "settings": "Ajustes",
+      "maxAttempts": "Intentos máximos",
+      "passScore": "Puntaje para aprobar",
+      "teamMode": "Modo equipo",
+      "questions": "Preguntas",
+      "addQuestion": "Añadir pregunta",
+      "noQuestions": "Aún no hay preguntas.",
+      "prompt": "Enunciado de la pregunta",
+      "correctNumeric": "Respuesta correcta",
+      "addChoice": "Añadir opción"
+    },
+    "paths": {
+      "subtitle": "Secuencias curadas de proyectos y lecciones.",
+      "new": "Nueva ruta",
+      "edit": "Editar ruta",
+      "empty": "Aún no hay rutas.",
+      "itemCount": "{{count}} elementos",
+      "editItems": "Editar secuencia"
+    },
+    "media": {
+      "subtitle": "Librería reutilizable. El binario sube directo al bucket.",
+      "upload": "Subir un archivo",
+      "uploadHint": "El archivo sube directo al almacenamiento, no pasa por el servidor.",
+      "file": "Archivo",
+      "altRequired": "Obligatorio por accesibilidad.",
+      "doUpload": "Subir",
+      "empty": "La biblioteca está vacía.",
+      "usedIn": "en {{count}} bloque(s)"
+    },
+    "templates": {
+      "subtitle": "Estructuras reutilizables para arrancar proyectos con el mismo molde.",
+      "new": "Nueva plantilla",
+      "empty": "Aún no hay plantillas.",
+      "apply": "Usar plantilla",
+      "applySlug": "Slug del nuevo proyecto",
+      "payloadHint": "Estructura JSON: title, summary y moments por tipo.",
+      "badJson": "El JSON de la plantilla no es válido."
+    },
+    "tags": {
+      "subtitle": "Etiquetas para clasificar el catálogo.",
+      "new": "Nueva etiqueta",
+      "empty": "Aún no hay etiquetas.",
+      "colorHint": "Token semántico de la paleta, no un color crudo."
+    },
+    "collections": {
+      "subtitle": "Agrupaciones temáticas de contenidos.",
+      "new": "Nueva colección",
+      "empty": "Aún no hay colecciones.",
+      "itemCount": "{{count}} elementos",
+      "editItems": "Editar elementos"
+    },
+    "analytics": {
+      "subtitle": "Rendimiento agregado del contenido publicado.",
+      "attempts": "Intentos"
+    },
+    "students": {
+      "subtitle": "Actividad de los estudiantes de tu institución.",
+      "lastActivity": "Última actividad"
+    },
+    "settings": {
+      "subtitle": "Preferencias del panel del editor.",
+      "account": "Cuenta",
+      "role": "Rol",
+      "uiLang": "Idioma de la interfaz",
+      "lang": {
+        "es": "Español",
+        "en": "Inglés"
+      },
+      "workingLangHint": "Con qué traducción se abre el editor. No cambia el idioma de la interfaz."
+    },
+    "publish": {
+      "validate": "Validar",
+      "publish": "Publicar",
+      "ok": "Sin problemas. Listo para publicar.",
+      "problems": "Falta corregir antes de publicar"
+    },
+    "group": {
+      "create": "Crear contenido",
+      "manage": "Gestión",
+      "insight": "Analítica",
+      "system": "Configuración"
+    },
+    "header": {
+      "notifications": "Notificaciones",
+      "menu": "Abrir menú",
+      "closeMenu": "Cerrar menú",
+      "greeting": "¡Hola, {{name}}!",
+      "greetingSub": "Bienvenido al panel de creación de contenido de Imaquina Robótica.",
+      "defaultName": "Creador"
+    },
+    "help": {
+      "title": "Centro de ayuda",
+      "body": "¿Necesitas ayuda para crear contenido increíble?",
+      "cta": "Ir al centro de ayuda"
+    },
+    "kpi": {
+      "totalContent": "Total de contenidos",
+      "publishedLessons": "Lecciones publicadas",
+      "activeProjects": "Proyectos activos",
+      "studentsReached": "Estudiantes impactados"
+    },
+    "quick": {
+      "title": "Crear nuevo contenido",
+      "lessonTitle": "Nueva lección",
+      "lessonBody": "Crea una lección teórica o práctica paso a paso.",
+      "projectTitle": "Nuevo proyecto",
+      "projectBody": "Diseña un proyecto de robótica desde cero.",
+      "resourceTitle": "Subir recurso",
+      "resourceBody": "Comparte archivos, plantillas o guías.",
+      "assessmentTitle": "Crear evaluación",
+      "assessmentBody": "Diseña pruebas, quizzes o evaluaciones."
+    },
+    "perf": {
+      "title": "Rendimiento de contenido",
+      "published": "Contenidos publicados",
+      "completedMoments": "Momentos completados",
+      "submittedAttempts": "Evaluaciones enviadas",
+      "avgScore": "Calificación promedio"
+    },
+    "aside": {
+      "creator": "Creador",
+      "editProfile": "Editar perfil",
+      "upcoming": "Pendientes de publicar",
+      "upcomingEmpty": "Nada en borrador.",
+      "reminders": "Recordatorios",
+      "reviewTitle": "Revisar evaluaciones pendientes",
+      "reviewBody": "{{count}} evaluaciones enviadas"
+    }
+  },
+  "teacher": {
+    "header": {
+      "readingLang": "Idioma de lectura",
+      "closeMenu": "Cerrar menú",
+      "menu": "Abrir menú",
+      "notifications": "Notificaciones",
+      "search": "Buscar cursos, estudiantes, proyectos…",
+      "exit": "Salir del panel",
+      "greeting": "¡Hola, {{name}}!",
+      "greetingSub": "Este es tu panel para seguir a tus estudiantes y calificar.",
+      "defaultName": "Docente"
+    },
+    "help": {
+      "title": "Centro de ayuda",
+      "body": "¿Dudas sobre el seguimiento o la calificación?",
+      "cta": "Ir al centro de ayuda"
+    },
+    "group": {
+      "track": "Seguimiento",
+      "content": "Contenido",
+      "system": "Configuración"
+    },
+    "nav": {
+      "dashboard": "Panel",
+      "courses": "Mis cursos",
+      "progress": "Progreso",
+      "grading": "Calificación",
+      "content": "Contenido",
+      "settings": "Configuración"
+    },
+    "dashboard": {
+      "title": "Tu panel docente",
+      "subtitle": "Sigue el avance de tus grupos y califica las evaluaciones.",
+      "courses": "Mis cursos",
+      "publishedProjects": "Proyectos disponibles",
+      "grades": "Calificación",
+      "gradesValue": "Abierta",
+      "shortcuts": "Accesos rápidos",
+      "progressBody": "Mira en qué momento va cada estudiante.",
+      "gradingBody": "Revisa y puntúa las evaluaciones enviadas.",
+      "contentBody": "Consulta los proyectos con la guía docente.",
+      "myCourses": "Mis cursos"
+    },
+    "courses": {
+      "subtitle": "Los grupos que tienes a cargo.",
+      "empty": "Todavía no tienes cursos asignados.",
+      "grade": "Grado {{grade}}"
+    },
+    "course": {
+      "seeProgress": "Ver progreso",
+      "noStudents": "Este curso no tiene estudiantes matriculados."
+    },
+    "col": {
+      "student": "Estudiante",
+      "grade": "Grado",
+      "status": "Estado"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "progress": {
+      "subtitle": "Avance por momento de cada estudiante en un proyecto.",
+      "pickCourse": "Elige un curso…",
+      "pickProject": "Elige un proyecto…",
+      "pickHint": "Elige un curso y un proyecto para ver el progreso.",
+      "completed": "Completado",
+      "inProgress": "En curso",
+      "notStarted": "Sin empezar",
+      "summary": "{{done}} de {{total}} momentos completados"
+    },
+    "grading": {
+      "subtitle": "Evaluaciones enviadas por tus estudiantes.",
+      "pickProject": "Elige un proyecto…",
+      "pickHint": "Elige un proyecto para revisar su evaluación.",
+      "noAssessment": "Este proyecto no tiene evaluación.",
+      "attemptCount": "{{count}} intentos enviados",
+      "passScore": "aprueba con {{score}}",
+      "export": "Exportar XLSX",
+      "exporting": "Generando…",
+      "download": "Descargar XLSX",
+      "noAttempts": "Aún no hay intentos enviados.",
+      "answer": "Respuesta",
+      "correct": "Correcta",
+      "incorrect": "Incorrecta",
+      "points": "{{n}} pts",
+      "score": "Puntaje (máx. {{max}})",
+      "feedback": "Comentario"
+    },
+    "attemptStatus": {
+      "in_progress": "En curso",
+      "submitted": "Por calificar",
+      "graded": "Calificada"
+    },
+    "content": {
+      "subtitle": "Los proyectos publicados, con la guía didáctica.",
+      "empty": "No hay proyectos publicados todavía.",
+      "open": "Abrir",
+      "teacherGuide": "Guía docente",
+      "openingPrompt": "Pregunta de apertura del chatbot",
+      "noBlocks": "Este momento no tiene contenido."
+    },
+    "settings": {
+      "subtitle": "Preferencias de tu panel.",
+      "roleLabel": "Docente",
+      "language": "Idioma de la interfaz",
+      "languageHint": "Cambia el idioma en el que ves la plataforma.",
+      "lang": {
+        "es": "Español",
+        "en": "Inglés"
+      }
+    }
   }
 }
