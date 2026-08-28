@@ -106,7 +106,8 @@
       "teacherNote": "Guía docente",
       "openingPrompt": "Pregunta de apertura del chatbot",
       "embedProvider": "Proveedor de embed",
-      "embedSrc": "Enlace o id del vídeo"
+      "embedSrc": "Enlace o id del vídeo",
+      "media": "Medio de la biblioteca"
     },
     "action": {
       "edit": "Editar",
@@ -240,7 +241,14 @@
         "ol": "Lista numerada",
         "quote": "Cita",
         "link": "Enlace"
-      }
+      },
+      "pickMedia": "Elegir de la biblioteca",
+      "mediaChange": "Cambiar medio",
+      "mediaClear": "Quitar",
+      "mediaNone": "Sin medio asignado",
+      "mediaPickHint": "El bloque guarda la referencia; la URL la resuelve el servidor al publicar.",
+      "previewMobile": "Ver en móvil",
+      "previewDesktop": "Ver en escritorio"
     },
     "assessments": {
       "subtitle": "Constructor de preguntas del momento de evaluación.",
@@ -274,7 +282,8 @@
       "altRequired": "Obligatorio por accesibilidad.",
       "doUpload": "Subir",
       "empty": "La biblioteca está vacía.",
-      "usedIn": "en {{count}} bloque(s)"
+      "usedIn": "en {{count}} bloque(s)",
+      "searchPlaceholder": "Buscar por nombre o alt…"
     },
     "templates": {
       "subtitle": "Estructuras reutilizables para arrancar proyectos con el mismo molde.",

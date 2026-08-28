@@ -53,6 +53,34 @@ export interface Block {
   updated_at: string;
 }
 
+/** Lo que devuelve `GET /studio/catalog/moments/{id}/preview`: el momento tal
+ *  y como lo sirve el camino de lectura, con `teacher_note` sólo si `as=teacher`
+ *  y las URLs de media ya resueltas. */
+export interface PreviewMoment {
+  id: string;
+  type: string;
+  order: number;
+  title: string | null;
+  chatbot_opening_prompt: string | null;
+  teacher_note?: string | null;
+  lang: Lang;
+  blocks: PreviewBlock[];
+}
+
+export interface PreviewBlock {
+  id: string;
+  kind: "text" | "image" | "audio" | "video" | "embed";
+  order: number;
+  media_asset_id?: string | null;
+  config?: Record<string, unknown>;
+  body: string | null;
+  caption: string | null;
+  alt_text: string | null;
+  url?: string | null;
+  mime_type?: string | null;
+  duration_seconds?: number | null;
+}
+
 export interface Moment {
   id: string;
   project_id: string;

@@ -13,8 +13,11 @@ import {
   TextArea,
   TextInput,
 } from "@/shared/ui/panel";
+import { RichText } from "@/shared/ui/RichText";
 import { RichTextEditor } from "@/shared/ui/RichTextEditor";
+import { MomentBlocks } from "@/shared/ui/MomentBlocks";
 import { useStudio } from "../StudioContext";
+import { MediaPickerModal } from "../components/MediaPickerModal";
 import { routes } from "@/shared/config/routes";
 import type { Block } from "../types";
 
@@ -216,6 +219,7 @@ function PreviewModal({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const [mobile, setMobile] = useState(false);
   const { data, isLoading, error } = useMomentPreview(
     momentId,
     lang as "es" | "en",
@@ -232,7 +236,7 @@ function PreviewModal({
       <div
         role="dialog"
         aria-modal="true"
-        className="relative z-10 max-h-[80vh] w-full max-w-2xl overflow-auto rounded-card bg-surface p-5 shadow-card"
+        className="relative z-10 flex max-h-[85vh] w-full max-w-3xl flex-col rounded-card bg-surface p-5 shadow-card"
       >
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-base font-semibold text-content">
@@ -240,14 +244,42 @@ function PreviewModal({
               ? t("studio.editor.previewStudent")
               : t("studio.editor.previewTeacher")}
           </h2>
-          <button type="button" onClick={onClose} className="text-content-muted">
-            ✕
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setMobile((v) => !v)}
+              className="rounded-control bg-surface-muted px-3 py-1.5 text-xs text-content hover:bg-line"
+            >
+              {mobile
+                ? t("studio.editor.previewDesktop")
+                : t("studio.editor.previewMobile")}
+            </button>
+            <button type="button" onClick={onClose} className="text-content-muted">
+              ✕
+            </button>
+          </div>
         </div>
         <QueryState isLoading={isLoading} error={error}>
-          <pre className="whitespace-pre-wrap break-words rounded-control bg-canvas p-3 text-xs text-content">
-            {JSON.stringify(data, null, 2)}
-          </pre>
+          {data ? (
+            <div className="overflow-auto rounded-card bg-canvas p-4">
+              <div
+                className={`mx-auto space-y-4 ${mobile ? "max-w-[390px]" : ""}`}
+              >
+                <h3 className="text-lg font-semibold text-content">
+                  {data.title ?? t("studio.editor.untitled")}
+                </h3>
+                {data.teacher_note ? (
+                  <div className="rounded-control border border-brand-ink/30 bg-brand-ink/5 p-3 text-sm text-content">
+                    <span className="mb-1 block text-xs font-semibold uppercase text-brand-ink">
+                      {t("studio.field.teacherNote")}
+                    </span>
+                    <RichText html={data.teacher_note} />
+                  </div>
+                ) : null}
+                <MomentBlocks blocks={data.blocks} />
+              </div>
+            </div>
+          ) : null}
         </QueryState>
       </div>
     </div>
@@ -281,6 +313,8 @@ function BlockCard({
   const [embedSrc, setEmbedSrc] = useState(
     (block.config?.src as string | undefined) ?? "",
   );
+  const [assetId, setAssetId] = useState<string | null>(block.media_asset_id);
+  const [pickingMedia, setPickingMedia] = useState(false);
 
   return (
     <Card>
@@ -342,6 +376,31 @@ function BlockCard({
         </>
       ) : (
         <>
+          <Field label={t("studio.field.media")} hint={t("studio.editor.mediaPickHint")}>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPickingMedia(true)}
+                className="rounded-control bg-surface-muted px-3 py-2 text-sm text-content hover:bg-line"
+              >
+                {assetId
+                  ? t("studio.editor.mediaChange")
+                  : t("studio.editor.pickMedia")}
+              </button>
+              {assetId ? (
+                <button
+                  type="button"
+                  onClick={() => setAssetId(null)}
+                  className="text-sm text-danger hover:underline"
+                >
+                  {t("studio.editor.mediaClear")}
+                </button>
+              ) : null}
+              <span className="truncate text-xs text-content-subtle">
+                {assetId ?? t("studio.editor.mediaNone")}
+              </span>
+            </div>
+          </Field>
           <Field label={t("studio.field.mediaRef")} hint={t("studio.editor.mediaRefHint")}>
             <TextArea
               rows={2}
@@ -358,6 +417,14 @@ function BlockCard({
         </>
       )}
 
+      {pickingMedia ? (
+        <MediaPickerModal
+          kind={block.kind}
+          onPick={setAssetId}
+          onClose={() => setPickingMedia(false)}
+        />
+      ) : null}
+
       <Button
         variant="ghost"
         onClick={() =>
@@ -367,11 +434,14 @@ function BlockCard({
                   config: { provider, src: embedSrc },
                   caption: caption || null,
                 }
-              : {
-                  body: body || null,
-                  caption: caption || null,
-                  alt_text: alt || null,
-                },
+              : block.kind === "text"
+                ? { body: body || null }
+                : {
+                    media_asset_id: assetId,
+                    body: body || null,
+                    caption: caption || null,
+                    alt_text: alt || null,
+                  },
           )
         }
       >

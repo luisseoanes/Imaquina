@@ -25,7 +25,7 @@ import { Icon } from "@/shared/ui/panel-icons";
 import { useCompleteMoment, useMoment, useProgress, useProject } from "../api";
 import { AssessmentPlayer } from "../components/AssessmentPlayer";
 import { ChatPanel } from "../components/ChatPanel";
-import { MomentBlocks } from "../components/MomentBlocks";
+import { MomentBlocks } from "@/shared/ui/MomentBlocks";
 import { useStudent } from "../StudentContext";
 
 function esTipoValido(v: string): v is MomentType {

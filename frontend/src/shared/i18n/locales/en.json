@@ -106,7 +106,8 @@
       "teacherNote": "Teacher guide",
       "openingPrompt": "Chatbot opening prompt",
       "embedProvider": "Embed provider",
-      "embedSrc": "Video link or id"
+      "embedSrc": "Video link or id",
+      "media": "Library media"
     },
     "action": {
       "edit": "Edit",
@@ -240,7 +241,14 @@
         "ol": "Numbered list",
         "quote": "Quote",
         "link": "Link"
-      }
+      },
+      "pickMedia": "Pick from library",
+      "mediaChange": "Change media",
+      "mediaClear": "Remove",
+      "mediaNone": "No media set",
+      "mediaPickHint": "The block stores the reference; the server resolves the URL on publish.",
+      "previewMobile": "Mobile view",
+      "previewDesktop": "Desktop view"
     },
     "assessments": {
       "subtitle": "Question builder for the assessment moment.",
@@ -274,7 +282,8 @@
       "altRequired": "Required for accessibility.",
       "doUpload": "Upload",
       "empty": "The library is empty.",
-      "usedIn": "in {{count}} block(s)"
+      "usedIn": "in {{count}} block(s)",
+      "searchPlaceholder": "Search by name or alt…"
     },
     "templates": {
       "subtitle": "Reusable structures to start projects from the same mold.",

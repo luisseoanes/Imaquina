@@ -14,7 +14,23 @@ import { useTranslation } from "react-i18next";
 
 import { RichText } from "@/shared/ui/RichText";
 import { Icon } from "@/shared/ui/panel-icons";
-import type { Block } from "../api";
+
+/** Bloque tal y como lo sirve el camino de lectura (`learning`) y como lo
+ *  devuelve la previsualización del Studio. `url`/`mime_type` los resuelve el
+ *  backend a partir de `media_asset_id`. */
+export interface Block {
+  id: string;
+  kind: "text" | "image" | "audio" | "video" | "embed";
+  order: number;
+  media_asset_id?: string | null;
+  config?: Record<string, unknown>;
+  body: string | null;
+  caption: string | null;
+  alt_text: string | null;
+  url?: string | null;
+  mime_type?: string | null;
+  duration_seconds?: number | null;
+}
 
 /** Mismo criterio que `RichText`: http(s) o una ruta del propio origen. Lo que
  *  se descarta es el esquema ejecutable — un `javascript:` guardado en el CMS

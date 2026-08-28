@@ -27,6 +27,7 @@ import type {
   Lesson,
   MediaList,
   Moment,
+  PreviewMoment,
   Project,
   ProjectDetail,
   RefType,
@@ -259,7 +260,7 @@ export const useMomentPreview = (momentId: string, lang: Lang, as: "student" | "
   useQuery({
     queryKey: ["studio", "preview", momentId, lang, as],
     queryFn: () =>
-      get<unknown>(
+      get<PreviewMoment>(
         `/studio/catalog/moments/${momentId}/preview${qs({ lang, as })}`,
       ),
   });
