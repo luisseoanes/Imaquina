@@ -1,0 +1,28 @@
+{
+  "app": {
+    "name": "Imaquina Robótica"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "courses": "Mis cursos",
+    "messages": "Mensajes",
+    "assignments": "Tareas",
+    "teacher": "Panel docente",
+    "admin": "Administración",
+    "studio": "Content Studio",
+    "account": "Mi cuenta"
+  },
+  "common": {
+    "loading": "Cargando…",
+    "error": "Ocurrió un error",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "seeAll": "Ver todo"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "email": "Correo",
+    "password": "Contraseña"
+  }
+}

@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* El fondo se pinta explícito: si el body queda transparente, hereda el del
+ * host y el tema oscuro se ve a medias. */
+body {
+  @apply bg-canvas text-content antialiased;
+}
+
+/* Foco visible en todo lo interactivo. El `:focus-visible` del navegador solo
+ * aparece con teclado, que es justo cuando hace falta. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  @apply outline-2 outline-offset-2 outline-brand-ink;
+}

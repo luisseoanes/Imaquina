@@ -1,0 +1,28 @@
+{
+  "app": {
+    "name": "Imaquina Robotics"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "courses": "My courses",
+    "messages": "Messages",
+    "assignments": "Assignments",
+    "teacher": "Teacher panel",
+    "admin": "Administration",
+    "studio": "Content Studio",
+    "account": "My account"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "seeAll": "See all"
+  },
+  "auth": {
+    "login": "Sign in",
+    "logout": "Sign out",
+    "email": "Email",
+    "password": "Password"
+  }
+}

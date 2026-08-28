@@ -1,0 +1,97 @@
+/** El andamiaje del router, no las pantallas.
+ *
+ *  Lo que se prueba aquí es que las rutas conecten y que los guards decidan
+ *  bien: un enlace a una ruta inexistente o un guard mal anidado no lo detecta
+ *  ningún test de componente aislado, y es de los fallos más caros de
+ *  descubrir tarde.
+ *
+ *  Las pantallas son marcadores (`data-pending`) hasta que se desarrollen, así
+ *  que se comprueba CUÁL se monta, no qué pinta.
+ */
+import { render, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { describe, expect, it } from "vitest";
+
+import { App } from "@/app/App";
+import type { Session } from "@/app/providers/authContext";
+import { routes } from "@/shared/config/routes";
+
+function iniciarSesion(session: Session) {
+  localStorage.setItem("session", JSON.stringify(session));
+  localStorage.setItem("access_token", "token-de-prueba");
+}
+
+/** Qué pantalla acabó montada. `null` si no hay ninguna. */
+function pantallaMontada(container: HTMLElement): string | null {
+  return container.querySelector("[data-pending]")?.getAttribute("data-pending") ?? null;
+}
+
+function renderizarEn(ruta: string) {
+  return render(
+    <MemoryRouter initialEntries={[ruta]}>
+      <App />
+    </MemoryRouter>,
+  );
+}
+
+const ESTUDIANTE: Session = { role: "student", lang: "es" };
+const DOCENTE: Session = { role: "teacher", lang: "es" };
+const EDITOR: Session = { role: "editor", lang: "es" };
+
+describe("router", () => {
+  it("sin sesión, cualquier ruta privada lleva al login", () => {
+    const { container } = renderizarEn(routes.dashboard);
+    expect(pantallaMontada(container)).toBe("LoginPage");
+  });
+
+  it("con sesión, la raíz monta el panel", () => {
+    iniciarSesion(ESTUDIANTE);
+    const { container } = renderizarEn(routes.dashboard);
+    expect(pantallaMontada(container)).toBe("DashboardPage");
+  });
+
+  it("una ruta desconocida vuelve al panel", () => {
+    iniciarSesion(ESTUDIANTE);
+    const { container } = renderizarEn("/no-existe-esta-ruta");
+    expect(pantallaMontada(container)).toBe("DashboardPage");
+  });
+
+  it("el momento de un proyecto resuelve sus dos parámetros", () => {
+    iniciarSesion(ESTUDIANTE);
+    const { container } = renderizarEn(routes.moment("proyecto-1", "intro"));
+    expect(pantallaMontada(container)).toBe("MomentPage");
+  });
+
+  describe("guards por rol", () => {
+    it("un estudiante no entra al Content Studio: lo devuelve al panel", () => {
+      iniciarSesion(ESTUDIANTE);
+      const { container } = renderizarEn(routes.studio);
+      expect(pantallaMontada(container)).toBe("DashboardPage");
+    });
+
+    it("un estudiante no entra al panel docente", () => {
+      iniciarSesion(ESTUDIANTE);
+      const { container } = renderizarEn(routes.teacher);
+      expect(pantallaMontada(container)).toBe("DashboardPage");
+    });
+
+    it("un docente no entra a administración", () => {
+      iniciarSesion(DOCENTE);
+      const { container } = renderizarEn(routes.admin);
+      expect(pantallaMontada(container)).toBe("DashboardPage");
+    });
+
+    it("un docente sí entra al panel docente", async () => {
+      iniciarSesion(DOCENTE);
+      const { container } = renderizarEn(routes.teacher);
+      // Va diferido con `lazy()`: hay que esperar a que resuelva el import.
+      await waitFor(() => expect(pantallaMontada(container)).toBe("TeacherPage"));
+    });
+
+    it("un editor sí entra al Content Studio", async () => {
+      iniciarSesion(EDITOR);
+      const { container } = renderizarEn(routes.studio);
+      await waitFor(() => expect(pantallaMontada(container)).toBe("StudioPage"));
+    });
+  });
+});
