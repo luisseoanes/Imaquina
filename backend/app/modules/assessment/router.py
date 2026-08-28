@@ -123,9 +123,21 @@ class GradeIn(BaseModel):
 
 @router.patch("/answers/{answer_id}")
 async def grade_answer(answer_id: UUID, payload: GradeIn, staff: Staff, db: Db):
-    return await service.grade_answer(
+    from app.modules.audit import service as audit
+
+    result = await service.grade_answer(
         db, staff.require_institution(), answer_id, **payload.model_dump()
     )
+    await audit.record(
+        db,
+        institution_id=staff.require_institution(),
+        actor_id=staff.user_id,
+        action="grade.change",
+        target_type="answer",
+        target_id=answer_id,
+        summary=f"Calificó una respuesta abierta con {payload.teacher_score} pts",
+    )
+    return result
 
 
 @router.get("/{assessment_id}/attempts")

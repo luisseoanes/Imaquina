@@ -22,9 +22,7 @@ async def reindex_project(ctx: dict, project_id: str) -> dict:
 
     pid = uuid.UUID(project_id)
     async with SessionLocal() as db:
-        await db.execute(
-            delete(DocumentChunk).where(DocumentChunk.project_id == pid)
-        )
+        await db.execute(delete(DocumentChunk).where(DocumentChunk.project_id == pid))
 
         snapshot = (
             await db.execute(
@@ -103,15 +101,19 @@ async def export_results(ctx: dict, assessment_id: str, requested_by: str) -> di
             return {"assessment_id": assessment_id, "status": "no encontrada"}
 
         intentos = (
-            await db.execute(select(Attempt).where(Attempt.assessment_id == aid))
-        ).scalars().all()
+            (await db.execute(select(Attempt).where(Attempt.assessment_id == aid)))
+            .scalars()
+            .all()
+        )
         estudiantes = {
             u.id: u.full_name
             for u in (
                 await db.execute(
                     select(User).where(User.id.in_([a.student_id for a in intentos]))
                 )
-            ).scalars().all()
+            )
+            .scalars()
+            .all()
         }
 
         libro = Workbook()
@@ -160,9 +162,7 @@ async def delete_orphaned_media(ctx: dict, s3_key: str) -> dict:
 
     async with SessionLocal() as db:
         sigue_referenciado = (
-            await db.execute(
-                select(MediaAsset.id).where(MediaAsset.s3_key == s3_key)
-            )
+            await db.execute(select(MediaAsset.id).where(MediaAsset.s3_key == s3_key))
         ).scalar_one_or_none()
 
     if sigue_referenciado is not None:
@@ -198,12 +198,141 @@ async def purge_old_chat_history(ctx: dict) -> dict:
     return {"borrados": resultado.rowcount}
 
 
+async def notify_due_assignments(ctx: dict) -> dict:
+    """Avisa a los alumnos de las tareas que vencen en las próximas 48 h y que
+    aún no han completado. Idempotente por día: no re-notifica lo ya avisado
+    esa misma jornada (misma `kind` + `link` + creada hoy)."""
+    from datetime import UTC, datetime, timedelta
+
+    from sqlalchemy import select
+
+    from app.modules.assignments.models import Assignment
+    from app.modules.identity.models import Enrollment
+    from app.modules.notifications import service as notifications
+    from app.modules.notifications.models import Notification
+
+    ahora = datetime.now(UTC)
+    limite = ahora + timedelta(hours=48)
+    avisados = 0
+    async with SessionLocal() as db:
+        tareas = (
+            (
+                await db.execute(
+                    select(Assignment).where(
+                        Assignment.is_published.is_(True),
+                        Assignment.due_at.is_not(None),
+                        Assignment.due_at > ahora,
+                        Assignment.due_at <= limite,
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        for a in tareas:
+            alumnos = (
+                (
+                    await db.execute(
+                        select(Enrollment.user_id).where(
+                            Enrollment.course_id == a.course_id
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            ya = set(
+                (
+                    await db.execute(
+                        select(Notification.user_id).where(
+                            Notification.kind == "assignment.due_soon",
+                            Notification.created_at
+                            >= ahora.replace(hour=0, minute=0, second=0, microsecond=0),
+                        )
+                    )
+                ).scalars()
+            )
+            pendientes = [u for u in alumnos if u not in ya]
+            if pendientes:
+                await notifications.notify_many(
+                    db,
+                    user_ids=pendientes,
+                    institution_id=a.institution_id,
+                    kind="assignment.due_soon",
+                    title=f"Vence pronto: {a.title}",
+                    body=f"Entrega antes del {a.due_at.date().isoformat()}.",
+                    link="/student/agenda",
+                )
+                avisados += len(pendientes)
+        await db.commit()
+    return {"avisos": avisados}
+
+
+async def notify_expiring_licenses(ctx: dict) -> dict:
+    """Avisa a los administradores de cada institución cuya licencia vence en
+    los próximos 14 días."""
+    from datetime import date, timedelta
+
+    from sqlalchemy import select
+
+    from app.modules.identity.models import License, User
+    from app.modules.notifications import service as notifications
+
+    limite = date.today() + timedelta(days=14)
+    avisos = 0
+    async with SessionLocal() as db:
+        licencias = (
+            (
+                await db.execute(
+                    select(License).where(
+                        License.valid_to >= date.today(), License.valid_to <= limite
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        for lic in licencias:
+            admins = (
+                (
+                    await db.execute(
+                        select(User.id).where(
+                            User.institution_id == lic.institution_id,
+                            User.role == "admin",
+                            User.is_active.is_(True),
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            await notifications.notify_many(
+                db,
+                user_ids=admins,
+                institution_id=lic.institution_id,
+                kind="license.expiring",
+                title="La licencia vence pronto",
+                body=(
+                    "La licencia de la institución vence el "
+                    f"{lic.valid_to.isoformat()}."
+                ),
+                link="/admin/settings",
+            )
+            avisos += len(admins)
+        await db.commit()
+    return {"avisos": avisos}
+
+
 class WorkerSettings:
     functions = [reindex_project, export_results, delete_orphaned_media]
     # Primer uso de cron en el repo: antes todo era encolado al vuelo desde
     # un router (publicar, borrar media). Esto es la excepción -- nadie
     # dispara "purgar historial viejo" a mano, tiene que ser periódico.
-    cron_jobs = [cron(purge_old_chat_history, hour={3}, minute=0)]
+    cron_jobs = [
+        cron(purge_old_chat_history, hour={3}, minute=0),
+        cron(notify_due_assignments, hour={6}, minute=0),
+        cron(notify_expiring_licenses, hour={6}, minute=15),
+    ]
     redis_settings = RedisSettings.from_dsn(str(settings.REDIS_URL))
     max_jobs = 10
     job_timeout = 300

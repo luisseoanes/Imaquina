@@ -258,15 +258,49 @@ async def list_users(admin: Admin, db: Db):
 
 @admin_router.post("/users", status_code=201)
 async def create_user(payload: UserIn, admin: Admin, db: Db):
-    return await service.create_user(
+    from app.modules.audit import service as audit
+
+    user = await service.create_user(
         db, institution_id=admin.require_institution(), **payload.model_dump()
     )
+    await audit.record(
+        db,
+        institution_id=admin.require_institution(),
+        actor_id=admin.user_id,
+        action="user.create",
+        target_type="user",
+        target_id=UUID(user["id"]),
+        summary=f"Creó la cuenta {user['email']} ({user['role']})",
+    )
+    return user
 
 
 @admin_router.patch("/users/{user_id}")
 async def update_user(user_id: UUID, payload: UserPatch, admin: Admin, db: Db):
+    from app.modules.audit import service as audit
+
     datos = payload.model_dump(exclude_unset=True)
-    return await service.update_user(db, user_id, admin.require_institution(), **datos)
+    user = await service.update_user(
+        db, user_id, admin.require_institution(), **datos
+    )
+    accion = (
+        "user.deactivate"
+        if datos.get("is_active") is False
+        else "user.activate"
+        if datos.get("is_active") is True
+        else "user.update"
+    )
+    await audit.record(
+        db,
+        institution_id=admin.require_institution(),
+        actor_id=admin.user_id,
+        action=accion,
+        target_type="user",
+        target_id=user_id,
+        summary=f"Modificó la cuenta {user['email']}",
+        meta={k: v for k, v in datos.items() if k != "is_active"} or None,
+    )
+    return user
 
 
 class PasswordResetIn(BaseModel):
@@ -284,8 +318,19 @@ async def reset_password(
     scope descarta el autoregistro—, así que el administrador la fija y la
     comunica por el canal del colegio.
     """
+    from app.modules.audit import service as audit
+
     await service.reset_password(
         db, user_id, admin.require_institution(), nueva=payload.new_password
+    )
+    await audit.record(
+        db,
+        institution_id=admin.require_institution(),
+        actor_id=admin.user_id,
+        action="user.reset_password",
+        target_type="user",
+        target_id=user_id,
+        summary="Restableció la contraseña de una cuenta",
     )
 
 

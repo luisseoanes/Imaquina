@@ -48,7 +48,16 @@ def test_docente_no_puede_autorear():
 
 @pytest.mark.parametrize(
     "modelo",
-    ["Progress", "Attempt", "ChatSession", "Course", "License"],
+    [
+        "Progress",
+        "Attempt",
+        "ChatSession",
+        "Course",
+        "License",
+        "Assignment",
+        "Notification",
+        "AuditEntry",
+    ],
 )
 def test_tablas_con_datos_por_institucion_tienen_institution_id(modelo):
     """Guard estructural: si un modelo con datos de alumnos pierde la

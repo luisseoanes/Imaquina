@@ -548,6 +548,32 @@ async def submit_attempt(
     attempt.status = AttemptStatus.GRADED if completo else AttemptStatus.SUBMITTED
     attempt.submitted_at = datetime.now(UTC)
     await db.flush()
+
+    # Avisa a los docentes de los cursos del alumno: hay algo que revisar.
+    if not completo:
+        from app.modules.identity.models import Course, Enrollment
+        from app.modules.notifications import service as notifications
+
+        docentes = (
+            await db.execute(
+                select(Course.teacher_id)
+                .join(Enrollment, Enrollment.course_id == Course.id)
+                .where(
+                    Enrollment.user_id == tenant.user_id,
+                    Course.teacher_id.is_not(None),
+                )
+            )
+        ).scalars().all()
+        await notifications.notify_many(
+            db,
+            user_ids=[d for d in docentes if d],
+            institution_id=attempt.institution_id,
+            kind="attempt.submitted",
+            title="Evaluación por calificar",
+            body="Un estudiante envió una evaluación con respuestas abiertas.",
+            link="/teacher/grading",
+        )
+
     return _serializar_attempt(await _get_attempt(db, attempt_id))
 
 
@@ -585,6 +611,18 @@ async def grade_answer(
     if completo:
         attempt.status = AttemptStatus.GRADED
     await db.flush()
+
+    from app.modules.notifications import service as notifications
+
+    await notifications.notify(
+        db,
+        user_id=attempt.student_id,
+        institution_id=attempt.institution_id,
+        kind="attempt.graded",
+        title="Tu evaluación fue calificada",
+        body="El docente puntuó una de tus respuestas.",
+        link="/student/agenda",
+    )
     return _serializar_attempt(await _get_attempt(db, attempt.id))
 
 
