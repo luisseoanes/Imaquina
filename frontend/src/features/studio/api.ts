@@ -324,6 +324,19 @@ export function useAssessmentMutations(momentId: string, lang: Lang) {
         send<void>(`/studio/assessment/choices/${id}`, "DELETE"),
       onSuccess: invalidate,
     }),
+    setRubric: useMutation({
+      mutationFn: ({
+        id,
+        criteria,
+      }: {
+        id: string;
+        criteria: unknown[];
+      }) =>
+        send<unknown>(`/studio/assessment/questions/${id}/rubric`, "PUT", {
+          criteria,
+        }),
+      onSuccess: invalidate,
+    }),
   };
 }
 

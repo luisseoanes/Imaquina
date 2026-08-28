@@ -259,14 +259,45 @@ export interface Assessment {
   questions: Question[];
 }
 
+export type QuestionKind =
+  | "mcq"
+  | "true_false"
+  | "open"
+  | "numeric"
+  | "ordering"
+  | "matching"
+  | "cloze";
+
+export interface RubricLevel {
+  id?: string;
+  label: string;
+  description: string | null;
+  points: number;
+}
+export interface RubricCriterion {
+  id?: string;
+  order?: number;
+  title: string;
+  max_points: number;
+  levels: RubricLevel[];
+}
+export interface Rubric {
+  id: string;
+  criteria: RubricCriterion[];
+}
+
 export interface Question {
   id: string;
-  kind: "mcq" | "true_false" | "open" | "numeric";
+  kind: QuestionKind;
   order: number;
   points: number;
   correct_numeric: number | null;
+  config: Record<string, unknown>;
+  competency: string | null;
+  difficulty: "easy" | "medium" | "hard" | null;
   prompt: string | null;
   choices: Choice[];
+  rubric: Rubric | null;
 }
 
 export interface Choice {

@@ -132,13 +132,25 @@ export interface Choice {
   label: string | null;
 }
 
+export type QuestionKind =
+  | "mcq"
+  | "true_false"
+  | "open"
+  | "numeric"
+  | "ordering"
+  | "matching"
+  | "cloze";
+
 export interface Question {
   id: string;
-  kind: "mcq" | "true_false" | "open" | "numeric";
+  kind: QuestionKind;
   order: number;
   points: number;
   prompt: string | null;
   choices: Choice[];
+  /** Estructura de ordering/matching/cloze, sin la clave de respuesta. */
+  config?: Record<string, unknown>;
+  rubric_criteria?: { id: string; title: string; max_points: number }[];
 }
 
 export interface StudentAssessment {

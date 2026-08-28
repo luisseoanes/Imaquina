@@ -161,7 +161,10 @@
       "mcq": "Multiple choice",
       "true_false": "True / False",
       "open": "Open",
-      "numeric": "Numeric"
+      "numeric": "Numeric",
+      "ordering": "Order",
+      "matching": "Match",
+      "cloze": "Fill the blanks"
     },
     "dashboard": {
       "title": "Hi, Creator!",
@@ -280,7 +283,20 @@
       "noQuestions": "No questions yet.",
       "prompt": "Question prompt",
       "correctNumeric": "Correct answer",
-      "addChoice": "Add choice"
+      "addChoice": "Add choice",
+      "orderingHint": "The order you set here is the correct one.",
+      "orderingItems": "Items to order",
+      "matchLeft": "Column A",
+      "matchRight": "Column B",
+      "matchPairs": "Correct matches",
+      "clozeText": "Text with blanks",
+      "clozeHint": "Mark each blank with {{0}}, {{1}}, …",
+      "clozeBlanks": "Answers per blank",
+      "clozeAnswers": "answer | variant",
+      "addBlank": "Add blank",
+      "rubric": "Rubric",
+      "criterionTitle": "Criterion",
+      "addCriterion": "Add criterion"
     },
     "paths": {
       "subtitle": "Curated sequences of projects and lessons.",
@@ -798,7 +814,8 @@
       "untitledQuestion": "Question without a prompt",
       "openPlaceholder": "Write your answer…",
       "resultTitle": "Result",
-      "pendingGrading": "Waiting for your teacher to grade it."
+      "pendingGrading": "Waiting for your teacher to grade it.",
+      "blank": "Blank"
     },
     "assignments": {
       "title": "Assessments",

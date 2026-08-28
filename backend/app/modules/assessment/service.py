@@ -16,6 +16,7 @@ from sqlalchemy.orm import selectinload
 
 from app.core.deps import TenantContext
 from app.core.errors import Conflict, NotFound, ValidationFailed
+from app.modules.assessment import grading
 from app.modules.assessment.models import (
     Answer,
     Assessment,
@@ -26,9 +27,61 @@ from app.modules.assessment.models import (
     Question,
     QuestionKind,
     QuestionTranslation,
+    Rubric,
+    RubricCriterion,
+    RubricLevel,
 )
 
 TOLERANCIA_NUMERICA = 1e-6
+
+
+def _rubric_loader():
+    """Cadena rúbrica→criterios→niveles colgando de `Question.rubric`."""
+    return (
+        selectinload(Question.rubric)
+        .selectinload(Rubric.criteria)
+        .selectinload(RubricCriterion.levels)
+    )
+
+
+def _questions_loaders():
+    """Todo lo que cuelga de las preguntas de una evaluación, en una lista."""
+    return [
+        selectinload(Assessment.questions)
+        .selectinload(Question.choices)
+        .selectinload(Choice.translations),
+        selectinload(Assessment.questions).selectinload(Question.translations),
+        selectinload(Assessment.questions)
+        .selectinload(Question.rubric)
+        .selectinload(Rubric.criteria)
+        .selectinload(RubricCriterion.levels),
+    ]
+
+
+def _serializar_rubric(rubric: Rubric | None) -> dict[str, Any] | None:
+    if rubric is None:
+        return None
+    return {
+        "id": str(rubric.id),
+        "criteria": [
+            {
+                "id": str(c.id),
+                "order": c.order,
+                "title": c.title,
+                "max_points": c.max_points,
+                "levels": [
+                    {
+                        "id": str(lv.id),
+                        "label": lv.label,
+                        "description": lv.description,
+                        "points": lv.points,
+                    }
+                    for lv in sorted(c.levels, key=lambda x: x.points)
+                ],
+            }
+            for c in sorted(rubric.criteria, key=lambda x: x.order)
+        ],
+    }
 
 
 # --- Autoría (A1) ------------------------------------------------------------
@@ -52,11 +105,15 @@ def _serializar_question(question: Question, lang: str) -> dict[str, Any]:
         "order": question.order,
         "points": question.points,
         "correct_numeric": question.correct_numeric,
+        "config": question.config or {},
+        "competency": question.competency,
+        "difficulty": question.difficulty,
         "prompt": tr.prompt if tr else None,
         "choices": [
             _serializar_choice(c, lang)
             for c in sorted(question.choices, key=lambda c: c.order)
         ],
+        "rubric": _serializar_rubric(question.rubric),
     }
 
 
@@ -79,12 +136,7 @@ async def _get_full(db: AsyncSession, assessment_id: uuid.UUID) -> Assessment:
         await db.execute(
             select(Assessment)
             .where(Assessment.id == assessment_id)
-            .options(
-                selectinload(Assessment.questions)
-                .selectinload(Question.choices)
-                .selectinload(Choice.translations),
-                selectinload(Assessment.questions).selectinload(Question.translations),
-            )
+            .options(*_questions_loaders())
             .execution_options(populate_existing=True)
         )
     ).scalar_one_or_none()
@@ -134,6 +186,9 @@ async def create_question(
     prompt: str = "",
     points: float = 1.0,
     correct_numeric: float | None = None,
+    config: dict | None = None,
+    competency: str | None = None,
+    difficulty: str | None = None,
     choices: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     _validar_kind(kind)
@@ -146,6 +201,9 @@ async def create_question(
         order=siguiente,
         points=points,
         correct_numeric=correct_numeric,
+        config=grading.validar_config(kind, config),
+        competency=competency,
+        difficulty=difficulty,
     )
     db.add(question)
     await db.flush()
@@ -178,6 +236,7 @@ async def _get_question(db: AsyncSession, question_id: uuid.UUID) -> Question:
             .options(
                 selectinload(Question.choices).selectinload(Choice.translations),
                 selectinload(Question.translations),
+                _rubric_loader(),
             )
             .execution_options(populate_existing=True)
         )
@@ -195,9 +254,11 @@ async def update_question(
     if "kind" in campos and campos["kind"] is not None:
         _validar_kind(campos["kind"])
         question.kind = campos["kind"]
-    for campo in ("points", "correct_numeric"):
+    for campo in ("points", "correct_numeric", "competency", "difficulty"):
         if campo in campos and campos[campo] is not None:
             setattr(question, campo, campos[campo])
+    if "config" in campos and campos["config"] is not None:
+        question.config = grading.validar_config(question.kind, campos["config"])
 
     if (prompt := campos.get("prompt")) is not None:
         tr = next((t for t in question.translations if t.lang == lang), None)
@@ -214,6 +275,44 @@ async def delete_question(db: AsyncSession, question_id: uuid.UUID) -> None:
     question = await _get_question(db, question_id)
     await db.delete(question)
     await db.flush()
+
+
+async def set_rubric(
+    db: AsyncSession,
+    question_id: uuid.UUID,
+    criteria: list[dict[str, Any]] | None,
+) -> dict[str, Any]:
+    """Reemplaza la rúbrica entera de una pregunta (o la borra si `criteria`
+    viene vacío). Mandar la lista completa evita el estado intermedio de ir
+    editando criterios uno a uno, igual que el reorder de bloques."""
+    question = await _get_question(db, question_id)
+
+    if question.rubric is not None:
+        await db.delete(question.rubric)
+        await db.flush()
+        question = await _get_question(db, question_id)
+
+    if criteria:
+        rubric = Rubric(question_id=question_id)
+        for orden, c in enumerate(criteria):
+            criterio = RubricCriterion(
+                order=orden,
+                title=c.get("title") or "",
+                max_points=float(c.get("max_points") or 1.0),
+            )
+            for lv in c.get("levels") or []:
+                criterio.levels.append(
+                    RubricLevel(
+                        label=lv.get("label") or "",
+                        description=lv.get("description"),
+                        points=float(lv.get("points") or 0.0),
+                    )
+                )
+            rubric.criteria.append(criterio)
+        db.add(rubric)
+        await db.flush()
+
+    return _serializar_question(await _get_question(db, question_id), "es")
 
 
 async def reorder_questions(
@@ -310,10 +409,23 @@ def _serializar_question_para_estudiante(question: Question, lang: str) -> dict[
         "points": question.points,
         # `correct_numeric` tampoco se manda: es la respuesta correcta.
         "prompt": tr.prompt if tr else None,
+        # `config` filtrado: sin la clave de respuesta (pairs, blanks[].answers,
+        # y el orden correcto de `ordering`, que se baraja).
+        "config": grading.config_para_estudiante(question.kind, question.config or {}),
         "choices": [
             _serializar_choice_para_estudiante(c, lang)
             for c in sorted(question.choices, key=lambda c: c.order)
         ],
+        # Sólo los criterios y su puntuación máxima: al alumno le sirve para
+        # saber cómo se le va a evaluar, no las descripciones internas.
+        "rubric_criteria": [
+            {"id": str(c.id), "title": c.title, "max_points": c.max_points}
+            for c in sorted(
+                question.rubric.criteria, key=lambda x: x.order
+            )
+        ]
+        if question.rubric
+        else [],
     }
 
 
@@ -327,12 +439,7 @@ async def get_for_student(
         await db.execute(
             select(Assessment)
             .where(Assessment.moment_id == moment_id)
-            .options(
-                selectinload(Assessment.questions)
-                .selectinload(Question.choices)
-                .selectinload(Choice.translations),
-                selectinload(Assessment.questions).selectinload(Question.translations),
-            )
+            .options(*_questions_loaders())
         )
     ).scalar_one_or_none()
     if assessment is None:
@@ -385,6 +492,7 @@ def _serializar_answer(answer: Answer) -> dict[str, Any]:
         "is_correct": answer.is_correct,
         "teacher_score": answer.teacher_score,
         "teacher_feedback": answer.teacher_feedback,
+        "rubric_scores": answer.rubric_scores,
     }
 
 
@@ -506,6 +614,14 @@ def _calificar_auto(question: Question, answer: Answer) -> None:
             and answer.value_numeric is not None
             and abs(answer.value_numeric - question.correct_numeric) < TOLERANCIA_NUMERICA
         )
+    elif question.kind in (
+        QuestionKind.ORDERING,
+        QuestionKind.MATCHING,
+        QuestionKind.CLOZE,
+    ):
+        answer.is_correct = grading.calificar(
+            question.kind, question.config or {}, answer.value_text
+        )
     # OPEN: no se toca.
 
 
@@ -585,8 +701,9 @@ async def grade_answer(
     staff_institution_id: uuid.UUID,
     answer_id: uuid.UUID,
     *,
-    teacher_score: float,
+    teacher_score: float | None = None,
     teacher_feedback: str | None = None,
+    rubric_scores: dict | None = None,
 ) -> dict[str, Any]:
     answer = (
         await db.execute(select(Answer).where(Answer.id == answer_id))
@@ -600,8 +717,19 @@ async def grade_answer(
     if attempt.status == AttemptStatus.IN_PROGRESS:
         raise Conflict("No se puede calificar un intento que el estudiante no ha enviado")
 
-    answer.teacher_score = teacher_score
-    answer.teacher_feedback = teacher_feedback
+    if rubric_scores is not None:
+        # La nota sale de la suma de la rúbrica; `teacher_score` explícito la
+        # sobreescribe sólo si también viene.
+        answer.rubric_scores = rubric_scores
+        answer.teacher_score = (
+            teacher_score
+            if teacher_score is not None
+            else sum(float(v) for v in rubric_scores.values())
+        )
+    elif teacher_score is not None:
+        answer.teacher_score = teacher_score
+    if teacher_feedback is not None:
+        answer.teacher_feedback = teacher_feedback
     await db.flush()
 
     assessment = await _get_full(db, attempt.assessment_id)
@@ -672,12 +800,7 @@ async def review_rows(
         await db.execute(
             select(Assessment)
             .where(Assessment.moment_id == moment_id)
-            .options(
-                selectinload(Assessment.questions)
-                .selectinload(Question.choices)
-                .selectinload(Choice.translations),
-                selectinload(Assessment.questions).selectinload(Question.translations),
-            )
+            .options(*_questions_loaders())
         )
     ).scalar_one_or_none()
     if assessment is None:

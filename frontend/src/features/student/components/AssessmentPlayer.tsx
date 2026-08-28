@@ -361,7 +361,141 @@ function Pregunta({
           aria-label={question.prompt ?? t("student.assessment.untitledQuestion")}
         />
       ) : null}
+
+      {question.kind === "ordering" ||
+      question.kind === "matching" ||
+      question.kind === "cloze" ? (
+        <StructuredAnswer
+          question={question}
+          valueText={value?.value_text ?? null}
+          onChange={(text) => onChange({ value_text: text })}
+        />
+      ) : null}
     </Card>
+  );
+}
+
+type LangText = Record<string, string> | undefined;
+function txt(m: LangText, lang: string): string {
+  if (!m) return "";
+  return m[lang] ?? Object.values(m)[0] ?? "";
+}
+
+/** Ordenar / emparejar / completar: la respuesta se serializa a JSON en
+ *  `value_text`, que es lo que el backend califica. */
+function StructuredAnswer({
+  question,
+  valueText,
+  onChange,
+}: {
+  question: Question;
+  valueText: string | null;
+  onChange: (text: string) => void;
+}) {
+  const { t } = useTranslation();
+  const { i18n } = useTranslation();
+  const lang = i18n.language.startsWith("en") ? "en" : "es";
+  const config = question.config ?? {};
+
+  let parsed: unknown = null;
+  try {
+    parsed = valueText ? JSON.parse(valueText) : null;
+  } catch {
+    parsed = null;
+  }
+
+  if (question.kind === "ordering") {
+    const items = (config.items as { id: string; text: LangText }[]) ?? [];
+    const orden: string[] =
+      Array.isArray(parsed) && parsed.length === items.length
+        ? (parsed as string[])
+        : items.map((i) => i.id);
+    const move = (idx: number, dir: -1 | 1) => {
+      const j = idx + dir;
+      if (j < 0 || j >= orden.length) return;
+      const next = [...orden];
+      [next[idx], next[j]] = [next[j]!, next[idx]!];
+      onChange(JSON.stringify(next));
+    };
+    return (
+      <ol className="space-y-2">
+        {orden.map((id, idx) => {
+          const it = items.find((x) => x.id === id);
+          return (
+            <li
+              key={id}
+              className="flex items-center justify-between rounded-control border border-line bg-canvas px-3 py-2 text-sm"
+            >
+              <span>{txt(it?.text, lang)}</span>
+              <span className="flex gap-1">
+                <button type="button" onClick={() => move(idx, -1)} aria-label="↑">
+                  ↑
+                </button>
+                <button type="button" onClick={() => move(idx, 1)} aria-label="↓">
+                  ↓
+                </button>
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    );
+  }
+
+  if (question.kind === "matching") {
+    const left = (config.left as { id: string; text: LangText }[]) ?? [];
+    const right = (config.right as { id: string; text: LangText }[]) ?? [];
+    const pairs: Record<string, string> =
+      parsed && typeof parsed === "object" ? (parsed as Record<string, string>) : {};
+    return (
+      <div className="space-y-2">
+        {left.map((l) => (
+          <div key={l.id} className="flex items-center gap-3 text-sm">
+            <span className="min-w-32 flex-1">{txt(l.text, lang)}</span>
+            <select
+              value={pairs[l.id] ?? ""}
+              onChange={(e) =>
+                onChange(JSON.stringify({ ...pairs, [l.id]: e.target.value }))
+              }
+              className="flex-1 rounded-control border border-line bg-canvas px-2 py-1.5"
+            >
+              <option value="">—</option>
+              {right.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {txt(r.text, lang)}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // cloze
+  const text = txt(config.text as LangText, lang);
+  const values: Record<string, string> =
+    parsed && typeof parsed === "object" ? (parsed as Record<string, string>) : {};
+  const partes = text.split(/(\{\{[^}]+\}\})/g);
+  return (
+    <p className="text-sm leading-8 text-content">
+      {partes.map((parte, i) => {
+        const m = /^\{\{\s*([^}\s]+)\s*\}\}$/.exec(parte);
+        if (!m) return <span key={i}>{parte}</span>;
+        const bid = m[1]!;
+        return (
+          <input
+            key={i}
+            value={values[bid] ?? ""}
+            onChange={(e) =>
+              onChange(JSON.stringify({ ...values, [bid]: e.target.value }))
+            }
+            aria-label={t("student.assessment.blank")}
+            className="mx-1 w-28 rounded border border-line bg-canvas px-1.5 py-0.5"
+          />
+        );
+      })}
+    </p>
   );
 }
 

@@ -404,3 +404,113 @@ async def test_mis_intentos_no_muestra_los_de_otro_estudiante(client, db):
     mios = await client.get(f"{LEARN_ASSESS}/{aid}/attempts/mine", headers=h1)
 
     assert len(mios.json()) == 1
+
+
+# --- Tipos con estructura en config (ordering / matching / cloze) y rúbrica ---
+
+
+async def _assessment_id(client, editor_h, mid) -> str:
+    return (await client.get(f"{ASSESS}/moments/{mid}", headers=editor_h)).json()["id"]
+
+
+async def test_pregunta_de_ordenar_se_califica_sola(client, db):
+    inst = await _institucion_con_licencia(db)
+    editor_h = _h(_token_de(await _usuario(db, inst, "editor"), inst))
+    mid = await _momento_assess(client, editor_h)
+    aid = await _assessment_id(client, editor_h, mid)
+
+    q = (
+        await client.post(
+            f"{ASSESS}/{aid}/questions",
+            headers=editor_h,
+            json={
+                "kind": "ordering",
+                "prompt": "Ordena los pasos",
+                "points": 2,
+                "config": {
+                    "items": [
+                        {"id": "a", "text": {"es": "Uno"}},
+                        {"id": "b", "text": {"es": "Dos"}},
+                        {"id": "c", "text": {"es": "Tres"}},
+                    ]
+                },
+            },
+        )
+    ).json()
+
+    # El estudiante no recibe el orden correcto tal cual: se baraja por id (aquí
+    # coincide) y nunca trae la clave de respuesta aparte.
+    h = _h(_token_de(await _usuario(db, inst, "student"), inst))
+    intento = (
+        await client.post(f"{LEARN_ASSESS}/{aid}/attempts", headers=h, json={})
+    ).json()
+    await client.patch(
+        f"{LEARN_ASSESS}/attempts/{intento['id']}/answers",
+        headers=h,
+        json={"answers": [{"question_id": q["id"], "value_text": '["a", "b", "c"]'}]},
+    )
+    enviado = (
+        await client.post(
+            f"{LEARN_ASSESS}/attempts/{intento['id']}/submit", headers=h
+        )
+    ).json()
+
+    assert enviado["status"] == "graded"
+    assert enviado["score"] == 2
+
+
+async def test_la_rubrica_recalcula_la_nota_de_una_abierta(client, db):
+    inst = await _institucion_con_licencia(db)
+    editor_h = _h(_token_de(await _usuario(db, inst, "editor"), inst))
+    mid = await _momento_assess(client, editor_h)
+    aid = await _assessment_id(client, editor_h, mid)
+
+    q = (
+        await client.post(
+            f"{ASSESS}/{aid}/questions",
+            headers=editor_h,
+            json={"kind": "open", "prompt": "Explica", "points": 10},
+        )
+    ).json()
+    await client.put(
+        f"{ASSESS}/questions/{q['id']}/rubric",
+        headers=editor_h,
+        json={
+            "criteria": [
+                {"title": "Claridad", "max_points": 4, "levels": []},
+                {"title": "Profundidad", "max_points": 6, "levels": []},
+            ]
+        },
+    )
+    rubrica = (
+        await client.get(f"{ASSESS}/moments/{mid}", headers=editor_h)
+    ).json()["questions"][0]["rubric"]
+    crit = {c["title"]: c["id"] for c in rubrica["criteria"]}
+
+    h = _h(_token_de(await _usuario(db, inst, "student"), inst))
+    intento = (
+        await client.post(f"{LEARN_ASSESS}/{aid}/attempts", headers=h, json={})
+    ).json()
+    await client.patch(
+        f"{LEARN_ASSESS}/attempts/{intento['id']}/answers",
+        headers=h,
+        json={"answers": [{"question_id": q["id"], "value_text": "una respuesta"}]},
+    )
+    await client.post(f"{LEARN_ASSESS}/attempts/{intento['id']}/submit", headers=h)
+
+    review = (
+        await client.get(f"{ASSESS}/moments/{mid}/review", headers=editor_h)
+    ).json()
+    answer_id = review["attempts"][0]["answers"][0]["id"]
+
+    graded = await client.patch(
+        f"{ASSESS}/answers/{answer_id}",
+        headers=editor_h,
+        json={"rubric_scores": {crit["Claridad"]: 3, crit["Profundidad"]: 5}},
+    )
+    assert graded.status_code == 200
+
+    review = (
+        await client.get(f"{ASSESS}/moments/{mid}/review", headers=editor_h)
+    ).json()
+    assert review["attempts"][0]["score"] == 8

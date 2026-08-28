@@ -161,7 +161,10 @@
       "mcq": "Opción múltiple",
       "true_false": "Verdadero / Falso",
       "open": "Abierta",
-      "numeric": "Numérica"
+      "numeric": "Numérica",
+      "ordering": "Ordenar",
+      "matching": "Emparejar",
+      "cloze": "Completar"
     },
     "dashboard": {
       "title": "¡Hola, Creador!",
@@ -280,7 +283,20 @@
       "noQuestions": "Aún no hay preguntas.",
       "prompt": "Enunciado de la pregunta",
       "correctNumeric": "Respuesta correcta",
-      "addChoice": "Añadir opción"
+      "addChoice": "Añadir opción",
+      "orderingHint": "El orden en que los pongas aquí es el correcto.",
+      "orderingItems": "Elementos a ordenar",
+      "matchLeft": "Columna A",
+      "matchRight": "Columna B",
+      "matchPairs": "Emparejamientos correctos",
+      "clozeText": "Texto con huecos",
+      "clozeHint": "Marca cada hueco con {{0}}, {{1}}, …",
+      "clozeBlanks": "Respuestas de cada hueco",
+      "clozeAnswers": "respuesta | variante",
+      "addBlank": "Añadir hueco",
+      "rubric": "Rúbrica",
+      "criterionTitle": "Criterio",
+      "addCriterion": "Añadir criterio"
     },
     "paths": {
       "subtitle": "Secuencias curadas de proyectos y lecciones.",
@@ -798,7 +814,8 @@
       "untitledQuestion": "Pregunta sin enunciado",
       "openPlaceholder": "Escribe tu respuesta…",
       "resultTitle": "Resultado",
-      "pendingGrading": "Pendiente de calificar por el docente."
+      "pendingGrading": "Pendiente de calificar por el docente.",
+      "blank": "Hueco"
     },
     "assignments": {
       "title": "Evaluaciones",

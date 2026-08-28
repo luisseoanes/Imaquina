@@ -46,6 +46,10 @@ class QuestionIn(BaseModel):
     prompt: str = ""
     points: float = 1.0
     correct_numeric: float | None = None
+    # Estructura de ordering/matching/cloze (texto por idioma dentro).
+    config: dict | None = None
+    competency: str | None = Field(default=None, max_length=120)
+    difficulty: str | None = Field(default=None, pattern="^(easy|medium|hard)$")
     choices: list[ChoiceIn] = Field(default_factory=list)
     lang: str = Field(default="es", pattern="^(es|en)$")
 
@@ -55,6 +59,9 @@ class QuestionPatch(BaseModel):
     prompt: str | None = None
     points: float | None = None
     correct_numeric: float | None = None
+    config: dict | None = None
+    competency: str | None = Field(default=None, max_length=120)
+    difficulty: str | None = Field(default=None, pattern="^(easy|medium|hard)$")
     lang: str = Field(default="es", pattern="^(es|en)$")
 
 
@@ -90,6 +97,31 @@ async def delete_question(question_id: UUID, author: Author, db: Db) -> None:
     await service.delete_question(db, question_id)
 
 
+class RubricLevelIn(BaseModel):
+    label: str = Field(min_length=1, max_length=200)
+    description: str | None = None
+    points: float = 0.0
+
+
+class RubricCriterionIn(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    max_points: float = Field(default=1.0, gt=0)
+    levels: list[RubricLevelIn] = Field(default_factory=list)
+
+
+class RubricIn(BaseModel):
+    """Lista completa de criterios. Vacía = quitar la rúbrica."""
+
+    criteria: list[RubricCriterionIn] = Field(default_factory=list)
+
+
+@router.put("/questions/{question_id}/rubric")
+async def set_rubric(question_id: UUID, payload: RubricIn, author: Author, db: Db):
+    return await service.set_rubric(
+        db, question_id, [c.model_dump() for c in payload.criteria]
+    )
+
+
 @router.post("/questions/{question_id}/choices", status_code=201)
 async def add_choice(question_id: UUID, payload: ChoiceIn, author: Author, db: Db):
     return await service.add_choice(db, question_id, **payload.model_dump())
@@ -117,16 +149,19 @@ async def delete_choice(choice_id: UUID, author: Author, db: Db) -> None:
 
 
 class GradeIn(BaseModel):
-    teacher_score: float = Field(ge=0)
+    teacher_score: float | None = Field(default=None, ge=0)
     teacher_feedback: str | None = None
+    # `{criterion_id: puntos}`. Si viene, la nota es su suma.
+    rubric_scores: dict[str, float] | None = None
 
 
 @router.patch("/answers/{answer_id}")
 async def grade_answer(answer_id: UUID, payload: GradeIn, staff: Staff, db: Db):
     from app.modules.audit import service as audit
 
+    datos = payload.model_dump(exclude_unset=True)
     result = await service.grade_answer(
-        db, staff.require_institution(), answer_id, **payload.model_dump()
+        db, staff.require_institution(), answer_id, **datos
     )
     await audit.record(
         db,
@@ -135,7 +170,7 @@ async def grade_answer(answer_id: UUID, payload: GradeIn, staff: Staff, db: Db):
         action="grade.change",
         target_type="answer",
         target_id=answer_id,
-        summary=f"Calificó una respuesta abierta con {payload.teacher_score} pts",
+        summary="Calificó una respuesta abierta",
     )
     return result
 

@@ -17,9 +17,22 @@ import {
   TextInput,
 } from "@/shared/ui/panel";
 import { useStudio } from "../StudioContext";
+import {
+  QuestionConfigEditor,
+  RubricEditor,
+} from "../components/QuestionEditors";
 import type { Question } from "../types";
 
-const KINDS = ["mcq", "true_false", "open", "numeric"] as const;
+const KINDS = [
+  "mcq",
+  "true_false",
+  "open",
+  "numeric",
+  "ordering",
+  "matching",
+  "cloze",
+] as const;
+const KINDS_CONFIG = new Set(["ordering", "matching", "cloze"]);
 
 export function AssessmentsView() {
   const { t } = useTranslation();
@@ -156,6 +169,7 @@ function QuestionCard({
   m: ReturnType<typeof useAssessmentMutations>;
 }) {
   const { t } = useTranslation();
+  const { lang } = useStudio();
   return (
     <Card>
       <div className="mb-2 flex items-center gap-2">
@@ -208,6 +222,22 @@ function QuestionCard({
             }
           />
         </Field>
+      ) : null}
+
+      {KINDS_CONFIG.has(q.kind) ? (
+        <QuestionConfigEditor
+          kind={q.kind}
+          config={q.config ?? {}}
+          lang={lang}
+          onChange={(config) => m.updateQuestion.mutate({ id: q.id, config })}
+        />
+      ) : null}
+
+      {q.kind === "open" ? (
+        <RubricEditor
+          criteria={q.rubric?.criteria ?? []}
+          onSave={(criteria) => m.setRubric.mutate({ id: q.id, criteria })}
+        />
       ) : null}
 
       {(q.kind === "mcq" || q.kind === "true_false") && (

@@ -12,6 +12,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin, UUIDMixin
@@ -22,6 +23,20 @@ class QuestionKind(StrEnum):
     TRUE_FALSE = "true_false"
     OPEN = "open"
     NUMERIC = "numeric"
+    # Tipos con estructura en `Question.config` (texto por idioma dentro):
+    ORDERING = "ordering"    # ordenar una secuencia de elementos
+    MATCHING = "matching"    # emparejar columna A con columna B
+    CLOZE = "cloze"          # completar huecos en un texto
+
+
+AUTO_KINDS = (
+    QuestionKind.MCQ,
+    QuestionKind.TRUE_FALSE,
+    QuestionKind.NUMERIC,
+    QuestionKind.ORDERING,
+    QuestionKind.MATCHING,
+    QuestionKind.CLOZE,
+)
 
 
 class AttemptStatus(StrEnum):
@@ -63,11 +78,22 @@ class Question(Base, UUIDMixin, TimestampMixin):
     points: Mapped[float] = mapped_column(Float, default=1.0)
     # Para NUMERIC; en MCQ/TRUE_FALSE la respuesta vive en Choice.is_correct.
     correct_numeric: Mapped[float | None] = mapped_column(Float, nullable=True)
+    # Estructura de ORDERING/MATCHING/CLOZE, con el texto por idioma dentro
+    # (`{es: ..., en: ...}`). La clave de respuesta también vive aquí y se
+    # filtra al servir al estudiante (`_config_para_estudiante`).
+    config: Mapped[dict] = mapped_column(JSONB, default=dict)
+    # Etiquetado editorial para el banco de ítems / informes. Texto libre: sin
+    # catálogo de competencias MEN en el MVP.
+    competency: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    difficulty: Mapped[str | None] = mapped_column(String(10), nullable=True)
 
     assessment: Mapped["Assessment"] = relationship(back_populates="questions")
     choices: Mapped[list["Choice"]] = relationship(cascade="all, delete-orphan")
     translations: Mapped[list["QuestionTranslation"]] = relationship(
         cascade="all, delete-orphan"
+    )
+    rubric: Mapped["Rubric | None"] = relationship(
+        cascade="all, delete-orphan", uselist=False
     )
 
 
@@ -149,3 +175,48 @@ class Answer(Base, UUIDMixin):
     # Abiertas: las califica el docente a mano.
     teacher_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     teacher_feedback: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Puntuación por criterio de rúbrica: `{criterion_id: points}`. Al guardarla
+    # el servicio recalcula `teacher_score` como su suma.
+    rubric_scores: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+
+
+class Rubric(Base, UUIDMixin):
+    """Rúbrica de una pregunta abierta: criterios con niveles y puntos.
+
+    Una por pregunta como mucho (uselist=False). Los textos van en columnas
+    simples, no en tabla de traducción: una rúbrica la lee el docente, no el
+    estudiante, y el equipo editorial trabaja en un idioma."""
+
+    __tablename__ = "rubrics"
+
+    question_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("questions.id", ondelete="CASCADE"), unique=True, index=True
+    )
+    criteria: Mapped[list["RubricCriterion"]] = relationship(
+        cascade="all, delete-orphan", order_by="RubricCriterion.order"
+    )
+
+
+class RubricCriterion(Base, UUIDMixin):
+    __tablename__ = "rubric_criteria"
+
+    rubric_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("rubrics.id", ondelete="CASCADE"), index=True
+    )
+    order: Mapped[int] = mapped_column(Integer, default=0)
+    title: Mapped[str] = mapped_column(String(200))
+    max_points: Mapped[float] = mapped_column(Float, default=1.0)
+    levels: Mapped[list["RubricLevel"]] = relationship(
+        cascade="all, delete-orphan", order_by="RubricLevel.points"
+    )
+
+
+class RubricLevel(Base, UUIDMixin):
+    __tablename__ = "rubric_levels"
+
+    criterion_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("rubric_criteria.id", ondelete="CASCADE"), index=True
+    )
+    label: Mapped[str] = mapped_column(String(200))
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    points: Mapped[float] = mapped_column(Float, default=0.0)
