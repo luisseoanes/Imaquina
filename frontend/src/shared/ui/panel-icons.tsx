@@ -35,7 +35,14 @@ export type IconName =
   | "sparkles"
   | "clock"
   | "eye"
-  | "star";
+  | "star"
+  | "lock"
+  | "check"
+  | "message"
+  | "send"
+  | "play"
+  | "flag"
+  | "log-out";
 
 const P: Record<IconName, ReactElement> = {
   grid: (
@@ -180,6 +187,30 @@ const P: Record<IconName, ReactElement> = {
   ),
   star: (
     <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9L12 3.5Z" />
+  ),
+  lock: (
+    <>
+      <rect x="4" y="10" width="16" height="11" rx="2.5" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+    </>
+  ),
+  check: <path d="M4.5 12.5 9.5 17.5 19.5 6.5" />,
+  message: (
+    <path d="M21 12a8 8 0 0 1-8 8H7l-4 3 1.2-4.2A8 8 0 1 1 21 12Z" />
+  ),
+  send: <path d="M4 12 20 4l-6 16-2.5-6.5L4 12Z" />,
+  play: <path d="M8 5.5 18.5 12 8 18.5v-13Z" />,
+  flag: (
+    <>
+      <path d="M5 21V4" />
+      <path d="M5 4.5h11l-2 3.5 2 3.5H5" />
+    </>
+  ),
+  "log-out": (
+    <>
+      <path d="M10 4H6.5A2.5 2.5 0 0 0 4 6.5v11A2.5 2.5 0 0 0 6.5 20H10" />
+      <path d="M15 8.5 18.5 12 15 15.5M18.5 12H9" />
+    </>
   ),
 };
 

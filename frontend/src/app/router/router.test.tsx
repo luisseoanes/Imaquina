@@ -25,7 +25,10 @@ function iniciarSesion(session: Session) {
   localStorage.setItem("access_token", "token-de-prueba");
 }
 
-/** Qué pantalla acabó montada. `null` si no hay ninguna. */
+/** Qué pantalla acabó montada. `null` si no hay ninguna.
+ *
+ *  Queda para los paneles que aún son marcadores (`data-pending`); las
+ *  pantallas ya desarrolladas se identifican por lo que el usuario ve. */
 function pantallaMontada(container: HTMLElement): string | null {
   return container.querySelector("[data-pending]")?.getAttribute("data-pending") ?? null;
 }
@@ -50,10 +53,18 @@ describe("router", () => {
     expect(screen.getByRole("heading", { name: "Iniciar sesión" })).toBeInTheDocument();
   });
 
-  it("la raíz muestra el 404 mientras el panel no exista", () => {
+  it("la raíz sigue siendo el 404: no hay panel común a los cuatro roles", () => {
     iniciarSesion(ESTUDIANTE);
     renderizarEn(routes.dashboard);
     expect(screen.getByRole("heading", { name: "Esta página no existe" })).toBeInTheDocument();
+  });
+
+  it("el área del estudiante arranca en su panel", async () => {
+    iniciarSesion(ESTUDIANTE);
+    renderizarEn(routes.student);
+    expect(
+      await screen.findByRole("heading", { name: "Mi aprendizaje" }),
+    ).toBeInTheDocument();
   });
 
   it("una ruta desconocida muestra un 404, no redirige en silencio", () => {
@@ -64,10 +75,30 @@ describe("router", () => {
     expect(screen.getByRole("heading", { name: "Esta página no existe" })).toBeInTheDocument();
   });
 
-  it("el momento de un proyecto resuelve sus dos parámetros", () => {
+  it("el momento de un proyecto resuelve sus dos parámetros", async () => {
     iniciarSesion(ESTUDIANTE);
-    const { container } = renderizarEn(routes.moment("proyecto-1", "intro"));
-    expect(pantallaMontada(container)).toBe("MomentPage");
+    renderizarEn(routes.studentMoment("proyecto-1", "intro"));
+    // El título del momento sólo puede venir de haber resuelto `:projectId` y
+    // `:momentType` y haber pedido ese momento.
+    expect(
+      await screen.findByRole("heading", { name: "Introducción", level: 1 }),
+    ).toBeInTheDocument();
+  });
+
+  it("un momento con un tipo inventado no rompe: avisa y ofrece volver", async () => {
+    iniciarSesion(ESTUDIANTE);
+    renderizarEn(routes.studentMoment("proyecto-1", "no-existe"));
+    expect(
+      await screen.findByRole("heading", { name: "Este momento está bloqueado" }),
+    ).toBeInTheDocument();
+  });
+
+  it("el estudiante llega a sus evaluaciones", async () => {
+    iniciarSesion(ESTUDIANTE);
+    renderizarEn(routes.studentAssignments);
+    expect(
+      await screen.findByRole("heading", { name: "Evaluaciones", level: 1 }),
+    ).toBeInTheDocument();
   });
 
   it("tras iniciar sesión, cada rol aterriza en su herramienta, no en el 404", async () => {

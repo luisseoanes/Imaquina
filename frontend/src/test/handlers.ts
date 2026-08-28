@@ -50,6 +50,8 @@ export const handlers = [
 
   // Panel del docente
   http.get(`${API}/courses`, () => HttpResponse.json([])),
+
+  // Panel del estudiante. `GET /learn/projects` lo comparten los dos paneles.
   http.get(`${API}/learn/projects`, () => HttpResponse.json([])),
 
   // Notificaciones y búsqueda (transversal)
@@ -63,4 +65,30 @@ export const handlers = [
   http.get(`${API}/admin/users`, () => HttpResponse.json([])),
   http.get(`${API}/studio/assistant/rejections`, () => HttpResponse.json([])),
   http.get(`${API}/admin/audit`, () => HttpResponse.json({ total: 0, items: [] })),
+  http.get(`${API}/learn/projects/:id`, () =>
+    HttpResponse.json({
+      id: "p1",
+      slug: "p1",
+      grade: "5",
+      kit: null,
+      lang: "es",
+      langs: ["es"],
+      title: "Proyecto",
+      summary: null,
+      moments: [],
+    }),
+  ),
+  http.get(`${API}/learn/projects/:id/progress`, () => HttpResponse.json({})),
+  http.get(`${API}/learn/projects/:id/moments/:type`, () =>
+    HttpResponse.json({
+      id: "m1",
+      type: "intro",
+      order: 0,
+      title: "Introducción",
+      chatbot_opening_prompt: null,
+      blocks: [],
+      lang: "es",
+    }),
+  ),
+  http.get(`${API}/chat/sessions`, () => HttpResponse.json([])),
 ];

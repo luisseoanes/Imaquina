@@ -7,19 +7,21 @@
 export const routes = {
   login: "/login",
 
+  // La raíz muestra el 404 a propósito: no hay panel común a los cuatro roles.
+  // `homeForRole` (shared/config/roles.ts) reparte a cada uno su herramienta.
   dashboard: "/",
-  courses: "/courses",
-  course: (projectId: string) => `/courses/${projectId}`,
-  moment: (projectId: string, momentType: string) =>
-    `/courses/${projectId}/${momentType}`,
-
-  assignments: "/assignments",
   messages: "/messages",
   account: "/account",
 
-  // Estudiante (Fase 1: sólo la agenda).
+  // Panel del estudiante (rol student; el personal docente también puede
+  // entrar, ve lo mismo que el alumno — R4).
   student: "/student",
   studentAgenda: "/student/agenda",
+  studentCourses: "/student/courses",
+  studentCourse: (projectId: string) => `/student/courses/${projectId}`,
+  studentMoment: (projectId: string, momentType: string) =>
+    `/student/courses/${projectId}/${momentType}`,
+  studentAssignments: "/student/assignments",
 
   // Panel del docente (rol teacher/editor/admin). Índice = resumen.
   teacher: "/teacher",

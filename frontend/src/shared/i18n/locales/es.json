@@ -691,7 +691,24 @@
     }
   },
   "student": {
-    "hi": "Hola, {{name}}",
+    "account": {
+      "title": "Mi cuenta",
+      "subtitle": "Tu idioma y tu contraseña.",
+      "language": "Idioma",
+      "languageHint": "Se guarda en tu cuenta, así que te sigue a cualquier equipo.",
+      "languageSaved": "Idioma guardado.",
+      "languageError": "No se pudo guardar el idioma.",
+      "password": "Contraseña",
+      "passwordHint": "Necesitas la actual para cambiarla.",
+      "currentPassword": "Contraseña actual",
+      "newPassword": "Contraseña nueva",
+      "repeatPassword": "Repite la contraseña nueva",
+      "minLength": "Mínimo 8 caracteres.",
+      "tooShort": "Debe tener al menos 8 caracteres.",
+      "mismatch": "Las dos contraseñas no coinciden.",
+      "passwordChanged": "Contraseña actualizada.",
+      "noRecovery": "No hay recuperación por correo: si olvidas tu contraseña, pídesela al administrador de tu institución."
+    },
     "agenda": {
       "title": "Mis tareas",
       "subtitle": "Lo que tienes que entregar.",
@@ -702,6 +719,176 @@
       "done": "Completada",
       "late": "Atrasada",
       "pending": "Pendiente"
+    },
+    "aside": {
+      "grade": "Grado {{grade}}",
+      "editProfile": "Editar mi cuenta",
+      "agenda": "Sigue por aquí",
+      "agendaEmpty": "Cuando empieces un proyecto, aparecerá aquí.",
+      "reminders": "Recordatorios",
+      "reminderTitle": "Evaluaciones abiertas",
+      "reminderBody": "Tienes {{count}} evaluaciones sin entregar.",
+      "reminderBody_one": "Tienes {{count}} evaluación sin entregar."
+    },
+    "assessment": {
+      "title": "Evaluación",
+      "notReady": "El docente todavía no ha preparado esta evaluación.",
+      "startTitle": "Evaluación del proyecto",
+      "retryTitle": "¿Otro intento?",
+      "start": "Comenzar",
+      "retry": "Reintentar",
+      "attemptsLeft": "Te quedan {{count}} intentos",
+      "attemptsLeft_one": "Te queda {{count}} intento",
+      "questions": "{{count}} preguntas",
+      "questions_one": "{{count}} pregunta",
+      "noAttemptsLeft": "Ya usaste todos tus intentos.",
+      "teamLabel": "Equipo",
+      "teamPlaceholder": "Equipo 3",
+      "inProgress": "Intento en curso",
+      "saving": "Guardando…",
+      "saved": "Guardado",
+      "saveError": "No se pudo guardar",
+      "submit": "Enviar evaluación",
+      "submitting": "Enviando…",
+      "unanswered": "Te faltan {{count}} preguntas por responder.",
+      "unanswered_one": "Te falta {{count}} pregunta por responder.",
+      "points": "{{count}} puntos",
+      "points_one": "{{count}} punto",
+      "untitledQuestion": "Pregunta sin enunciado",
+      "openPlaceholder": "Escribe tu respuesta…",
+      "resultTitle": "Resultado",
+      "pendingGrading": "Pendiente de calificar por el docente."
+    },
+    "assignments": {
+      "title": "Evaluaciones",
+      "subtitle": "Una por proyecto, en el momento 6.",
+      "empty": "Todavía no hay evaluaciones disponibles.",
+      "go": "Responder",
+      "review": "Ver resultado",
+      "lockedShort": "Bloqueada",
+      "score": "Nota"
+    },
+    "attemptStatus": {
+      "in_progress": "En curso",
+      "submitted": "Enviado",
+      "graded": "Calificado"
+    },
+    "card": {
+      "grade": "Grado {{grade}}",
+      "moments": "{{done}} de {{total}} momentos",
+      "completed": "Completado:",
+      "start": "Empezar",
+      "continue": "Continuar",
+      "review": "Repasar",
+      "langFallback": "Este proyecto sólo está publicado en {{lang}}."
+    },
+    "chat": {
+      "title": "Asistente de robótica",
+      "subtitle": "Pregúntale sobre este momento.",
+      "empty": "Escribe tu primera pregunta.",
+      "placeholder": "¿Qué quieres saber?",
+      "send": "Enviar pregunta",
+      "rateLimited": "Llegaste al límite de preguntas por hora. Vuelve a intentarlo más tarde."
+    },
+    "dashboard": {
+      "title": "Mi aprendizaje",
+      "subtitle": "Retoma donde lo dejaste y revisa lo que tienes pendiente.",
+      "nextStep": "Siguiente paso",
+      "myProjects": "Mis proyectos",
+      "noProjects": "Todavía no hay proyectos publicados para tu grado.",
+      "projectDone": "Completaste todos los momentos.",
+      "pending": "Pendientes",
+      "noPending": "No tienes evaluaciones pendientes.",
+      "assessPending": "La evaluación sigue abierta.",
+      "goToAssessment": "Ir a la evaluación",
+      "truncated": "Se muestran los primeros proyectos con su progreso."
+    },
+    "filter": {
+      "all": "Todos",
+      "in_progress": "En curso",
+      "completed": "Completados"
+    },
+    "group": {
+      "learn": "Aprender",
+      "account": "Cuenta"
+    },
+    "header": {
+      "greeting": "¡Hola, {{name}}! 👋",
+      "greetingSub": "Vamos a construir algo hoy.",
+      "defaultName": "explorador",
+      "menu": "Abrir menú",
+      "closeMenu": "Cerrar menú"
+    },
+    "help": {
+      "title": "¿Te atascaste?",
+      "body": "El asistente de robótica está en cada momento, listo para ayudarte."
+    },
+    "hi": "Hola, {{name}}",
+    "moment": {
+      "intro": "Introducción e inclusión",
+      "inquiry": "Indagación",
+      "design": "Diseño",
+      "build": "Construcción",
+      "communicate": "Comunicación",
+      "assess": "Evaluación",
+      "noContent": "Este momento todavía no tiene contenido.",
+      "missingMedia": "Falta el recurso de este bloque ({{kind}}).",
+      "openResource": "Abrir recurso",
+      "video": "Vídeo del momento",
+      "complete": "Marcar como completado",
+      "completing": "Guardando…",
+      "next": "Siguiente momento",
+      "backToProject": "Volver al proyecto",
+      "lockedTitle": "Este momento está bloqueado",
+      "unknown": "Ese momento no existe en este proyecto."
+    },
+    "momentState": {
+      "not_started": "Sin empezar",
+      "in_progress": "En curso",
+      "completed": "Completado",
+      "locked": "Bloqueado"
+    },
+    "nav": {
+      "dashboard": "Inicio",
+      "courses": "Mis proyectos",
+      "assignments": "Evaluaciones",
+      "messages": "Mensajes",
+      "account": "Mi cuenta",
+      "soon": "Pronto",
+      "agenda": "Mis tareas"
+    },
+    "project": {
+      "moments": "Los seis momentos",
+      "momentIndex": "Momento {{index}}",
+      "lockedHint": "Completa el momento anterior para abrir este."
+    },
+    "projects": {
+      "title": "Mis proyectos",
+      "subtitle": "Los proyectos publicados que puedes recorrer.",
+      "subtitleGrade": "Proyectos publicados para el grado {{grade}}.",
+      "empty": "Todavía no hay proyectos publicados para tu grado.",
+      "noMatches": "Ningún proyecto coincide con tu búsqueda."
+    },
+    "role": {
+      "student": "Estudiante",
+      "teacher": "Docente",
+      "editor": "Editor",
+      "admin": "Administrador"
+    },
+    "searchPlaceholder": "Busca un proyecto, un momento…",
+    "status": {
+      "not_started": "Sin empezar",
+      "in_progress": "En curso",
+      "completed": "Completado"
+    },
+    "title": {
+      "dashboard": "Inicio",
+      "projects": "Mis Proyectos",
+      "project": "Proyecto",
+      "moment": "Momento",
+      "assignments": "Evaluaciones",
+      "account": "Mi Cuenta",
+      "agenda": "Mis Tareas"
     }
   }
 }

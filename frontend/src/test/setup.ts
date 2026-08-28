@@ -14,6 +14,11 @@ configure({ asyncUtilTimeout: 3000 });
 // no como un `nav.courses` pintado en pantalla.
 import "@/shared/i18n";
 
+// jsdom no implementa `scrollIntoView`, y llamarlo lanza. Lo usa el chat para
+// seguir la conversación; sin este relleno, cualquier test que monte un momento
+// revienta con un error que no tiene nada que ver con lo que prueba.
+Element.prototype.scrollIntoView = () => {};
+
 // `onUnhandledRequest: "error"`: una petición que ningún handler simule hace
 // fallar el test en vez de escaparse a la red de verdad.
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));

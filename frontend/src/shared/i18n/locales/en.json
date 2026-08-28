@@ -691,7 +691,24 @@
     }
   },
   "student": {
-    "hi": "Hi, {{name}}",
+    "account": {
+      "title": "My account",
+      "subtitle": "Your language and your password.",
+      "language": "Language",
+      "languageHint": "It's stored in your account, so it follows you to any device.",
+      "languageSaved": "Language saved.",
+      "languageError": "Couldn't save the language.",
+      "password": "Password",
+      "passwordHint": "You need your current one to change it.",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "repeatPassword": "Repeat the new password",
+      "minLength": "At least 8 characters.",
+      "tooShort": "It must be at least 8 characters.",
+      "mismatch": "The two passwords don't match.",
+      "passwordChanged": "Password updated.",
+      "noRecovery": "There is no email recovery: if you forget your password, ask your institution's administrator."
+    },
     "agenda": {
       "title": "My assignments",
       "subtitle": "What you need to hand in.",
@@ -702,6 +719,176 @@
       "done": "Completed",
       "late": "Late",
       "pending": "Pending"
+    },
+    "aside": {
+      "grade": "Grade {{grade}}",
+      "editProfile": "Edit my account",
+      "agenda": "Keep going",
+      "agendaEmpty": "Once you start a project, it shows up here.",
+      "reminders": "Reminders",
+      "reminderTitle": "Open assessments",
+      "reminderBody": "You have {{count}} assessments to hand in.",
+      "reminderBody_one": "You have {{count}} assessment to hand in."
+    },
+    "assessment": {
+      "title": "Assessment",
+      "notReady": "Your teacher hasn't prepared this assessment yet.",
+      "startTitle": "Project assessment",
+      "retryTitle": "Another attempt?",
+      "start": "Start",
+      "retry": "Retry",
+      "attemptsLeft": "{{count}} attempts left",
+      "attemptsLeft_one": "{{count}} attempt left",
+      "questions": "{{count}} questions",
+      "questions_one": "{{count}} question",
+      "noAttemptsLeft": "You used all your attempts.",
+      "teamLabel": "Team",
+      "teamPlaceholder": "Team 3",
+      "inProgress": "Attempt in progress",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "saveError": "Couldn't save",
+      "submit": "Submit assessment",
+      "submitting": "Submitting…",
+      "unanswered": "{{count}} questions still unanswered.",
+      "unanswered_one": "{{count}} question still unanswered.",
+      "points": "{{count}} points",
+      "points_one": "{{count}} point",
+      "untitledQuestion": "Question without a prompt",
+      "openPlaceholder": "Write your answer…",
+      "resultTitle": "Result",
+      "pendingGrading": "Waiting for your teacher to grade it."
+    },
+    "assignments": {
+      "title": "Assessments",
+      "subtitle": "One per project, in moment 6.",
+      "empty": "No assessments available yet.",
+      "go": "Answer",
+      "review": "See result",
+      "lockedShort": "Locked",
+      "score": "Score"
+    },
+    "attemptStatus": {
+      "in_progress": "In progress",
+      "submitted": "Submitted",
+      "graded": "Graded"
+    },
+    "card": {
+      "grade": "Grade {{grade}}",
+      "moments": "{{done}} of {{total}} moments",
+      "completed": "Completed:",
+      "start": "Start",
+      "continue": "Continue",
+      "review": "Review",
+      "langFallback": "This project is only published in {{lang}}."
+    },
+    "chat": {
+      "title": "Robotics assistant",
+      "subtitle": "Ask about this moment.",
+      "empty": "Type your first question.",
+      "placeholder": "What do you want to know?",
+      "send": "Send question",
+      "rateLimited": "You reached the hourly question limit. Try again later."
+    },
+    "dashboard": {
+      "title": "My learning",
+      "subtitle": "Pick up where you left off and check what's still open.",
+      "nextStep": "Next step",
+      "myProjects": "My projects",
+      "noProjects": "No projects published for your grade yet.",
+      "projectDone": "You completed every moment.",
+      "pending": "Pending",
+      "noPending": "No assessments pending.",
+      "assessPending": "The assessment is still open.",
+      "goToAssessment": "Go to the assessment",
+      "truncated": "Showing the first projects with their progress."
+    },
+    "filter": {
+      "all": "All",
+      "in_progress": "Active",
+      "completed": "Completed"
+    },
+    "group": {
+      "learn": "Learn",
+      "account": "Account"
+    },
+    "header": {
+      "greeting": "Hi, {{name}}! 👋",
+      "greetingSub": "Let's build something today.",
+      "defaultName": "explorer",
+      "menu": "Open menu",
+      "closeMenu": "Close menu"
+    },
+    "help": {
+      "title": "Stuck?",
+      "body": "The robotics assistant is in every moment, ready to help."
+    },
+    "hi": "Hi, {{name}}",
+    "moment": {
+      "intro": "Introduction and inclusion",
+      "inquiry": "Inquiry",
+      "design": "Design",
+      "build": "Build",
+      "communicate": "Communicate",
+      "assess": "Assessment",
+      "noContent": "This moment has no content yet.",
+      "missingMedia": "This block's resource is missing ({{kind}}).",
+      "openResource": "Open resource",
+      "video": "Moment video",
+      "complete": "Mark as completed",
+      "completing": "Saving…",
+      "next": "Next moment",
+      "backToProject": "Back to the project",
+      "lockedTitle": "This moment is locked",
+      "unknown": "That moment does not exist in this project."
+    },
+    "momentState": {
+      "not_started": "Not started",
+      "in_progress": "Active",
+      "completed": "Completed",
+      "locked": "Locked"
+    },
+    "nav": {
+      "dashboard": "Home",
+      "courses": "My projects",
+      "assignments": "Assessments",
+      "messages": "Messages",
+      "account": "My account",
+      "soon": "Soon",
+      "agenda": "My assignments"
+    },
+    "project": {
+      "moments": "The six moments",
+      "momentIndex": "Moment {{index}}",
+      "lockedHint": "Complete the previous moment to open this one."
+    },
+    "projects": {
+      "title": "My projects",
+      "subtitle": "The published projects you can work through.",
+      "subtitleGrade": "Projects published for grade {{grade}}.",
+      "empty": "No projects published for your grade yet.",
+      "noMatches": "No project matches your search."
+    },
+    "role": {
+      "student": "Student",
+      "teacher": "Teacher",
+      "editor": "Editor",
+      "admin": "Administrator"
+    },
+    "searchPlaceholder": "Search a project, a moment…",
+    "status": {
+      "not_started": "Not started",
+      "in_progress": "Active",
+      "completed": "Completed"
+    },
+    "title": {
+      "dashboard": "Home",
+      "projects": "My Projects",
+      "project": "Project",
+      "moment": "Moment",
+      "assignments": "Assessments",
+      "account": "My Account",
+      "agenda": "My Assignments"
     }
   }
 }
