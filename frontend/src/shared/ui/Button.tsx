@@ -15,7 +15,10 @@ const variantes: Record<Variante, string> = {
   ghost: "text-content-muted hover:bg-surface-muted hover:text-content",
 };
 
-const tamanos = { sm: "px-3 py-2 text-sm", md: "px-5 py-3 text-sm" } as const;
+const tamanos = {
+  sm: "px-3 py-2 text-[1.05rem]",
+  md: "px-5 py-3.5 text-[1.05rem]",
+} as const;
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variante;

@@ -11,15 +11,21 @@ import whalesbot from "@/assets/logos/whalesbot.png";
  *  oscuro; los de tono medio se ven bien en ambos y no la necesitan. */
 interface Colaborador {
   nombre: string;
+  url: string;
   claro: string;
   oscuro?: string;
 }
 
 const COLABORADORES: Colaborador[] = [
-  { nombre: "ubbu", claro: ubbuClaro, oscuro: ubbuOscuro },
-  { nombre: "WhalesBot", claro: whalesbot },
-  { nombre: "EnjoyAI", claro: enjoyai },
-  { nombre: "Foodcash", claro: foodcashClaro, oscuro: foodcashOscuro },
+  { nombre: "ubbu", url: "https://ubbu.io/", claro: ubbuClaro, oscuro: ubbuOscuro },
+  { nombre: "WhalesBot", url: "https://www.whalesbot.ai/", claro: whalesbot },
+  { nombre: "EnjoyAI", url: "https://www.enjoyaiglobal.org/", claro: enjoyai },
+  {
+    nombre: "Foodcash",
+    url: "https://www.foodcash.com.co/",
+    claro: foodcashClaro,
+    oscuro: foodcashOscuro,
+  },
 ];
 
 /** Logos de los colaboradores.
@@ -37,30 +43,39 @@ export function PartnerLogos({ className = "" }: { className?: string }) {
     <section aria-labelledby="colaboradores" className={className}>
       <h2
         id="colaboradores"
-        className="text-center text-xs font-medium uppercase tracking-[0.14em] text-content-subtle"
+        className="text-center text-[0.9rem] font-semibold uppercase tracking-[0.14em] text-content-subtle"
       >
         {t("auth.partners")}
       </h2>
 
       <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-8 gap-y-6 sm:gap-x-12">
-        {COLABORADORES.map(({ nombre, claro, oscuro }) => (
+        {COLABORADORES.map(({ nombre, url, claro, oscuro }) => (
           <li key={nombre}>
-            <img
-              src={claro}
-              alt={nombre}
-              loading="lazy"
-              className={`h-6 w-auto opacity-70 transition hover:opacity-100 sm:h-7 ${
-                oscuro ? "dark:hidden" : ""
-              }`}
-            />
-            {oscuro && (
+            <a
+              href={url}
+              // Sitios de terceros: se abren aparte para no sacar a nadie de
+              // mitad del acceso, y `noopener` evita que la página destino
+              // pueda tocar la nuestra por `window.opener`.
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={t("auth.visitPartner", { name: nombre })}
+              className="block rounded-control opacity-70 transition hover:opacity-100 focus-visible:opacity-100"
+            >
               <img
-                src={oscuro}
+                src={claro}
                 alt={nombre}
                 loading="lazy"
-                className="hidden h-6 w-auto opacity-70 transition hover:opacity-100 sm:h-7 dark:block"
+                className={`h-6 w-auto sm:h-7 ${oscuro ? "dark:hidden" : ""}`}
               />
-            )}
+              {oscuro && (
+                <img
+                  src={oscuro}
+                  alt={nombre}
+                  loading="lazy"
+                  className="hidden h-6 w-auto sm:h-7 dark:block"
+                />
+              )}
+            </a>
           </li>
         ))}
       </ul>

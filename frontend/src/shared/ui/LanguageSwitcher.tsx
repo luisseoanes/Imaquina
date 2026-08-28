@@ -19,14 +19,14 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
   return (
     <label
       className={`inline-flex items-center gap-2 rounded-pill border border-line
-                  bg-surface px-3 py-2 text-sm text-content-muted ${className}`}
+                  bg-surface px-3 py-2 text-[1.05rem] font-[480] text-content-muted ${className}`}
     >
       <IconoGlobo />
       <span className="sr-only">{t("nav.language")}</span>
       <select
         value={actual}
         onChange={(e) => setLanguage(e.target.value as Lang)}
-        className="cursor-pointer bg-transparent pr-1 font-medium text-content focus:outline-none"
+        className="cursor-pointer bg-transparent pr-1 font-semibold text-content focus:outline-none"
       >
         {LANGS.map((lang) => (
           <option key={lang} value={lang}>

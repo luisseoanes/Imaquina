@@ -45,7 +45,7 @@ export function TextField({
 
   return (
     <div className={className}>
-      <label htmlFor={id} className="block text-sm font-medium text-content">
+      <label htmlFor={id} className="block text-[1.05rem] font-semibold text-content">
         {label}
       </label>
 
@@ -63,7 +63,7 @@ export function TextField({
           type={tipoReal}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy || undefined}
-          className={`w-full rounded-control border bg-surface py-3 text-sm text-content
+          className={`w-full rounded-control border bg-surface py-3.5 text-[1.05rem] text-content
                       transition placeholder:text-content-subtle
                       focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30
                       ${icon ? "pl-11" : "pl-4"} ${esPassword ? "pr-11" : "pr-4"}
@@ -85,12 +85,12 @@ export function TextField({
       </div>
 
       {hint && !error && (
-        <p id={hintId} className="mt-1.5 text-xs text-content-subtle">
+        <p id={hintId} className="mt-1.5 text-[0.9rem] font-[480] text-content-subtle">
           {hint}
         </p>
       )}
       {error && (
-        <p id={errorId} className="mt-1.5 text-xs font-medium text-danger">
+        <p id={errorId} className="mt-1.5 text-[0.9rem] font-semibold text-danger">
           {error}
         </p>
       )}

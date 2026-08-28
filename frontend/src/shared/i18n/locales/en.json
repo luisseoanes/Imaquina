@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Imaquina Robotics"
+    "name": "IMaquina Robotics"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -40,6 +40,8 @@
     "forgotPassword": "Forgot your password? Ask your school administrator to reset it.",
     "partners": "In collaboration with",
     "terms": "Terms",
-    "contact": "Contact"
+    "contact": "Contact",
+    "pageTitle": "Sign In",
+    "visitPartner": "Visit the {{name}} website (opens in a new tab)"
   }
 }

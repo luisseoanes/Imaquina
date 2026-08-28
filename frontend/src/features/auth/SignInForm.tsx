@@ -79,7 +79,7 @@ export function SignInForm() {
       {errorServidor && (
         <p
           role="alert"
-          className="flex items-start gap-2 rounded-control bg-danger-surface px-3 py-2.5 text-sm text-danger"
+          className="flex items-start gap-2 rounded-control bg-danger-surface px-3 py-2.5 text-[1.05rem] font-[480] text-danger"
         >
           <IconoAviso />
           {errorServidor}
@@ -93,7 +93,7 @@ export function SignInForm() {
       {/* No hay recuperación por correo: las cuentas de menores se crean sin
           buzón propio, así que la única vía es el administrador. Decirlo aquí
           evita que alguien busque un enlace que no existe. */}
-      <p className="text-center text-xs leading-relaxed text-content-subtle">
+      <p className="text-center text-[0.9rem] font-[480] leading-relaxed text-content-subtle">
         {t("auth.forgotPassword")}
       </p>
     </form>

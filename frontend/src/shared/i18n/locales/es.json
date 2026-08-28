@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Imaquina Robótica"
+    "name": "IMaquina Robótica"
   },
   "nav": {
     "dashboard": "Panel",
@@ -40,6 +40,8 @@
     "forgotPassword": "¿Olvidaste tu contraseña? Pídele a la administración de tu institución que la restablezca.",
     "partners": "Con la colaboración de",
     "terms": "Términos",
-    "contact": "Contacto"
+    "contact": "Contacto",
+    "pageTitle": "Inicio de Sesión",
+    "visitPartner": "Visitar el sitio de {{name}} (se abre en una pestaña nueva)"
   }
 }

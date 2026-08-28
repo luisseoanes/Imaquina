@@ -16,6 +16,7 @@ import { SignInPage } from "./SignInPage";
 import { ROBOTS } from "./useRandomRobot";
 import { AuthProvider } from "@/app/providers/AuthProvider";
 import { crearQueryClient } from "@/app/providers/queryClient";
+import i18n from "@/shared/i18n";
 import { API } from "@/test/handlers";
 import { server } from "@/test/server";
 
@@ -120,13 +121,17 @@ describe("pantalla de acceso", () => {
     expect(vistos.size).toBe(3);
   });
 
-  it("dentro de una misma carga, el robot del panel y el del fondo son el mismo", () => {
-    const { container } = renderizar();
-    const fuentes = [...container.querySelectorAll('[data-testid="robot-ilustracion"]')].map(
-      (el) => el.getAttribute("src"),
-    );
-    expect(fuentes.length).toBeGreaterThan(1);
-    expect(new Set(fuentes).size).toBe(1);
+  it("el título de la pestaña lleva la marca y la sección", () => {
+    renderizar();
+    expect(document.title).toBe("IMaquina Robótica | Inicio de Sesión");
+  });
+
+  it("el título sigue al idioma, y la marca no se traduce", async () => {
+    renderizar();
+    await i18n.changeLanguage("en");
+    // La marca también cambia: "Robótica" -> "Robotics".
+    await waitFor(() => expect(document.title).toBe("IMaquina Robotics | Sign In"));
+    await i18n.changeLanguage("es");
   });
 
   it("muestra los cuatro colaboradores", () => {
@@ -135,6 +140,47 @@ describe("pantalla de acceso", () => {
     for (const nombre of ["ubbu", "WhalesBot", "EnjoyAI", "Foodcash"]) {
       expect(within(seccion).getAllByAltText(nombre).length).toBeGreaterThan(0);
     }
+  });
+
+  it("cada colaborador enlaza a su sitio, y se abre aparte", () => {
+    renderizar();
+    const esperado: Record<string, string> = {
+      ubbu: "https://ubbu.io/",
+      WhalesBot: "https://www.whalesbot.ai/",
+      EnjoyAI: "https://www.enjoyaiglobal.org/",
+      Foodcash: "https://www.foodcash.com.co/",
+    };
+    for (const [nombre, url] of Object.entries(esperado)) {
+      const enlace = screen.getByRole("link", { name: new RegExp(nombre, "i") });
+      expect(enlace).toHaveAttribute("href", url);
+      expect(enlace).toHaveAttribute("target", "_blank");
+      // Sin `noopener` la página destino puede tocar la nuestra por window.opener.
+      expect(enlace.getAttribute("rel")).toContain("noopener");
+    }
+  });
+
+  it("en móvil no se pinta ninguna ilustración de fondo", () => {
+    // El robot sólo existe en el panel de escritorio, que está oculto bajo
+    // `lg`. Si volviera a haber uno suelto en el fondo, este contador sube.
+    const { container } = renderizar();
+    const robots = container.querySelectorAll('[data-testid="robot-ilustracion"]');
+    expect(robots).toHaveLength(1);
+    expect(robots[0]?.closest(".hidden")).not.toBeNull();
+  });
+
+  it("el logotipo trae las dos versiones, y sólo una se anuncia", () => {
+    // La conmutación clara/oscura es CSS (`dark:`), no JavaScript, así que las
+    // dos están en el DOM. Sólo la primera lleva texto alternativo: son la
+    // misma marca y un lector de pantalla la anunciaría dos veces.
+    const { container } = renderizar();
+    const logos = [...container.querySelectorAll("img")].filter((i) =>
+      i.getAttribute("src")?.includes("imaquina-horizontal"),
+    );
+    expect(logos).toHaveLength(2);
+    expect(logos[0]).toHaveAttribute("alt", "IMaquina Robótica");
+    expect(logos[0]?.className).toContain("dark:hidden");
+    expect(logos[1]).toHaveAttribute("aria-hidden");
+    expect(logos[1]?.className).toContain("dark:block");
   });
 
   it("todos los robots del sorteo existen", () => {
