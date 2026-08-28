@@ -71,6 +71,8 @@ export interface Block {
   kind: BlockKind;
   order: number;
   media_asset_id: string | null;
+  /** Ajustes que no dependen del idioma (proveedor de embed, etc.). */
+  config?: Record<string, unknown>;
   body: string | null;
   caption: string | null;
   alt_text: string | null;

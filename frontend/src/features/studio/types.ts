@@ -44,6 +44,7 @@ export interface Block {
   kind: "text" | "image" | "audio" | "video" | "embed";
   order: number;
   media_asset_id: string | null;
+  config: Record<string, unknown>;
   lang: Lang;
   body: string | null;
   caption: string | null;

@@ -104,7 +104,9 @@
       "altText": "Texto alternativo",
       "mediaRef": "Referencia de medio",
       "teacherNote": "Guía docente",
-      "openingPrompt": "Pregunta de apertura del chatbot"
+      "openingPrompt": "Pregunta de apertura del chatbot",
+      "embedProvider": "Proveedor de embed",
+      "embedSrc": "Enlace o id del vídeo"
     },
     "action": {
       "edit": "Editar",
@@ -224,7 +226,21 @@
       "preview": "Vista previa",
       "previewHint": "Cómo se verá el momento antes de publicar.",
       "previewStudent": "Ver como estudiante",
-      "previewTeacher": "Ver como docente"
+      "previewTeacher": "Ver como docente",
+      "embedSrcHint": "Pega la URL de YouTube (o el id del vídeo).",
+      "linkPrompt": "Dirección del enlace (https://…)",
+      "rte": {
+        "bold": "Negrita",
+        "italic": "Cursiva",
+        "strike": "Tachado",
+        "code": "Código",
+        "h3": "Título",
+        "h4": "Subtítulo",
+        "ul": "Lista",
+        "ol": "Lista numerada",
+        "quote": "Cita",
+        "link": "Enlace"
+      }
     },
     "assessments": {
       "subtitle": "Constructor de preguntas del momento de evaluación.",

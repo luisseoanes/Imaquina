@@ -35,7 +35,9 @@ function esUrlServible(url: string | null | undefined): url is string {
 function idDeYoutube(url: string): string | null {
   const m =
     /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{6,})/i.exec(url);
-  return m?.[1] ?? null;
+  if (m?.[1]) return m[1];
+  // El editor puede guardar el id pelado en `config.src`.
+  return /^[\w-]{11}$/.test(url.trim()) ? url.trim() : null;
 }
 
 function Figura({ block, children }: { block: Block; children: ReactNode }) {
@@ -61,12 +63,20 @@ function SinRecurso({ kind }: { kind: string }) {
 
 function BlockView({ block }: { block: Block }) {
   const { t } = useTranslation();
-  // El asset de la librería manda; `body` es la dirección escrita a mano.
-  const src = esUrlServible(block.url)
-    ? block.url
-    : esUrlServible(block.body)
-      ? block.body
+  // Un embed puede traer su fuente en `config` (proveedor + src, el camino del
+  // editor nuevo). Para el resto: el asset de la librería manda y `body` es la
+  // dirección escrita a mano.
+  const configSrc =
+    block.kind === "embed" && typeof block.config?.src === "string"
+      ? (block.config.src as string)
       : null;
+  const src = configSrc
+    ? configSrc
+    : esUrlServible(block.url)
+      ? block.url
+      : esUrlServible(block.body)
+        ? block.body
+        : null;
 
   if (block.kind === "text") {
     return block.body ? (

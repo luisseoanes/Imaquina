@@ -13,6 +13,7 @@ import {
   TextArea,
   TextInput,
 } from "@/shared/ui/panel";
+import { RichTextEditor } from "@/shared/ui/RichTextEditor";
 import { useStudio } from "../StudioContext";
 import { routes } from "@/shared/config/routes";
 import type { Block } from "../types";
@@ -142,7 +143,9 @@ export function MomentEditorView() {
                       lang={lang}
                       first={idx === 0}
                       last={idx === data.blocks.length - 1}
-                      onSave={(fields) => m.updateBlock.mutate({ id: b.id, ...fields })}
+                      onSave={(fields) =>
+                        m.updateBlock.mutate({ id: b.id, ...fields })
+                      }
                       onDelete={() => m.deleteBlock.mutate(b.id)}
                       onMove={(dir) => {
                         const ids = data.blocks.map((x) => x.id);
@@ -264,7 +267,7 @@ function BlockCard({
   lang: string;
   first: boolean;
   last: boolean;
-  onSave: (fields: Record<string, string | null>) => void;
+  onSave: (fields: Record<string, unknown>) => void;
   onDelete: () => void;
   onMove: (dir: -1 | 1) => void;
 }) {
@@ -272,6 +275,12 @@ function BlockCard({
   const [body, setBody] = useState(block.body ?? "");
   const [caption, setCaption] = useState(block.caption ?? "");
   const [alt, setAlt] = useState(block.alt_text ?? "");
+  const [provider, setProvider] = useState(
+    (block.config?.provider as string | undefined) ?? "youtube",
+  );
+  const [embedSrc, setEmbedSrc] = useState(
+    (block.config?.src as string | undefined) ?? "",
+  );
 
   return (
     <Card>
@@ -304,8 +313,33 @@ function BlockCard({
 
       {block.kind === "text" ? (
         <Field label={t("studio.field.body")} hint={t("studio.editor.richTextHint")}>
-          <TextArea rows={5} value={body} onChange={(e) => setBody(e.target.value)} />
+          <RichTextEditor
+            value={body}
+            onChange={setBody}
+            ariaLabel={t("studio.field.body")}
+          />
         </Field>
+      ) : block.kind === "embed" ? (
+        <>
+          <Field label={t("studio.field.embedProvider")}>
+            <Select value={provider} onChange={(e) => setProvider(e.target.value)}>
+              <option value="youtube">YouTube</option>
+            </Select>
+          </Field>
+          <Field
+            label={t("studio.field.embedSrc")}
+            hint={t("studio.editor.embedSrcHint")}
+          >
+            <TextInput
+              value={embedSrc}
+              onChange={(e) => setEmbedSrc(e.target.value)}
+              placeholder="https://youtu.be/…"
+            />
+          </Field>
+          <Field label={t("studio.field.caption")}>
+            <TextInput value={caption} onChange={(e) => setCaption(e.target.value)} />
+          </Field>
+        </>
       ) : (
         <>
           <Field label={t("studio.field.mediaRef")} hint={t("studio.editor.mediaRefHint")}>
@@ -327,11 +361,18 @@ function BlockCard({
       <Button
         variant="ghost"
         onClick={() =>
-          onSave({
-            body: body || null,
-            caption: caption || null,
-            alt_text: alt || null,
-          })
+          onSave(
+            block.kind === "embed"
+              ? {
+                  config: { provider, src: embedSrc },
+                  caption: caption || null,
+                }
+              : {
+                  body: body || null,
+                  caption: caption || null,
+                  alt_text: alt || null,
+                },
+          )
         }
       >
         {t("common.save")}

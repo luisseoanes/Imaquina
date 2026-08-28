@@ -104,7 +104,9 @@
       "altText": "Alt text",
       "mediaRef": "Media reference",
       "teacherNote": "Teacher guide",
-      "openingPrompt": "Chatbot opening prompt"
+      "openingPrompt": "Chatbot opening prompt",
+      "embedProvider": "Embed provider",
+      "embedSrc": "Video link or id"
     },
     "action": {
       "edit": "Edit",
@@ -224,7 +226,21 @@
       "preview": "Preview",
       "previewHint": "How the moment will look before publishing.",
       "previewStudent": "View as student",
-      "previewTeacher": "View as teacher"
+      "previewTeacher": "View as teacher",
+      "embedSrcHint": "Paste the YouTube URL (or the video id).",
+      "linkPrompt": "Link address (https://…)",
+      "rte": {
+        "bold": "Bold",
+        "italic": "Italic",
+        "strike": "Strikethrough",
+        "code": "Code",
+        "h3": "Heading",
+        "h4": "Subheading",
+        "ul": "Bulleted list",
+        "ol": "Numbered list",
+        "quote": "Quote",
+        "link": "Link"
+      }
     },
     "assessments": {
       "subtitle": "Question builder for the assessment moment.",

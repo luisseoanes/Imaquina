@@ -9,6 +9,7 @@ import type { BlockKind } from './blockKind';
 export interface BlockIn {
   kind: BlockKind;
   media_asset_id?: string | null;
+  config?: { [key: string]: unknown } | null;
   body?: string | null;
   caption?: string | null;
   alt_text?: string | null;
