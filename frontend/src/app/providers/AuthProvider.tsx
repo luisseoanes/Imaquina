@@ -32,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const nueva: Session = { role: res.role as Role, lang: res.lang as Lang };
     localStorage.setItem(SESSION_KEY, JSON.stringify(nueva));
     setSession(nueva);
+    return nueva;
   }, []);
 
   const logout = useCallback(() => {

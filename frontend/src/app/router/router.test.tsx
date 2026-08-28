@@ -9,12 +9,16 @@
  *  que se comprueba CUÁL se monta, no qué pinta.
  */
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { HttpResponse, http } from "msw";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 
 import { App } from "@/app/App";
 import type { Session } from "@/app/providers/authContext";
 import { routes } from "@/shared/config/routes";
+import { API } from "@/test/handlers";
+import { server } from "@/test/server";
 
 function iniciarSesion(session: Session) {
   localStorage.setItem("session", JSON.stringify(session));
@@ -64,6 +68,37 @@ describe("router", () => {
     iniciarSesion(ESTUDIANTE);
     const { container } = renderizarEn(routes.moment("proyecto-1", "intro"));
     expect(pantallaMontada(container)).toBe("MomentPage");
+  });
+
+  it("tras iniciar sesión, cada rol aterriza en su herramienta, no en el 404", async () => {
+    for (const [rol, marcador] of [
+      ["teacher", "[data-teacher-root]"],
+      ["editor", "[data-studio-root]"],
+    ] as const) {
+      localStorage.clear();
+      server.use(
+        http.post(`${API}/auth/login`, () =>
+          HttpResponse.json({
+            access_token: "a",
+            refresh_token: "r",
+            token_type: "bearer",
+            role: rol,
+            lang: "es",
+          }),
+        ),
+      );
+      const { container, unmount } = renderizarEn(routes.login);
+      await userEvent.type(
+        screen.getByLabelText("Correo electrónico"),
+        "x@imaquina.example.com",
+      );
+      await userEvent.type(screen.getByLabelText("Contraseña"), "clave-12345");
+      await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
+      await waitFor(() =>
+        expect(container.querySelector(marcador)).not.toBeNull(),
+      );
+      unmount();
+    }
   });
 
   describe("guards por rol", () => {

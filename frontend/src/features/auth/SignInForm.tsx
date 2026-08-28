@@ -8,7 +8,7 @@ import { z } from "zod";
 import { ApiError } from "@/shared/api/ApiError";
 import { Button } from "@/shared/ui/Button";
 import { TextField } from "@/shared/ui/TextField";
-import { routes } from "@/shared/config/routes";
+import { homeForRole } from "@/shared/config/roles";
 import { useAuth } from "@/shared/hooks/useAuth";
 
 const esquema = z.object({
@@ -38,8 +38,11 @@ export function SignInForm() {
   const onSubmit = handleSubmit(async ({ email, password }) => {
     setErrorServidor(null);
     try {
-      await login(email, password);
-      navigate(routes.dashboard, { replace: true });
+      // La raíz `/` muestra el 404 (el panel general no existe): cada rol va
+      // a su herramienta —Studio, panel docente o cursos— según lo que
+      // devuelve el login.
+      const sesion = await login(email, password);
+      navigate(homeForRole(sesion.role), { replace: true });
     } catch (error) {
       // El backend distingue el caso: una licencia vencida no es culpa de la
       // contraseña, y decir "credenciales inválidas" mandaría al usuario a

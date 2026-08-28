@@ -242,7 +242,7 @@ function Topbar({ onMenu }: { onMenu: () => void }) {
         <div className="hidden items-center gap-3 border-l border-line pl-3 text-xs text-content-subtle sm:flex">
           <button
             type="button"
-            onClick={() => navigate(routes.dashboard)}
+            onClick={() => navigate(routes.teacher)}
             className="whitespace-nowrap transition duration-150 hover:text-content"
           >
             {t("studio.exit")}

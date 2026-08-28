@@ -9,7 +9,9 @@ export interface Session {
 
 export interface AuthValue {
   session: Session | null;
-  login: (email: string, password: string) => Promise<void>;
+  /** Resuelve con la sesión recién creada, para poder redirigir por rol sin
+   *  esperar a que el estado del contexto se propague. */
+  login: (email: string, password: string) => Promise<Session>;
   logout: () => void;
 }
 

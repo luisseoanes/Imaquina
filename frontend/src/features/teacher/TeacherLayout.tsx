@@ -9,7 +9,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 
 import robotHelp from "@/assets/illustrations/robot-2.svg";
 import { BrandLogo } from "@/shared/ui/BrandLogo";
-import { LANGS } from "@/shared/config/roles";
+import { LANGS, canAuthor } from "@/shared/config/roles";
 import { routes } from "@/shared/config/routes";
 import { useAuth } from "@/shared/hooks/useAuth";
 import { useMe } from "@/shared/hooks/useMe";
@@ -169,13 +169,18 @@ function HelpCard() {
 
 function Topbar({ onMenu }: { onMenu: () => void }) {
   const { t } = useTranslation();
-  const { logout } = useAuth();
+  const { logout, session } = useAuth();
   const { search, setSearch } = useTeacher();
   const { data: me } = useMe();
   const navigate = useNavigate();
 
   const nombre =
     me?.full_name?.trim().split(/\s+/)[0] || t("teacher.header.defaultName");
+
+  // Un editor/admin salta al Studio; un docente sin más herramienta, cierra
+  // sesión (la raíz `/` muestra el 404).
+  const salir = () =>
+    session && canAuthor(session.role) ? navigate(routes.studio) : logout();
 
   return (
     <header className="sticky top-0 z-30 flex min-h-16 items-center gap-3 border-b border-line/70 bg-canvas/85 px-4 py-2.5 backdrop-blur sm:gap-5 sm:px-6">
@@ -227,7 +232,7 @@ function Topbar({ onMenu }: { onMenu: () => void }) {
         <div className="hidden items-center gap-3 border-l border-line pl-3 text-xs text-content-subtle sm:flex">
           <button
             type="button"
-            onClick={() => navigate(routes.dashboard)}
+            onClick={salir}
             className="whitespace-nowrap transition duration-150 hover:text-content"
           >
             {t("teacher.header.exit")}
