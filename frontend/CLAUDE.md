@@ -3,9 +3,21 @@
 Contexto del cliente. Lo del backend está en el `CLAUDE.md` de la raíz, que se carga
 igualmente; aquí sólo va lo que es propio de esta mitad.
 
-SPA en **React 19 + Vite + TypeScript** contra `/api/v1`. Construidas: **acceso
-(`/login`) y 404**. El resto de rutas existen y compilan pero montan marcadores
-(`data-pending`), a la espera de desarrollo.
+SPA en **React 19 + Vite + TypeScript** contra `/api/v1`. Cinco áreas, cada una con **su
+propio armazón** (barra lateral, cabecera y, donde toca, panel derecho), su chunk vía
+`lazy()` y su `features/<área>/api.ts`: acceso, panel del estudiante, panel del docente,
+Content Studio y administración. **No hay layout común por encima**: un envoltorio
+compartido sólo metía un `<main>` alrededor de otro.
+
+**La raíz `/` es el 404 a propósito** — no existe un panel común a los cuatro roles.
+`homeForRole` (`shared/config/roles.ts`) es quien reparte: al iniciar sesión, cuando un
+guard devuelve a alguien de donde no le toca, y como salida del 404. Si se añade un área,
+se añade ahí.
+
+`/student/*` **no lleva guard**: el personal docente entra a ver exactamente lo mismo que
+el alumno (R4). Lo que no ve quien no es staff es la guía didáctica, y de eso se encarga
+el servidor. Cuidado con lo que se importa en ese chunk — los `robot-*.svg` pesan entre
+366 y 633 KB y por eso la tarjeta de ayuda del estudiante no lleva ilustración.
 
 ## Comandos
 
@@ -64,6 +76,18 @@ oscuro sale de redefinir los mismos tokens. La paleta definitiva sigue sin decid
 
 **Los guards de ruta deciden qué pintar, no qué se permite.** La autorización real la hace
 el servidor en cada petición; saltarse un guard en el navegador no da acceso a ningún dato.
+El caso claro es el **progreso lineal**: `hooks.estaDesbloqueado` pinta candados, pero
+quien devuelve 403 es `get_moment_for`. Si los dos criterios se separan, manda el backend.
+
+**La guía docente no se oculta en el cliente.** `learning.serialize_moment_for` ya la quita
+del JSON de quien no es personal docente. Si algún día apareciera en la respuesta del
+estudiante, el arreglo va en el servidor: un `if` aquí no sirve ante unas DevTools.
+
+**El estudiante no lista "sus cursos".** `GET /courses` tiene guard `Staff`. Lo que ve en
+`/student/courses` es el catálogo publicado filtrado por su grado
+(`GET /learn/projects?grade=`), que es lo que el backend sí le ofrece. El nombre de la
+ruta viene del prototipo. Sus tareas con fecha son otra cosa y sí son suyas:
+`/student/agenda` contra `GET /assignments/mine`.
 
 **Todo texto va por i18next.** La plataforma es bilingüe por requisito del cliente (R6).
 La marca se escribe `IMaquina`, y en inglés cambia la segunda palabra: `IMaquina Robótica`
@@ -92,6 +116,9 @@ script: no dispara `:focus-visible` y da un falso positivo de "no hay foco visib
 que mandar un Tab real con `Input.dispatchKeyEvent`.
 
 `tsc -b` type-chequea también los tests, así que un test mal tipado rompe el build.
+
+**jsdom no implementa `scrollIntoView`** y llamarlo lanza. `test/setup.ts` lo rellena: sin
+eso, cualquier test que monte un momento revienta por el chat y no por lo que prueba.
 
 ## Assets
 

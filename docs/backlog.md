@@ -257,7 +257,7 @@ Todo se construye y se testea contra `StubProvider`, sin depender de Luis.
 | Embeddings reales, prompt de sistema, chunking/ranking/top-k, calidad del RAG, `is_in_domain` | Luis — ver `CLAUDE.md` § Frontera del trabajo de modelo. **Recordado el 27/08/2026**: siguen siendo un vector de ceros, así que el chat responde sin recuperar nada. |
 | Infra, hosting, servidor, despliegue | PO |
 | Carga de los 34 proyectos restantes y los textos en inglés | Cliente, con el Content Studio |
-| **Las pantallas del cliente web** más allá del acceso y el 404 | Sin planificar. El stack ya está decidido (React + Vite, ver `frontend/CLAUDE.md`); lo que falta es el backlog de pantallas, que se escribirá contra el contrato que el backend ya expone. |
+| **Las pantallas del cliente web** | Construidas las cinco áreas: acceso, panel de administración, Content Studio, panel del docente y **panel del estudiante** (27/08/2026: catálogo por grado, recorrido lineal de los seis momentos, asistente por SSE y evaluación de punta a punta, con la agenda de tareas dentro). |
 | App nativa, offline, gamificación, LMS, dashboards de directivos, aprobación multinivel | Fuera del MVP (`scope-mvp.md` §3) |
 
 ## 8. Preguntas que bloqueaban ítems concretos — resueltas 18/08/2026
