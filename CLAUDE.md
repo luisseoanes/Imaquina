@@ -101,8 +101,12 @@ cero costo. Los tests lo dan por hecho — `tests/conftest.py` fuerza la key vac
 
 **Los commits siguen Conventional Commits** — `.github/workflows/release.yml` los analiza
 en cada push a `master` y publica tag + release de GitHub sin intervención. Antes de
-publicar corre el job `backend` (ruff + pytest contra un Postgres con pgvector) y el
-release **sólo arranca si pasa**. Usa los mismos targets del Makefile que en local. Las
+publicar corre el job `backend` (ruff + pytest contra un Postgres con pgvector **y un
+Redis**) y el release **sólo arranca si pasa**. Los dos servicios son obligatorios: 12
+tests de integración tocan Redis de verdad —publicar, duplicar y borrar media encolan un
+job ARQ, y el rate limit del chat cuenta ahí—, así que sin ese service container el paso
+`Tests` falla entero con `ConnectionError` al 6379. Pasó: el release estuvo bloqueado por
+esto y no por el código. Usa los mismos targets del Makefile que en local. Las
 reglas están en `.releaserc.json`:
 
 - `feat:` → **minor** · `fix:` → **patch** · `feat!:` o pie `BREAKING CHANGE:` → **major**

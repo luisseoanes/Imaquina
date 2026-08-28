@@ -37,7 +37,12 @@ jobs:
 
     # Los tests de integracion corren contra Postgres de verdad: los mocks de
     # base de datos mienten, y ademas aqui vive el guard de deriva entre
-    # modelos y migraciones. Misma imagen que docker-compose.
+    # modelos y migraciones. Mismas imagenes que docker-compose.
+    #
+    # Redis NO es opcional aqui: 12 tests lo tocan de verdad --publicar,
+    # duplicar y borrar media encolan un job ARQ, y el rate limit del chat
+    # cuenta en Redis. Sin este servicio el paso `Tests` fallaba entero con
+    # ConnectionError al 6379 y el release nunca llegaba a ejecutarse.
     services:
       db:
         image: pgvector/pgvector:pg16
@@ -48,6 +53,15 @@ jobs:
         ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U imaquina"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
