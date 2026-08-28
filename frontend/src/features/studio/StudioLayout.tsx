@@ -157,27 +157,31 @@ function Sidebar({
 function HelpCard() {
   const { t } = useTranslation();
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-surface-inverse px-4 pb-4 pt-7 text-content-inverse">
-      <img
-        src={robotHelp}
-        alt=""
-        aria-hidden
-        className="pointer-events-none absolute -bottom-3 -right-4 w-24 opacity-20 select-none"
-      />
-      <span className="absolute -top-4 left-4 flex h-9 w-9 items-center justify-center rounded-full bg-brand text-brand-content ring-4 ring-surface">
-        <Icon name="help" className="h-5 w-5" />
+    // Contenedor exterior sin recorte: el círculo sobresale por arriba. El
+    // recorte (para el robot) vive en la tarjeta interior.
+    <div className="relative mt-4">
+      <span className="absolute -top-4 left-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-brand text-brand-content shadow-sm ring-4 ring-surface">
+        <Icon name="help" className="h-[18px] w-[18px]" />
       </span>
-      <p className="relative text-sm font-bold">{t("studio.help.title")}</p>
-      <p className="relative mt-1 max-w-[12rem] text-xs text-content-inverse/70">
-        {t("studio.help.body")}
-      </p>
-      <a
-        href="#ayuda"
-        className="relative mt-3 inline-flex items-center gap-1 rounded-control bg-brand px-3 py-1.5 text-xs font-semibold text-brand-content transition duration-150 hover:bg-brand-strong"
-      >
-        {t("studio.help.cta")}
-        <Icon name="arrow-right" className="h-3.5 w-3.5" />
-      </a>
+      <div className="relative overflow-hidden rounded-2xl bg-surface-inverse px-4 pb-4 pt-8 text-content-inverse">
+        <img
+          src={robotHelp}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute -bottom-4 -right-5 w-24 opacity-15 select-none"
+        />
+        <p className="relative text-sm font-bold">{t("studio.help.title")}</p>
+        <p className="relative mt-1 text-xs text-content-inverse/70">
+          {t("studio.help.body")}
+        </p>
+        <a
+          href="#ayuda"
+          className="relative mt-3 inline-flex items-center gap-1 rounded-control bg-brand px-3 py-1.5 text-xs font-semibold text-brand-content transition duration-150 hover:bg-brand-strong"
+        >
+          {t("studio.help.cta")}
+          <Icon name="arrow-right" className="h-3.5 w-3.5" />
+        </a>
+      </div>
     </div>
   );
 }
