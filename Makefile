@@ -13,7 +13,7 @@
 UV ?= uv
 
 .DEFAULT_GOAL := help
-.PHONY: help require-uv sync lock up down testdb api worker seed migrate revision test test-unit test-int lint fix
+.PHONY: help require-uv sync lock up down testdb api worker seed migrate revision test test-unit test-int lint fix web web-install web-lint web-test web-build web-api
 
 help:          ## Lista los comandos disponibles
 	@grep -hE '^[a-z-]+:.*##' $(MAKEFILE_LIST) | sort | awk -F':.*##' '{printf "  \033[36m%-12s\033[0m%s\n", $$1, $$2}'
@@ -61,6 +61,24 @@ test-unit: require-uv ## Sin infraestructura, siempre corren
 
 test-int: require-uv  ## Requiere `make up && make testdb`
 	cd backend && $(UV) run pytest tests/integration -q
+
+web-install:   ## node_modules exactamente segun package-lock.json
+	cd frontend && npm ci
+
+web:           ## Cliente en local (5173, proxy /api -> :8000)
+	cd frontend && npm run dev
+
+web-lint:      ## oxlint
+	cd frontend && npm run lint
+
+web-test:      ## vitest (una pasada)
+	cd frontend && npm test
+
+web-build:     ## tsc -b && vite build
+	cd frontend && npm run build
+
+web-api:       ## Regenera el cliente desde el OpenAPI (necesita `make api` corriendo)
+	cd frontend && npm run api:generate
 
 lint: require-uv      ## ruff check
 	cd backend && $(UV) run ruff check app tests

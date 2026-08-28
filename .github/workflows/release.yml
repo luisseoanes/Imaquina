@@ -1,8 +1,9 @@
 # Verificacion + release automatico por versionado semantico.
 #
-# El job de verificacion (backend) corre antes que el de release: publicar una
-# version rota es peor que no publicar. Los mismos comandos que en local, via
-# Makefile — si `make test` pasa en tu maquina, pasa aqui.
+# Dos jobs de verificacion (backend y frontend) corren en paralelo y el release
+# solo arranca si ambos pasan: publicar una version rota es peor que no
+# publicar. Los mismos comandos que en local, via Makefile — si `make test`
+# pasa en tu maquina, pasa aqui.
 #
 # El release lee los prefijos de los commits desde el ultimo tag y decide el
 # salto de version: `feat` sube minor, `fix` sube patch, y un `!` o un pie
@@ -92,9 +93,37 @@ jobs:
       - name: Tests
         run: make test
 
+  frontend:
+    name: Frontend (lint + tests + build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instala dependencias
+        run: make web-install
+
+      - name: Lint
+        run: make web-lint
+
+      - name: Tests
+        run: make web-test
+
+      # `tsc -b` type-chequea tambien los tests, asi que el build es el que
+      # atrapa un test mal tipado. El cliente generado se versiona, asi que
+      # esto NO necesita el backend levantado.
+      - name: Build
+        run: make web-build
+
   release:
     name: Publica
-    needs: [backend]
+    needs: [backend, frontend]
     runs-on: ubuntu-latest
 
     steps:
