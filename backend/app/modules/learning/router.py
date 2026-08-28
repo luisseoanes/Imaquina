@@ -18,7 +18,7 @@ async def list_projects(
 @router.get("/projects/{project_id}")
 async def get_project(project_id: UUID, tenant: Tenant, db: Db, lang: str = "es"):
     snapshot = await service.get_project_snapshot(db, project_id)
-    return service.serialize_project_for(snapshot, tenant, lang=lang)
+    return await service.project_for(db, snapshot, tenant, lang=lang)
 
 
 @router.get("/projects/{project_id}/moments/{moment_type}")

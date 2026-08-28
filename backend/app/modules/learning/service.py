@@ -16,6 +16,7 @@ from app.core.errors import NotFound, PermissionDenied
 from app.modules.catalog.models import MOMENT_ORDER
 from app.modules.identity.models import Course, Enrollment, User
 from app.modules.learning.models import Progress, ProgressState
+from app.modules.media import service as media
 from app.modules.publishing.models import ProjectVersion
 from app.modules.publishing.service import contenido_en
 
@@ -74,6 +75,36 @@ async def get_project_snapshot(
     return snapshot
 
 
+async def resolver_media(db: AsyncSession, moments: list[dict[str, Any]]) -> None:
+    """Anade `url` y `mime_type` a los bloques que referencian un asset.
+
+    El snapshot guarda `media_asset_id` a secas, asi que sin esto un bloque de
+    imagen, audio o video llega al cliente sin nada que pintar. Se resuelve
+    AQUI, al servir, y no al publicar: la URL depende del bucket configurado, y
+    congelarla en el snapshot dejaria el contenido ya publicado apuntando a la
+    nada el dia que cambie.
+
+    Una sola query para todos los bloques de todos los momentos que se pasen.
+    Muta los diccionarios del bloque en el sitio, y es seguro: el snapshot se
+    lee con `select(ProjectVersion.snapshot)`, un valor suelto que no cuelga de
+    ninguna instancia del ORM, asi que la mutacion no vuelve a la base.
+    """
+    bloques = [b for m in moments for b in m.get("blocks", [])]
+    ids = [
+        uuid.UUID(b["media_asset_id"]) for b in bloques if b.get("media_asset_id")
+    ]
+    if not ids:
+        return
+
+    por_id = await media.urls_por_id(db, ids)
+    for b in bloques:
+        datos = por_id.get(b.get("media_asset_id") or "")
+        # Un asset borrado deja el bloque sin URL en vez de tumbar el momento.
+        b["url"] = datos["url"] if datos else None
+        b["mime_type"] = datos["mime_type"] if datos else None
+        b["duration_seconds"] = datos["duration_seconds"] if datos else None
+
+
 def serialize_moment_for(moment: dict[str, Any], tenant: TenantContext) -> dict[str, Any]:
     """R4: el docente ve lo mismo que el estudiante MÁS la guía didáctica.
 
@@ -108,6 +139,24 @@ def serialize_project_for(
     }
 
 
+async def project_for(
+    db: AsyncSession,
+    snapshot: dict[str, Any],
+    tenant: TenantContext,
+    *,
+    lang: str = "es",
+) -> dict[str, Any]:
+    """`serialize_project_for` + las URLs del media. Lo que sirve el router.
+
+    La version sincrona se conserva porque `catalog` la reutiliza para la
+    previsualizacion del editor y las pruebas unitarias la ejercitan sin base
+    de datos; el acceso a media es lo unico que necesita una sesion.
+    """
+    salida = serialize_project_for(snapshot, tenant, lang=lang)
+    await resolver_media(db, salida["moments"])
+    return salida
+
+
 async def get_moment_for(
     db: AsyncSession,
     project_id: uuid.UUID,
@@ -127,7 +176,9 @@ async def get_moment_for(
     if not tenant.is_staff:
         await _exigir_momento_desbloqueado(db, tenant, project_id, moment_type)
 
-    return {**serialize_moment_for(moment, tenant), "lang": servido}
+    salida = {**serialize_moment_for(moment, tenant), "lang": servido}
+    await resolver_media(db, [salida])
+    return salida
 
 
 # --- Progreso del estudiante (N5) -------------------------------------------

@@ -240,3 +240,67 @@ async def test_un_estudiante_no_ve_el_panel_docente(client, db):
     )
 
     assert resp.status_code == 403
+
+
+async def test_el_bloque_de_imagen_llega_al_estudiante_con_su_url(client, db):
+    """El snapshot guarda `media_asset_id` a secas: sin resolverlo al servir,
+    el estudiante recibe un bloque de imagen sin nada que pintar y el momento
+    se ve vacío. Aquí se comprueba el camino de lectura completo."""
+    inst = await _institucion_con_licencia(db)
+    editor = await _usuario(db, inst, "editor")
+    editor_h = _h(_token_de(editor, inst))
+
+    asset = (
+        await client.post(
+            "/api/v1/studio/media/register",
+            headers=editor_h,
+            json={
+                "s3_key": f"media/{uuid.uuid4().hex}.png",
+                "mime_type": "image/png",
+                "size_bytes": 1024,
+                "original_filename": "robot.png",
+                "alt_text": "Un robot",
+            },
+        )
+    ).json()
+
+    creado = (
+        await client.post(
+            f"{CATALOG}/projects",
+            headers=editor_h,
+            json={"slug": f"p-{uuid.uuid4().hex[:6]}", "grade": "5", "title": "P"},
+        )
+    ).json()
+    intro = next(m for m in creado["moments"] if m["type"] == "intro")
+    for m in creado["moments"]:
+        await client.patch(
+            f"{CATALOG}/moments/{m['id']}", headers=editor_h, json={"title": "T"}
+        )
+        await client.post(
+            f"{CATALOG}/moments/{m['id']}/blocks",
+            headers=editor_h,
+            json={"kind": "text", "body": "contenido"},
+        )
+    await client.post(
+        f"{CATALOG}/moments/{intro['id']}/blocks",
+        headers=editor_h,
+        json={"kind": "image", "media_asset_id": asset["id"], "alt_text": "Un robot"},
+    )
+    await client.post(f"{PUBLISHING}/projects/{creado['id']}/publish", headers=editor_h)
+
+    estudiante = await _usuario(db, inst, "student")
+    est_h = _h(_token_de(estudiante, inst))
+
+    momento = (
+        await client.get(f"{LEARN}/projects/{creado['id']}/moments/intro", headers=est_h)
+    ).json()
+    imagen = next(b for b in momento["blocks"] if b["kind"] == "image")
+    assert imagen["url"] and imagen["url"].endswith(".png")
+    assert imagen["mime_type"] == "image/png"
+
+    # Y también por la ficha del proyecto, que es de donde sale el índice.
+    proyecto = (
+        await client.get(f"{LEARN}/projects/{creado['id']}", headers=est_h)
+    ).json()
+    intro_ficha = next(m for m in proyecto["moments"] if m["type"] == "intro")
+    assert next(b for b in intro_ficha["blocks"] if b["kind"] == "image")["url"]

@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from app.core.deps import Author, Db, Role, TenantContext
 from app.modules.catalog import service
 from app.modules.catalog.models import BlockKind
-from app.modules.learning.service import serialize_moment_for
+from app.modules.learning.service import resolver_media, serialize_moment_for
 
 router = APIRouter(prefix="/studio/catalog", tags=["studio"])
 
@@ -140,7 +140,11 @@ async def preview_moment(
     tenant_previsto = TenantContext(
         user_id=author.user_id, institution_id=author.institution_id, role=rol_previsto
     )
-    return serialize_moment_for(moment, tenant_previsto)
+    vista = serialize_moment_for(moment, tenant_previsto)
+    # La previsualizacion tiene que ver el media igual que el estudiante,
+    # o revisar un momento con imagenes no sirve para revisar nada.
+    await resolver_media(db, [vista])
+    return vista
 
 
 @router.get("/projects/{project_id}/translations")

@@ -5,6 +5,7 @@ la regla de `arquitectura.md` 2 es que un modulo llama al SERVICIO de otro.
 """
 
 import uuid
+from collections.abc import Iterable
 from typing import Any
 
 from sqlalchemy import func, or_, select
@@ -39,6 +40,41 @@ def _serializar(asset: MediaAsset, usos: int) -> dict[str, Any]:
         # Cuantos bloques lo usan: el editor necesita saberlo ANTES de intentar
         # borrar, no despues de recibir un 409.
         "used_in": usos,
+    }
+
+
+async def urls_por_id(
+    db: AsyncSession, asset_ids: Iterable[uuid.UUID]
+) -> dict[str, dict[str, Any]]:
+    """Los datos de reproduccion de varios assets, en UNA query.
+
+    Existe para el camino de lectura del estudiante: el snapshot publicado
+    guarda `media_asset_id`, no la URL —si la congelara, mover el bucket
+    dejaria el contenido ya publicado apuntando a la nada—, asi que se resuelve
+    al servir. `learning` la llama en vez de tocar `MediaAsset`: leer el modelo
+    de otro modulo se permite, pero llamar a su servicio es lo preferido
+    (arquitectura.md 2).
+
+    Devuelve un mapa por id EN TEXTO, que es como viaja dentro del snapshot.
+    Un id que ya no exista simplemente no sale: el bloque se queda sin URL en
+    vez de romper el momento entero.
+    """
+    ids = list(dict.fromkeys(asset_ids))
+    if not ids:
+        return {}
+
+    assets = (
+        (await db.execute(select(MediaAsset).where(MediaAsset.id.in_(ids))))
+        .scalars()
+        .all()
+    )
+    return {
+        str(a.id): {
+            "url": settings.media_url(a.s3_key),
+            "mime_type": a.mime_type,
+            "duration_seconds": a.duration_seconds,
+        }
+        for a in assets
     }
 
 
