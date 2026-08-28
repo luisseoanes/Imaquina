@@ -27,7 +27,13 @@ export const routes = {
   teacherContentProject: (id: string) => `/teacher/content/${id}`,
   teacherSettings: "/teacher/settings",
 
+  // Panel de administración (rol admin).
   admin: "/admin",
+  adminUsers: "/admin/users",
+  adminCourses: "/admin/courses",
+  adminCourse: (id: string) => `/admin/courses/${id}`,
+  adminModeration: "/admin/moderation",
+  adminSettings: "/admin/settings",
 
   // Content Studio (rol editor/admin). El índice es el panel; el resto son
   // pestañas del mockup. Se construyen aquí y nunca a mano en un <Link>.

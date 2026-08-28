@@ -472,5 +472,128 @@
         "en": "English"
       }
     }
+  },
+  "admin": {
+    "header": {
+      "lang": "Language",
+      "closeMenu": "Close menu",
+      "menu": "Open menu",
+      "greeting": "Hi, {{name}}!",
+      "greetingSub": "Your institution's administration panel.",
+      "defaultName": "Admin",
+      "search": "Search users, courses…",
+      "notifications": "Notifications"
+    },
+    "help": {
+      "title": "Help center",
+      "body": "Questions about accounts, courses or enrolments?",
+      "cta": "Go to the help center"
+    },
+    "group": {
+      "manage": "Manage",
+      "watch": "Oversight",
+      "system": "Settings"
+    },
+    "nav": {
+      "dashboard": "Panel",
+      "users": "Users",
+      "courses": "Courses",
+      "moderation": "Chat moderation",
+      "settings": "Settings"
+    },
+    "dashboard": {
+      "title": "Administration panel",
+      "subtitle": "Accounts, courses, enrolments and oversight of the institution.",
+      "activeUsers": "Active users",
+      "teachers": "Teachers",
+      "students": "Students",
+      "courses": "Courses",
+      "moderationAlert": "{{count}} chat messages redirected by the guardrail",
+      "shortcuts": "Shortcuts",
+      "usersBody": "Create accounts, change roles and reset passwords.",
+      "coursesBody": "Create courses, assign teachers and enrol students.",
+      "moderationBody": "Review which chat questions were blocked.",
+      "platform": "Platform",
+      "publishedProjects": "Published projects",
+      "publishedLessons": "Published lessons",
+      "submittedAttempts": "Submitted assessments",
+      "avgScore": "Average score",
+      "recentUsers": "Recent users"
+    },
+    "role": {
+      "student": "Student",
+      "teacher": "Teacher",
+      "editor": "Editor",
+      "admin": "Administrator"
+    },
+    "col": {
+      "name": "Name",
+      "role": "Role",
+      "grade": "Grade",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "action": {
+      "edit": "Edit",
+      "resetPassword": "Reset password",
+      "deactivate": "Deactivate",
+      "activate": "Activate"
+    },
+    "users": {
+      "subtitle": "Every account in the institution.",
+      "allRoles": "All roles",
+      "new": "New user",
+      "edit": "Edit user",
+      "empty": "No users match that filter.",
+      "resetPrompt": "New password for {{name}} (at least 8 characters):",
+      "resetDone": "Password reset. Share it through the school's channel.",
+      "resetTooShort": "The password must be at least 8 characters."
+    },
+    "field": {
+      "email": "Email",
+      "fullName": "Full name",
+      "password": "Initial password",
+      "passwordHint": "At least 8 characters.",
+      "gradeHint": "Students only.",
+      "courseName": "Course name",
+      "teacher": "Teacher",
+      "noTeacher": "Unassigned"
+    },
+    "courses": {
+      "subtitle": "The institution's groups.",
+      "new": "New course",
+      "empty": "No courses yet.",
+      "grade": "Grade {{grade}}"
+    },
+    "course": {
+      "enroll": "Enrol student",
+      "pickStudent": "Pick a student…",
+      "add": "Enrol",
+      "noCandidates": "No active unenrolled students.",
+      "confirmRemove": "Remove this student from the course?",
+      "remove": "Remove",
+      "noStudents": "This course has no students."
+    },
+    "moderation": {
+      "subtitle": "Chat messages the guardrail redirected (C5).",
+      "empty": "No redirected messages.",
+      "note": "Read only. Tuning the guardrail classifier is the technical team's job."
+    },
+    "settings": {
+      "subtitle": "Your administrator account.",
+      "language": "Interface language",
+      "lang": {
+        "es": "Spanish",
+        "en": "English"
+      },
+      "password": "Change my password",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "changePassword": "Change password",
+      "pwDone": "Password changed."
+    }
   }
 }

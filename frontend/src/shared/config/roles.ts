@@ -12,9 +12,10 @@ export const isAdmin = (role: Role) => role === "admin";
 
 /** A dónde va cada rol tras iniciar sesión (y a dónde lo devuelve un guard si
  *  entra donde no le toca). La raíz `/` no está construida —muestra el 404—,
- *  así que nadie debe aterrizar ahí: editor/admin al Studio, docente a su
- *  panel, estudiante a sus cursos. */
+ *  así que nadie debe aterrizar ahí: admin a administración, editor al Studio,
+ *  docente a su panel, estudiante a sus cursos. */
 export function homeForRole(role: Role): string {
+  if (isAdmin(role)) return routes.admin;
   if (canAuthor(role)) return routes.studio;
   if (isStaff(role)) return routes.teacher;
   return routes.courses;

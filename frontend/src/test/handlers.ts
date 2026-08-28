@@ -51,4 +51,8 @@ export const handlers = [
   // Panel del docente
   http.get(`${API}/courses`, () => HttpResponse.json([])),
   http.get(`${API}/learn/projects`, () => HttpResponse.json([])),
+
+  // Panel de administración
+  http.get(`${API}/admin/users`, () => HttpResponse.json([])),
+  http.get(`${API}/studio/assistant/rejections`, () => HttpResponse.json([])),
 ];

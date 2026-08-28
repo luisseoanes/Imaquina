@@ -472,5 +472,128 @@
         "en": "Inglés"
       }
     }
+  },
+  "admin": {
+    "header": {
+      "lang": "Idioma",
+      "closeMenu": "Cerrar menú",
+      "menu": "Abrir menú",
+      "greeting": "¡Hola, {{name}}!",
+      "greetingSub": "Panel de administración de la institución.",
+      "defaultName": "Admin",
+      "search": "Buscar usuarios, cursos…",
+      "notifications": "Notificaciones"
+    },
+    "help": {
+      "title": "Centro de ayuda",
+      "body": "¿Dudas sobre cuentas, cursos o matrículas?",
+      "cta": "Ir al centro de ayuda"
+    },
+    "group": {
+      "manage": "Gestión",
+      "watch": "Supervisión",
+      "system": "Configuración"
+    },
+    "nav": {
+      "dashboard": "Panel",
+      "users": "Usuarios",
+      "courses": "Cursos",
+      "moderation": "Moderación del chat",
+      "settings": "Configuración"
+    },
+    "dashboard": {
+      "title": "Panel de administración",
+      "subtitle": "Cuentas, cursos, matrículas y supervisión de la institución.",
+      "activeUsers": "Usuarios activos",
+      "teachers": "Docentes",
+      "students": "Estudiantes",
+      "courses": "Cursos",
+      "moderationAlert": "{{count}} mensajes del chat redirigidos por el guardrail",
+      "shortcuts": "Accesos rápidos",
+      "usersBody": "Da de alta cuentas, cambia roles y restablece contraseñas.",
+      "coursesBody": "Crea cursos, asigna docentes y matricula estudiantes.",
+      "moderationBody": "Revisa qué preguntas del chat se han bloqueado.",
+      "platform": "Plataforma",
+      "publishedProjects": "Proyectos publicados",
+      "publishedLessons": "Lecciones publicadas",
+      "submittedAttempts": "Evaluaciones enviadas",
+      "avgScore": "Calificación promedio",
+      "recentUsers": "Usuarios recientes"
+    },
+    "role": {
+      "student": "Estudiante",
+      "teacher": "Docente",
+      "editor": "Editor",
+      "admin": "Administrador"
+    },
+    "col": {
+      "name": "Nombre",
+      "role": "Rol",
+      "grade": "Grado",
+      "status": "Estado"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "action": {
+      "edit": "Editar",
+      "resetPassword": "Restablecer contraseña",
+      "deactivate": "Desactivar",
+      "activate": "Activar"
+    },
+    "users": {
+      "subtitle": "Todas las cuentas de la institución.",
+      "allRoles": "Todos los roles",
+      "new": "Nuevo usuario",
+      "edit": "Editar usuario",
+      "empty": "No hay usuarios con ese filtro.",
+      "resetPrompt": "Nueva contraseña para {{name}} (mínimo 8 caracteres):",
+      "resetDone": "Contraseña restablecida. Comunícasela por el canal del colegio.",
+      "resetTooShort": "La contraseña debe tener al menos 8 caracteres."
+    },
+    "field": {
+      "email": "Correo",
+      "fullName": "Nombre completo",
+      "password": "Contraseña inicial",
+      "passwordHint": "Mínimo 8 caracteres.",
+      "gradeHint": "Solo para estudiantes.",
+      "courseName": "Nombre del curso",
+      "teacher": "Docente",
+      "noTeacher": "Sin asignar"
+    },
+    "courses": {
+      "subtitle": "Los grupos de la institución.",
+      "new": "Nuevo curso",
+      "empty": "Aún no hay cursos.",
+      "grade": "Grado {{grade}}"
+    },
+    "course": {
+      "enroll": "Matricular estudiante",
+      "pickStudent": "Elige un estudiante…",
+      "add": "Matricular",
+      "noCandidates": "No hay estudiantes activos sin matricular.",
+      "confirmRemove": "¿Quitar a este estudiante del curso?",
+      "remove": "Quitar",
+      "noStudents": "Este curso no tiene estudiantes."
+    },
+    "moderation": {
+      "subtitle": "Mensajes del chat que el guardrail redirigió (C5).",
+      "empty": "No hay mensajes redirigidos.",
+      "note": "Solo lectura. Ajustar el clasificador del guardrail es trabajo del equipo técnico."
+    },
+    "settings": {
+      "subtitle": "Tu cuenta de administrador.",
+      "language": "Idioma de la interfaz",
+      "lang": {
+        "es": "Español",
+        "en": "Inglés"
+      },
+      "password": "Cambiar mi contraseña",
+      "currentPassword": "Contraseña actual",
+      "newPassword": "Contraseña nueva",
+      "changePassword": "Cambiar contraseña",
+      "pwDone": "Contraseña cambiada."
+    }
   }
 }

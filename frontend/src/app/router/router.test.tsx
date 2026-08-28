@@ -74,6 +74,7 @@ describe("router", () => {
     for (const [rol, marcador] of [
       ["teacher", "[data-teacher-root]"],
       ["editor", "[data-studio-root]"],
+      ["admin", "[data-admin-root]"],
     ] as const) {
       localStorage.clear();
       server.use(
@@ -136,6 +137,14 @@ describe("router", () => {
       // su propio router. Marca su raíz con `data-studio-root`.
       await waitFor(() =>
         expect(container.querySelector("[data-studio-root]")).not.toBeNull(),
+      );
+    });
+
+    it("un admin sí entra a administración", async () => {
+      iniciarSesion({ role: "admin", lang: "es" });
+      const { container } = renderizarEn(routes.admin);
+      await waitFor(() =>
+        expect(container.querySelector("[data-admin-root]")).not.toBeNull(),
       );
     });
   });
