@@ -409,6 +409,47 @@ async def test_los_bloques_tampoco_son_para_docentes(client, db):
     assert resp.status_code == 403
 
 
+async def test_el_config_del_bloque_va_y_vuelve(client, db):
+    """`config` guarda los ajustes que no dependen del idioma (embed, etc.)."""
+    h = _h(await _token(db, "editor"))
+    mid = await _momento_intro(client, h)
+
+    bid = (
+        await client.post(
+            f"{BLOQUES}/moments/{mid}/blocks",
+            headers=h,
+            json={
+                "kind": "embed",
+                "config": {"provider": "youtube", "src": "dQw4w9WgXcQ"},
+            },
+        )
+    ).json()["id"]
+
+    listado = (await client.get(f"{BLOQUES}/moments/{mid}/blocks", headers=h)).json()
+    assert listado[0]["config"] == {"provider": "youtube", "src": "dQw4w9WgXcQ"}
+
+    # PATCH parcial: tocar `config` no exige reenviar los textos.
+    patched = await client.patch(
+        f"{BLOQUES}/blocks/{bid}",
+        headers=h,
+        json={"config": {"provider": "youtube", "src": "otro-id"}},
+    )
+    assert patched.json()["config"]["src"] == "otro-id"
+
+
+async def test_un_proveedor_de_embed_no_permitido_se_rechaza(client, db):
+    h = _h(await _token(db, "editor"))
+    mid = await _momento_intro(client, h)
+
+    resp = await client.post(
+        f"{BLOQUES}/moments/{mid}/blocks",
+        headers=h,
+        json={"kind": "embed", "config": {"provider": "tiktok", "src": "x"}},
+    )
+
+    assert resp.status_code == 422
+
+
 # --- Momentos y traducción (S4, S5) ----------------------------------------
 
 

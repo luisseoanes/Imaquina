@@ -2,6 +2,7 @@ import uuid
 from enum import StrEnum
 
 from sqlalchemy import ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin, UUIDMixin
@@ -123,6 +124,13 @@ class ContentBlock(Base, UUIDMixin, TimestampMixin):
     media_asset_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("media_assets.id", ondelete="SET NULL"), nullable=True
     )
+    # Datos del bloque que NO dependen del idioma: proveedor y URL de un embed,
+    # id del vídeo de YouTube, y —desde la fase de interactivos— la forma de un
+    # checklist, los capítulos de un vídeo o el toolbox de Blockly. Forma libre
+    # a propósito (igual que `ContentTemplate.payload`): la valida
+    # `catalog.service` al guardar según el `kind`, no la base. Viaja tal cual
+    # al snapshot publicado y el cliente del estudiante la interpreta.
+    config: Mapped[dict] = mapped_column(JSONB, default=dict)
 
     moment: Mapped["Moment"] = relationship(back_populates="blocks")
     translations: Mapped[list["BlockTranslation"]] = relationship(

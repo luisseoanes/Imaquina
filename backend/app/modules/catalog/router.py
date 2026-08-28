@@ -163,6 +163,8 @@ async def estado_de_traduccion(project_id: UUID, author: Author, db: Db):
 class BlockIn(BaseModel):
     kind: BlockKind
     media_asset_id: UUID | None = None
+    # Ajustes del bloque que no dependen del idioma (embed, capítulos, etc.).
+    config: dict | None = None
     body: str | None = None
     caption: str | None = None
     alt_text: str | None = Field(default=None, max_length=500)
@@ -174,6 +176,7 @@ class BlockPatch(BaseModel):
 
     kind: BlockKind | None = None
     media_asset_id: UUID | None = None
+    config: dict | None = None
     body: str | None = None
     caption: str | None = None
     alt_text: str | None = Field(default=None, max_length=500)

@@ -290,7 +290,10 @@ async def duplicate_project(
             )
         for bloque in sorted(moment.blocks, key=lambda b: b.order):
             nuevo_bloque = ContentBlock(
-                kind=bloque.kind, order=bloque.order, media_asset_id=bloque.media_asset_id
+                kind=bloque.kind,
+                order=bloque.order,
+                media_asset_id=bloque.media_asset_id,
+                config=dict(bloque.config or {}),
             )
             for tr in bloque.translations:
                 nuevo_bloque.translations.append(
@@ -325,6 +328,7 @@ def _serializar_bloque(bloque: ContentBlock, lang: str) -> dict[str, Any]:
         "kind": bloque.kind,
         "order": bloque.order,
         "media_asset_id": str(bloque.media_asset_id) if bloque.media_asset_id else None,
+        "config": bloque.config or {},
         "lang": lang,
         "body": tr.body if tr else None,
         "caption": tr.caption if tr else None,
@@ -374,6 +378,32 @@ async def _comprobar_media(db: AsyncSession, asset_id: uuid.UUID | None) -> None
         raise ValidationFailed(f"El asset de media '{asset_id}' no existe")
 
 
+# Proveedores de embed que el cliente sabe montar en un iframe. Un proveedor
+# fuera de esta lista es HTML de terceros en la sesión de un menor.
+EMBED_PROVIDERS = ("youtube",)
+
+
+def _validar_config(kind: str, config: Any) -> dict:
+    """Lo mínimo que se exige a `config` al GUARDAR, por tipo de bloque.
+
+    Guardar a medias está permitido (la completitud se exige al publicar), así
+    que aquí sólo se rechaza lo que no tiene arreglo: una forma que no es un
+    objeto, o un proveedor de embed que el cliente no sabe pintar.
+    """
+    if config is None:
+        return {}
+    if not isinstance(config, dict):
+        raise ValidationFailed("`config` debe ser un objeto")
+    if kind == "embed":
+        proveedor = config.get("provider")
+        if proveedor is not None and proveedor not in EMBED_PROVIDERS:
+            raise ValidationFailed(
+                f"Proveedor de embed no permitido: '{proveedor}'. "
+                f"Permitidos: {', '.join(EMBED_PROVIDERS)}"
+            )
+    return config
+
+
 async def list_blocks(
     db: AsyncSession, moment_id: uuid.UUID, *, lang: str = "es"
 ) -> list[dict[str, Any]]:
@@ -391,6 +421,7 @@ async def create_block(
     kind: str,
     lang: str = "es",
     media_asset_id: uuid.UUID | None = None,
+    config: Any = None,
     body: str | None = None,
     caption: str | None = None,
     alt_text: str | None = None,
@@ -405,6 +436,7 @@ async def create_block(
         kind=kind,
         order=siguiente,
         media_asset_id=media_asset_id,
+        config=_validar_config(kind, config),
     )
     db.add(bloque)
     await db.flush()
@@ -441,6 +473,8 @@ async def update_block(
     if "media_asset_id" in campos:
         await _comprobar_media(db, campos["media_asset_id"])
         bloque.media_asset_id = campos["media_asset_id"]
+    if "config" in campos:
+        bloque.config = _validar_config(bloque.kind, campos["config"])
 
     textos = {c: campos[c] for c in ("body", "caption", "alt_text") if c in campos}
     if textos:

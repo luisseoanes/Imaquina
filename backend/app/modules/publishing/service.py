@@ -79,6 +79,14 @@ def _falta_en_el_bloque(block: Any, lang: str) -> str | None:
         return "texto" if not (tr and (tr.body or "").strip()) else None
     if block.kind == BlockKind.IMAGE:
         return "alt_text" if not (tr and (tr.alt_text or "").strip()) else None
+    if block.kind == BlockKind.EMBED:
+        # Un embed sin fuente no pinta nada. La fuente puede venir en `config`
+        # (proveedor + src, el camino nuevo) o, como antes, escrita a mano en
+        # `body`; con cualquiera de las dos el bloque es servible.
+        config = getattr(block, "config", None) or {}
+        tiene_config = bool(config.get("provider") and config.get("src"))
+        tiene_body = bool(tr and (tr.body or "").strip())
+        return None if (tiene_config or tiene_body) else "fuente del embed"
     return None
 
 
@@ -146,6 +154,7 @@ def _contenido(project: Project, lang: str) -> dict[str, Any]:
                         "media_asset_id": str(b.media_asset_id)
                         if b.media_asset_id
                         else None,
+                        "config": getattr(b, "config", None) or {},
                         "body": _tr(b.translations, lang, "body"),
                         "caption": _tr(b.translations, lang, "caption"),
                         "alt_text": _tr(b.translations, lang, "alt_text"),
