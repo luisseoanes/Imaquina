@@ -49,6 +49,7 @@ from app.modules.publishing.models import ProjectVersion
 PASSWORD = "imaquina2027"
 INSTITUCION = "Colegio de Pruebas Imaquina"
 SLUG = "semaforo-inteligente"
+CURSO = "5A - Robotica"
 
 # Dominio `example.com`: es el reservado por IANA para documentacion y
 # `EmailStr` lo acepta. Ojo con `.test` y `.local` — son special-use y
@@ -86,7 +87,10 @@ async def _sembrar(db: AsyncSession) -> None:
 
     lic = (
         await db.execute(
-            select(License).where(License.institution_id == inst.id)
+            select(License)
+            .where(License.institution_id == inst.id)
+            .order_by(License.valid_to.desc())
+            .limit(1)
         )
     ).scalar_one_or_none()
     if lic is None:
@@ -124,19 +128,21 @@ async def _sembrar(db: AsyncSession) -> None:
 
     curso = (
         await db.execute(
-            select(Course).where(Course.institution_id == inst.id)
+            select(Course).where(
+                Course.institution_id == inst.id, Course.name == CURSO
+            )
         )
     ).scalar_one_or_none()
     if curso is None:
         curso = Course(
             institution_id=inst.id,
-            name="5A - Robotica",
+            name=CURSO,
             grade="5",
             teacher_id=creados[Role.TEACHER].id,
         )
         db.add(curso)
         await db.flush()
-        print("  + curso 5A - Robotica")
+        print(f"  + curso {CURSO}")
 
     matricula = (
         await db.execute(
