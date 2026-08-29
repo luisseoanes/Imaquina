@@ -14,6 +14,7 @@ from app.modules.learning.router import router as learning_router
 from app.modules.media.router import router as media_router
 from app.modules.notifications.router import router as notifications_router
 from app.modules.publishing.router import router as publishing_router
+from app.modules.review.router import router as review_router
 from app.modules.search.router import router as search_router
 from app.modules.studio.router import router as studio_router
 
@@ -27,6 +28,7 @@ api_router.include_router(assistant_staff_router)
 # Content Studio: solo roles editor/admin (guard en cada router).
 api_router.include_router(catalog_router)
 api_router.include_router(publishing_router)
+api_router.include_router(review_router)
 api_router.include_router(media_router)
 api_router.include_router(assessment_router)
 api_router.include_router(assessment_learn_router)

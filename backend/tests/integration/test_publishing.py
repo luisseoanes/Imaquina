@@ -24,7 +24,12 @@ from app.modules.publishing import service as publishing
 
 
 async def _proyecto_completo(db, *, langs=("es",)) -> Project:
-    proyecto = Project(slug=f"p-{uuid.uuid4().hex[:8]}", grade="5", order=1)
+    proyecto = Project(
+        slug=f"p-{uuid.uuid4().hex[:8]}",
+        grade="5",
+        order=1,
+        status=ProjectStatus.APPROVED,
+    )
     db.add(proyecto)
     await db.flush()
     for lang in langs:

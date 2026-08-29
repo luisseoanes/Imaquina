@@ -32,6 +32,7 @@ import type {
   ProjectDetail,
   RefType,
   Resource,
+  ReviewThread,
   StudentActivity,
   Tag,
   TranslationState,
@@ -197,6 +198,67 @@ export function usePublishMutations(id: string) {
           `/studio/publishing/projects/${id}/unpublish`,
           "POST",
         ),
+      onSuccess: done,
+    }),
+  };
+}
+
+// --- Flujo editorial (fase 4) ------------------------------------------
+
+export const useReviewThread = (
+  targetType: string,
+  targetId: string,
+  opts?: Opts<ReviewThread>,
+) =>
+  useQuery({
+    queryKey: ["studio", "review", targetType, targetId],
+    queryFn: () =>
+      get<ReviewThread>(
+        `/studio/review/${targetType}/${targetId}`,
+      ),
+    ...opts,
+  });
+
+export function useReviewMutations(projectId: string) {
+  const qc = useQueryClient();
+  const done = () => void qc.invalidateQueries({ queryKey: ["studio"] });
+  return {
+    transition: useMutation({
+      mutationFn: (b: { to_status: string; note?: string }) =>
+        send<unknown>(
+          `/studio/catalog/projects/${projectId}/transition`,
+          "POST",
+          b,
+        ),
+      onSuccess: done,
+    }),
+    assignReviewer: useMutation({
+      mutationFn: (reviewer_id: string | null) =>
+        send<unknown>(
+          `/studio/catalog/projects/${projectId}/reviewer`,
+          "PUT",
+          { reviewer_id },
+        ),
+      onSuccess: done,
+    }),
+    comment: useMutation({
+      mutationFn: (b: {
+        body: string;
+        moment_id?: string;
+        block_id?: string;
+      }) =>
+        send<unknown>("/studio/review/comments", "POST", {
+          target_type: "project",
+          target_id: projectId,
+          ...b,
+        }),
+      onSuccess: done,
+    }),
+    resolve: useMutation({
+      mutationFn: (v: { id: string; resolved: boolean }) =>
+        send<unknown>(`/studio/review/comments/${v.id}/resolve`, "POST", {
+          resolved: v.resolved,
+        }),
       onSuccess: done,
     }),
   };

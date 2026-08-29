@@ -78,6 +78,33 @@ async def delete_project(project_id: UUID, author: Author, db: Db) -> None:
     await service.delete_project(db, project_id)
 
 
+class TransitionIn(BaseModel):
+    to_status: str = Field(pattern="^(in_review|approved|draft)$")
+    note: str | None = None
+
+
+@router.post("/projects/{project_id}/transition")
+async def transition_project(
+    project_id: UUID, payload: TransitionIn, author: Author, db: Db
+):
+    """Flujo editorial: enviar a revisión / aprobar / devolver a borrador.
+    Publicar y despublicar siguen siendo de `/studio/publishing`."""
+    return await service.transition_project(
+        db, project_id, author, to_status=payload.to_status, note=payload.note
+    )
+
+
+class ReviewerIn(BaseModel):
+    reviewer_id: UUID | None = None
+
+
+@router.put("/projects/{project_id}/reviewer")
+async def assign_reviewer(
+    project_id: UUID, payload: ReviewerIn, author: Author, db: Db
+):
+    return await service.assign_reviewer(db, project_id, payload.reviewer_id)
+
+
 class DuplicateIn(BaseModel):
     slug: str = Field(min_length=1, max_length=120)
 

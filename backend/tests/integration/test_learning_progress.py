@@ -27,6 +27,19 @@ def _h(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 
+async def _aprobar_y_publicar(client, editor_h, project_id: str) -> None:
+    """Flujo editorial (fase 4): sólo se publica lo aprobado."""
+    for estado in ("in_review", "approved"):
+        await client.post(
+            f"{CATALOG}/projects/{project_id}/transition",
+            headers=editor_h,
+            json={"to_status": estado},
+        )
+    await client.post(
+        f"{PUBLISHING}/projects/{project_id}/publish", headers=editor_h
+    )
+
+
 async def _institucion_con_licencia(db) -> Institution:
     inst = Institution(name=f"Colegio {uuid.uuid4().hex[:6]}", calendar=Calendar.A)
     db.add(inst)
@@ -81,7 +94,7 @@ async def _proyecto_publicado(client, editor_h) -> str:
             headers=editor_h,
             json={"kind": "text", "body": "contenido"},
         )
-    await client.post(f"{PUBLISHING}/projects/{creado['id']}/publish", headers=editor_h)
+    await _aprobar_y_publicar(client, editor_h, creado["id"])
     return creado["id"]
 
 
@@ -116,7 +129,7 @@ async def test_prompt_de_apertura_llega_publicado_al_estudiante(client, db):
             headers=editor_h,
             json={"kind": "text", "body": "contenido"},
         )
-    await client.post(f"{PUBLISHING}/projects/{creado['id']}/publish", headers=editor_h)
+    await _aprobar_y_publicar(client, editor_h, creado["id"])
     estudiante = await _usuario(db, inst, "student")
 
     resp = await client.get(
@@ -286,7 +299,7 @@ async def test_el_bloque_de_imagen_llega_al_estudiante_con_su_url(client, db):
         headers=editor_h,
         json={"kind": "image", "media_asset_id": asset["id"], "alt_text": "Un robot"},
     )
-    await client.post(f"{PUBLISHING}/projects/{creado['id']}/publish", headers=editor_h)
+    await _aprobar_y_publicar(client, editor_h, creado["id"])
 
     estudiante = await _usuario(db, inst, "student")
     est_h = _h(_token_de(estudiante, inst))
@@ -339,7 +352,7 @@ async def test_el_estado_de_un_bloque_interactivo_se_guarda_y_se_sirve(client, d
             },
         )
     ).json()
-    await client.post(f"{PUBLISHING}/projects/{creado['id']}/publish", headers=editor_h)
+    await _aprobar_y_publicar(client, editor_h, creado["id"])
 
     est_h = _h(_token_de(await _usuario(db, inst, "student"), inst))
 

@@ -642,6 +642,10 @@ async def test_duplicar_publicado_nace_borrador(client, db):
             headers=h,
             json={"kind": "text", "body": "x"},
         )
+    for estado in ("in_review", "approved"):
+        await client.post(
+            f"{BASE}/{pid}/transition", headers=h, json={"to_status": estado}
+        )
     await client.post(f"/api/v1/studio/publishing/projects/{pid}/publish", headers=h)
 
     resp = await client.post(

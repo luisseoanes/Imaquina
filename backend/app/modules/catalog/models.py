@@ -48,7 +48,19 @@ class BlockKind(StrEnum):
 
 class ProjectStatus(StrEnum):
     DRAFT = "draft"
+    IN_REVIEW = "in_review"
+    APPROVED = "approved"
     PUBLISHED = "published"
+
+
+# Transiciones editoriales permitidas. `publish`/`unpublish` (a PUBLISHED y de
+# vuelta a DRAFT) las sigue gestionando `publishing`; el resto, `catalog`.
+REVIEW_TRANSITIONS: dict[str, tuple[str, ...]] = {
+    "draft": ("in_review",),
+    "in_review": ("approved", "draft"),
+    "approved": ("in_review", "draft"),
+    "published": ("draft",),
+}
 
 
 class Project(Base, UUIDMixin, TimestampMixin):
@@ -60,6 +72,10 @@ class Project(Base, UUIDMixin, TimestampMixin):
     order: Mapped[int] = mapped_column(Integer, default=0)
     status: Mapped[str] = mapped_column(
         String(20), default=ProjectStatus.DRAFT, index=True
+    )
+    # Revisor asignado para el flujo editorial (borrador→revisión→aprobado).
+    reviewer_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
 
     moments: Mapped[list["Moment"]] = relationship(

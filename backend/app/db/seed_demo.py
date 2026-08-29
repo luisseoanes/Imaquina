@@ -35,6 +35,7 @@ from app.modules.catalog.models import (
     Moment,
     MomentTranslation,
     Project,
+    ProjectStatus,
     ProjectTranslation,
 )
 from app.modules.identity.models import Course, Enrollment, Institution, User
@@ -575,6 +576,9 @@ async def _proyectos(db: AsyncSession, inst: Institution) -> None:
 
         if publicar and not await _existe(db, ProjectVersion, project_id=p.id):
             try:
+                # Flujo editorial (fase 4): se publica lo aprobado.
+                p.status = ProjectStatus.APPROVED
+                await db.flush()
                 await publishing.publish(db, p.id, published_by=editor.id)
                 print(f"    publicado {slug}")
             except Exception as e:  # noqa: BLE001

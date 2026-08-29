@@ -415,6 +415,17 @@
       "reminders": "Recordatorios",
       "reviewTitle": "Revisar evaluaciones pendientes",
       "reviewBody": "{{count}} evaluaciones enviadas"
+    },
+    "review": {
+      "submit": "Enviar a revisión",
+      "approve": "Aprobar",
+      "requestChanges": "Devolver a borrador",
+      "comments": "Comentarios de revisión",
+      "resolve": "Resolver",
+      "reopen": "Reabrir",
+      "noComments": "Sin comentarios todavía.",
+      "commentPlaceholder": "Escribe un comentario y pulsa Enter",
+      "publishNeedsApproval": "El proyecto tiene que estar aprobado para publicarse"
     }
   },
   "teacher": {

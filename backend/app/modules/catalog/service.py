@@ -16,9 +16,11 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.deps import TenantContext
 from app.core.errors import Conflict, NotFound, ValidationFailed
 from app.modules.catalog.models import (
     MOMENT_ORDER,
+    REVIEW_TRANSITIONS,
     BlockTranslation,
     ContentBlock,
     Moment,
@@ -84,6 +86,7 @@ def _serializar(project: Project, lang: str) -> dict[str, Any]:
         "kit": project.kit,
         "order": project.order,
         "status": project.status,
+        "reviewer_id": str(project.reviewer_id) if project.reviewer_id else None,
         "lang": lang,
         "title": tr.title if tr else None,
         "summary": tr.summary if tr else None,
@@ -224,6 +227,9 @@ async def update_project(
         summary=campos.get("summary"),
     )
 
+    if project.status == ProjectStatus.APPROVED:
+        project.status = ProjectStatus.IN_REVIEW
+
     await db.flush()
     await db.refresh(project, ["translations"])
     # `title`/`summary` viven en `ProjectTranslation`, una tabla aparte: un
@@ -236,6 +242,123 @@ async def update_project(
     project.updated_at = datetime.now(UTC)
     await db.flush()
     return _serializar(project, lang)
+
+
+# --- Flujo editorial (borrador → revisión → aprobado) --------------------
+#
+# Las transiciones a `published` y de vuelta a `draft` son de `publishing`.
+# Aquí viven `in_review` y `approved`, sobre el modelo propio de catalog. El
+# historial y los comentarios los guarda el módulo `review`.
+
+
+async def _revertir_si_aprobado(db: AsyncSession, project_id: uuid.UUID) -> None:
+    """Editar un proyecto ya aprobado lo devuelve a revisión: publicar tiene
+    que servir lo que se aprobó, no algo distinto."""
+    proyecto = (
+        await db.execute(
+            select(Project).where(
+                Project.id == project_id,
+                Project.status == ProjectStatus.APPROVED,
+            )
+        )
+    ).scalar_one_or_none()
+    if proyecto is not None:
+        proyecto.status = ProjectStatus.IN_REVIEW
+
+
+async def assign_reviewer(
+    db: AsyncSession, project_id: uuid.UUID, reviewer_id: uuid.UUID | None
+) -> dict[str, Any]:
+    project = await _get(db, project_id)
+    project.reviewer_id = reviewer_id
+    await db.flush()
+    return _serializar(project, "es")
+
+
+async def transition_project(
+    db: AsyncSession,
+    project_id: uuid.UUID,
+    tenant: TenantContext,
+    *,
+    to_status: str,
+    note: str | None = None,
+) -> dict[str, Any]:
+    from app.modules.notifications import service as notifications
+    from app.modules.review import service as review
+
+    project = await _get(db, project_id)
+    permitidas = REVIEW_TRANSITIONS.get(project.status, ())
+    if to_status not in permitidas or to_status not in ("in_review", "approved", "draft"):
+        raise Conflict(
+            f"No se puede pasar de '{project.status}' a '{to_status}'"
+        )
+
+    anterior = project.status
+    project.status = to_status
+    await db.flush()
+
+    await review.registrar_evento(
+        db,
+        target_type="project",
+        target_id=project.id,
+        actor_id=tenant.user_id,
+        from_status=anterior,
+        to_status=to_status,
+        note=note,
+    )
+
+    # Avisos: al revisor cuando se pide revisión; a quien la pidió cuando se
+    # aprueba o se devuelve.
+    inst = tenant.require_institution()
+    if to_status == "in_review" and project.reviewer_id:
+        await notifications.notify(
+            db,
+            user_id=project.reviewer_id,
+            institution_id=inst,
+            kind="content.review_requested",
+            title="Contenido para revisar",
+            body=f"'{project.slug}' está listo para tu revisión.",
+            link="/studio/reviews",
+        )
+    elif to_status in ("approved", "draft"):
+        solicitante = await _ultimo_solicitante(db, project.id)
+        if solicitante and solicitante != tenant.user_id:
+            aprobado = to_status == "approved"
+            await notifications.notify(
+                db,
+                user_id=solicitante,
+                institution_id=inst,
+                kind="content.approved" if aprobado else "content.changes_requested",
+                title="Contenido aprobado" if aprobado else "Cambios solicitados",
+                body=(note or "")
+                or (
+                    f"'{project.slug}' fue aprobado."
+                    if aprobado
+                    else f"'{project.slug}' vuelve a borrador."
+                ),
+                link=f"/studio/projects/{project.id}",
+            )
+
+    return _serializar(project, "es")
+
+
+async def _ultimo_solicitante(
+    db: AsyncSession, project_id: uuid.UUID
+) -> uuid.UUID | None:
+    from app.modules.review.models import ReviewEvent
+
+    return (
+        await db.execute(
+            select(ReviewEvent.actor_id)
+            .where(
+                ReviewEvent.target_type == "project",
+                ReviewEvent.target_id == project_id,
+                ReviewEvent.to_status == "in_review",
+            )
+            .order_by(ReviewEvent.created_at.desc())
+            .limit(1)
+        )
+    ).scalar_one_or_none()
 
 
 async def delete_project(db: AsyncSession, project_id: uuid.UUID) -> None:
@@ -358,6 +481,12 @@ async def _get_moment(db: AsyncSession, moment_id: uuid.UUID) -> Moment:
     return moment
 
 
+async def _project_id_de_momento(db: AsyncSession, moment_id: uuid.UUID) -> uuid.UUID:
+    return (
+        await db.execute(select(Moment.project_id).where(Moment.id == moment_id))
+    ).scalar_one()
+
+
 async def _get_block(db: AsyncSession, block_id: uuid.UUID) -> ContentBlock:
     bloque = (
         await db.execute(
@@ -477,6 +606,7 @@ async def create_block(
         )
         await db.flush()
 
+    await _revertir_si_aprobado(db, moment.project_id)
     return _serializar_bloque(await _get_block(db, bloque.id), lang)
 
 
@@ -513,12 +643,14 @@ async def update_block(
     # actualiza esa tabla y no dispara el `onupdate` del bloque. Sin esto S9
     # no detecta el conflicto más común (dos editores en el mismo bloque).
     bloque.updated_at = datetime.now(UTC)
+    await _revertir_si_aprobado(db, await _project_id_de_momento(db, bloque.moment_id))
     await db.flush()
     return _serializar_bloque(await _get_block(db, block_id), lang)
 
 
 async def delete_block(db: AsyncSession, block_id: uuid.UUID) -> None:
     bloque = await _get_block(db, block_id)
+    await _revertir_si_aprobado(db, await _project_id_de_momento(db, bloque.moment_id))
     await db.delete(bloque)
     await db.flush()
 
@@ -544,6 +676,7 @@ async def reorder_blocks(
     for posicion, bid in enumerate(block_ids):
         por_id[bid].order = posicion
 
+    await _revertir_si_aprobado(db, moment.project_id)
     await db.flush()
     return await list_blocks(db, moment_id)
 
@@ -615,6 +748,7 @@ async def update_moment(
         # `MomentTranslation`: sin este toque explícito, S9 no detectaría un
         # conflicto al editar solo esos campos.
         moment.updated_at = datetime.now(UTC)
+        await _revertir_si_aprobado(db, moment.project_id)
         await db.flush()
 
     return _serializar_momento(await _get_moment(db, moment_id), lang)

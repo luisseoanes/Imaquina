@@ -33,6 +33,7 @@ from app.modules.catalog.models import (
     Moment,
     MomentTranslation,
     Project,
+    ProjectStatus,
     ProjectTranslation,
 )
 from app.modules.identity.models import (
@@ -169,7 +170,14 @@ async def _sembrar_proyecto(db: AsyncSession, *, autor: User) -> None:
         await db.execute(select(Project).where(Project.slug == SLUG))
     ).scalar_one_or_none()
     if proyecto is None:
-        proyecto = Project(slug=SLUG, grade="5", kit="Kit basico de robotica", order=1)
+        proyecto = Project(
+            slug=SLUG,
+            grade="5",
+            kit="Kit basico de robotica",
+            order=1,
+            # Flujo editorial (fase 4): el gate de publicacion exige aprobado.
+            status=ProjectStatus.APPROVED,
+        )
         db.add(proyecto)
         await db.flush()
         db.add(

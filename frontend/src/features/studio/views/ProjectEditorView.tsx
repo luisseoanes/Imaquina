@@ -5,6 +5,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   useProject,
   usePublishMutations,
+  useReviewMutations,
+  useReviewThread,
   useTranslationState,
 } from "../api";
 import {
@@ -61,6 +63,7 @@ export function ProjectEditorView() {
               actions={
                 <>
                   <StatusBadge status={data.status} />
+                  <WorkflowActions projectId={data.id} status={data.status} />
                   <Button variant="ghost" onClick={() => void runValidate()}>
                     {t("studio.publish.validate")}
                   </Button>
@@ -72,13 +75,22 @@ export function ProjectEditorView() {
                       {t("studio.action.unpublish")}
                     </Button>
                   ) : (
-                    <Button onClick={() => void runPublish()} disabled={pub.publish.isPending}>
+                    <Button
+                      onClick={() => void runPublish()}
+                      disabled={pub.publish.isPending || data.status !== "approved"}
+                    >
                       {t("studio.publish.publish")}
                     </Button>
                   )}
                 </>
               }
             />
+
+            {data.status !== "published" && data.status !== "approved" ? (
+              <p className="mb-4 text-xs text-content-muted">
+                {t("studio.review.publishNeedsApproval")}
+              </p>
+            ) : null}
 
             {problems !== null ? (
               <Card
@@ -168,11 +180,111 @@ export function ProjectEditorView() {
                 <Field label={t("studio.field.slug")}>
                   <TextInput value={data.slug} readOnly />
                 </Field>
+
+                <ReviewPanel projectId={data.id} />
               </div>
             </div>
           </>
         ) : null}
       </QueryState>
     </div>
+  );
+}
+
+const NEXT_ACTIONS: Record<string, { to: string; key: string }[]> = {
+  draft: [{ to: "in_review", key: "submit" }],
+  in_review: [
+    { to: "approved", key: "approve" },
+    { to: "draft", key: "requestChanges" },
+  ],
+  approved: [{ to: "draft", key: "requestChanges" }],
+  published: [],
+};
+
+function WorkflowActions({
+  projectId,
+  status,
+}: {
+  projectId: string;
+  status: string;
+}) {
+  const { t } = useTranslation();
+  const m = useReviewMutations(projectId);
+  return (
+    <>
+      {(NEXT_ACTIONS[status] ?? []).map((a) => (
+        <Button
+          key={a.to}
+          variant="ghost"
+          disabled={m.transition.isPending}
+          onClick={() => m.transition.mutate({ to_status: a.to })}
+        >
+          {t(`studio.review.${a.key}`)}
+        </Button>
+      ))}
+    </>
+  );
+}
+
+function ReviewPanel({ projectId }: { projectId: string }) {
+  const { t } = useTranslation();
+  const { data } = useReviewThread("project", projectId);
+  const m = useReviewMutations(projectId);
+  const [body, setBody] = useState("");
+
+  return (
+    <Card>
+      <h3 className="mb-2 text-sm font-semibold text-content">
+        {t("studio.review.comments")}
+      </h3>
+      <div className="mb-3 space-y-2">
+        {(data?.comments ?? []).map((c) => (
+          <div
+            key={c.id}
+            className={`rounded-control border border-line p-2 text-sm ${
+              c.resolved ? "opacity-50" : ""
+            }`}
+          >
+            <p className={c.resolved ? "line-through" : ""}>{c.body}</p>
+            <button
+              type="button"
+              className="mt-1 text-xs text-content-muted hover:text-content"
+              onClick={() =>
+                m.resolve.mutate({ id: c.id, resolved: !c.resolved })
+              }
+            >
+              {c.resolved
+                ? t("studio.review.reopen")
+                : t("studio.review.resolve")}
+            </button>
+          </div>
+        ))}
+        {(data?.comments ?? []).length === 0 ? (
+          <p className="text-xs text-content-subtle">
+            {t("studio.review.noComments")}
+          </p>
+        ) : null}
+      </div>
+      <TextInput
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        placeholder={t("studio.review.commentPlaceholder")}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && body.trim()) {
+            m.comment.mutate({ body: body.trim() });
+            setBody("");
+          }
+        }}
+      />
+      {(data?.events ?? []).length ? (
+        <ul className="mt-3 space-y-0.5 text-xs text-content-subtle">
+          {(data?.events ?? []).map((ev) => (
+            <li key={ev.id}>
+              {ev.from_status ?? "—"} → {ev.to_status}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </Card>
   );
 }

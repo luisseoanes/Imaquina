@@ -279,6 +279,14 @@ async def publish(
 ) -> ProjectVersion:
     project = await _load_full(db, project_id)
 
+    # Gate del flujo editorial: sólo se publica lo aprobado (o un proyecto ya
+    # publicado que se re-publica tras un retoque menor).
+    if project.status not in (ProjectStatus.APPROVED, ProjectStatus.PUBLISHED):
+        raise ValidationFailed(
+            "El proyecto tiene que estar aprobado antes de publicarse "
+            f"(estado actual: '{project.status}')"
+        )
+
     problems = validate_for_publish(project, lang)
     if problems:
         raise ValidationFailed("; ".join(problems))

@@ -415,6 +415,17 @@
       "reminders": "Reminders",
       "reviewTitle": "Review pending assessments",
       "reviewBody": "{{count}} assessments submitted"
+    },
+    "review": {
+      "submit": "Submit for review",
+      "approve": "Approve",
+      "requestChanges": "Send back to draft",
+      "comments": "Review comments",
+      "resolve": "Resolve",
+      "reopen": "Reopen",
+      "noComments": "No comments yet.",
+      "commentPlaceholder": "Type a comment and press Enter",
+      "publishNeedsApproval": "The project must be approved before publishing"
     }
   },
   "teacher": {

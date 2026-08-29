@@ -7,6 +7,31 @@
 import type { Lang } from "@/shared/config/roles";
 
 export type ContentStatus = "draft" | "published";
+export type ProjectStatus = "draft" | "in_review" | "approved" | "published";
+
+export interface ReviewComment {
+  id: string;
+  target_type: string;
+  target_id: string;
+  moment_id: string | null;
+  block_id: string | null;
+  author_id: string | null;
+  body: string;
+  resolved: boolean;
+  created_at: string;
+}
+export interface ReviewEvent {
+  id: string;
+  actor_id: string | null;
+  from_status: string | null;
+  to_status: string;
+  note: string | null;
+  created_at: string;
+}
+export interface ReviewThread {
+  comments: ReviewComment[];
+  events: ReviewEvent[];
+}
 export type RefType = "project" | "lesson" | "resource" | "assessment";
 export type ResourceKind = "link" | "file" | "doc";
 export type TemplateKind = "project" | "lesson";
@@ -17,7 +42,8 @@ export interface Project {
   grade: string;
   kit: string | null;
   order: number;
-  status: ContentStatus;
+  status: ProjectStatus;
+  reviewer_id?: string | null;
   lang: Lang;
   title: string | null;
   summary: string | null;
