@@ -514,3 +514,62 @@ async def test_la_rubrica_recalcula_la_nota_de_una_abierta(client, db):
         await client.get(f"{ASSESS}/moments/{mid}/review", headers=editor_h)
     ).json()
     assert review["attempts"][0]["score"] == 8
+
+
+# --- Analítica del editor (fase 5) ---------------------------------------
+
+
+async def test_item_analysis_da_dificultad_y_discriminacion(client, db):
+    inst = await _institucion_con_licencia(db)
+    editor_h = _h(_token_de(await _usuario(db, inst, "editor"), inst))
+    aid, ids = await _evaluacion_completa(client, editor_h)
+
+    async def _intento(acierta_mcq: bool):
+        h = _h(_token_de(await _usuario(db, inst, "student"), inst))
+        it = (
+            await client.post(f"{LEARN_ASSESS}/{aid}/attempts", headers=h, json={})
+        ).json()
+        await client.patch(
+            f"{LEARN_ASSESS}/attempts/{it['id']}/answers",
+            headers=h,
+            json={
+                "answers": [
+                    {
+                        "question_id": ids["mcq"]["id"],
+                        "choice_id": (
+                            ids["correcta"] if acierta_mcq else ids["incorrecta"]
+                        ),
+                    },
+                    {"question_id": ids["numerica"]["id"], "value_numeric": 9.8},
+                    {"question_id": ids["abierta"]["id"], "value_text": "algo"},
+                ]
+            },
+        )
+        it = (
+            await client.post(
+                f"{LEARN_ASSESS}/attempts/{it['id']}/submit", headers=h
+            )
+        ).json()
+        # calificar la abierta para que el intento quede GRADED
+        answer_abierta = next(
+            a for a in it["answers"] if a["question_id"] == ids["abierta"]["id"]
+        )
+        await client.patch(
+            f"{ASSESS}/answers/{answer_abierta['id']}",
+            headers=editor_h,
+            json={"teacher_score": 5 if acierta_mcq else 0},
+        )
+
+    await _intento(acierta_mcq=True)
+    await _intento(acierta_mcq=True)
+    await _intento(acierta_mcq=False)
+
+    items = (
+        await client.get("/api/v1/studio/analytics/items", headers=editor_h)
+    ).json()
+    por_id = {r["question_id"]: r for r in items}
+    mcq_stats = por_id[ids["mcq"]["id"]]
+    assert mcq_stats["n"] == 3
+    assert 0 <= mcq_stats["difficulty"] <= 1
+    # la numérica la aciertan todos -> dificultad 1
+    assert por_id[ids["numerica"]["id"]]["difficulty"] == 1

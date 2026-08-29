@@ -29,6 +29,25 @@ async def get_assessment_analytics(author: Author, db: Db):
     return await analytics.assessment_analytics(db, author.require_institution())
 
 
+@router.get("/analytics/items")
+async def get_item_analysis(author: Author, db: Db):
+    """Dificultad y discriminación por pregunta (índice de discriminación =
+    tercio alto − tercio bajo)."""
+    return await analytics.item_analysis(db, author.require_institution())
+
+
+@router.get("/analytics/dropoff")
+async def get_moment_dropoff(author: Author, db: Db):
+    """Entradas vs. finalizaciones por momento: dónde abandonan los alumnos."""
+    return await analytics.moment_dropoff(db, author.require_institution())
+
+
+@router.get("/analytics/chatbot")
+async def get_chatbot_confusion(author: Author, db: Db):
+    """Preguntas al chat por momento y proporción que dispara el guardrail."""
+    return await analytics.chatbot_confusion(db, author.require_institution())
+
+
 @router.get("/students")
 async def get_students(author: Author, db: Db):
     return await analytics.student_activity(db, author.require_institution())

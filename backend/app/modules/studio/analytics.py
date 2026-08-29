@@ -15,8 +15,16 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.assessment.models import Assessment, Attempt, AttemptStatus
-from app.modules.catalog.models import Moment, Project, ProjectStatus
+from app.modules.assessment.models import (
+    Answer,
+    Assessment,
+    Attempt,
+    AttemptStatus,
+    Question,
+    QuestionTranslation,
+)
+from app.modules.assistant.models import ChatMessage, ChatSession
+from app.modules.catalog.models import Moment, MomentTranslation, Project, ProjectStatus
 from app.modules.identity.models import User
 from app.modules.learning.models import Progress, ProgressState
 from app.modules.studio.models import (
@@ -175,6 +183,194 @@ async def assessment_analytics(
         }
         for r in filas
     ]
+
+
+async def item_analysis(
+    db: AsyncSession, institution_id: uuid.UUID
+) -> list[dict[str, Any]]:
+    """Por pregunta: índice de dificultad (proporción de acierto) y de
+    discriminación (D = %acierto del tercio alto − %acierto del tercio bajo,
+    partiendo por la nota del intento).
+
+    Una abierta se cuenta como acertada si el docente le dio ≥ la mitad de sus
+    puntos. Los intentos sin calificar del todo se ignoran."""
+    filas = (
+        await db.execute(
+            select(
+                Answer.attempt_id,
+                Attempt.score,
+                Answer.question_id,
+                Answer.is_correct,
+                Answer.teacher_score,
+                Question.points,
+            )
+            .join(Attempt, Attempt.id == Answer.attempt_id)
+            .join(Question, Question.id == Answer.question_id)
+            .where(
+                Attempt.institution_id == institution_id,
+                Attempt.status == AttemptStatus.GRADED,
+            )
+        )
+    ).all()
+
+    # correctness por (attempt, question)
+    por_pregunta: dict[uuid.UUID, list[tuple[float, int]]] = {}
+    puntaje_intento: dict[uuid.UUID, float] = {}
+    for aid, score, qid, is_correct, tscore, points in filas:
+        puntaje_intento[aid] = float(score or 0.0)
+        if is_correct is not None:
+            acierto = 1 if is_correct else 0
+        elif tscore is not None and points:
+            acierto = 1 if tscore >= points / 2 else 0
+        else:
+            continue
+        por_pregunta.setdefault(qid, []).append((aid, acierto))
+
+    if not por_pregunta:
+        return []
+
+    intentos_ordenados = sorted(puntaje_intento, key=lambda a: puntaje_intento[a])
+    corte = max(1, len(intentos_ordenados) // 3)
+    bajo = set(intentos_ordenados[:corte])
+    alto = set(intentos_ordenados[-corte:])
+
+    prompts = dict(
+        (
+            await db.execute(
+                select(QuestionTranslation.question_id, QuestionTranslation.prompt).where(
+                    QuestionTranslation.question_id.in_(por_pregunta.keys()),
+                    QuestionTranslation.lang == "es",
+                )
+            )
+        ).all()
+    )
+    kinds = dict(
+        (
+            await db.execute(
+                select(Question.id, Question.kind).where(
+                    Question.id.in_(por_pregunta.keys())
+                )
+            )
+        ).all()
+    )
+
+    salida = []
+    for qid, respuestas in por_pregunta.items():
+        n = len(respuestas)
+        dificultad = sum(a for _, a in respuestas) / n
+        a_alto = [a for aid, a in respuestas if aid in alto]
+        a_bajo = [a for aid, a in respuestas if aid in bajo]
+        disc = (
+            (sum(a_alto) / len(a_alto) - sum(a_bajo) / len(a_bajo))
+            if a_alto and a_bajo
+            else None
+        )
+        salida.append(
+            {
+                "question_id": str(qid),
+                "prompt": prompts.get(qid),
+                "kind": kinds.get(qid),
+                "n": n,
+                "difficulty": round(dificultad, 2),
+                "discrimination": round(disc, 2) if disc is not None else None,
+            }
+        )
+    salida.sort(key=lambda r: (r["discrimination"] is None, r["discrimination"] or 0))
+    return salida
+
+
+async def moment_dropoff(
+    db: AsyncSession, institution_id: uuid.UUID
+) -> list[dict[str, Any]]:
+    """Por momento: cuántos alumnos entraron (tienen fila de `Progress`) frente
+    a cuántos lo completaron. El escalón donde más gente cae es dónde revisar
+    el contenido."""
+    filas = (
+        await db.execute(
+            select(
+                Progress.moment_id,
+                Moment.project_id,
+                Moment.type,
+                func.count(Progress.id),
+                func.count(Progress.id).filter(
+                    Progress.state == ProgressState.COMPLETED
+                ),
+            )
+            .join(Moment, Moment.id == Progress.moment_id)
+            .where(Progress.institution_id == institution_id)
+            .group_by(Progress.moment_id, Moment.project_id, Moment.type)
+        )
+    ).all()
+    titulos = dict(
+        (
+            await db.execute(
+                select(MomentTranslation.moment_id, MomentTranslation.title).where(
+                    MomentTranslation.lang == "es"
+                )
+            )
+        ).all()
+    )
+    salida = [
+        {
+            "moment_id": str(mid),
+            "project_id": str(pid),
+            "type": tipo,
+            "title": titulos.get(mid),
+            "entered": int(entered),
+            "completed": int(completed),
+            "dropoff": int(entered) - int(completed),
+        }
+        for mid, pid, tipo, entered, completed in filas
+    ]
+    salida.sort(key=lambda r: r["dropoff"], reverse=True)
+    return salida
+
+
+async def chatbot_confusion(
+    db: AsyncSession, institution_id: uuid.UUID
+) -> list[dict[str, Any]]:
+    """Por momento: cuántas preguntas le hacen al chat y qué proporción de
+    ellas dispara el guardrail. Un momento que dispara muchas preguntas es un
+    candidato a "mejora este contenido"."""
+    filas = (
+        await db.execute(
+            select(
+                ChatSession.moment_id,
+                func.count(ChatMessage.id),
+                func.count(ChatMessage.id).filter(
+                    ChatMessage.was_redirected.is_(True)
+                ),
+            )
+            .join(ChatMessage, ChatMessage.session_id == ChatSession.id)
+            .where(
+                ChatSession.institution_id == institution_id,
+                ChatMessage.role == "user",
+                ChatSession.moment_id.is_not(None),
+            )
+            .group_by(ChatSession.moment_id)
+        )
+    ).all()
+    titulos = dict(
+        (
+            await db.execute(
+                select(MomentTranslation.moment_id, MomentTranslation.title).where(
+                    MomentTranslation.lang == "es"
+                )
+            )
+        ).all()
+    )
+    salida = [
+        {
+            "moment_id": str(mid),
+            "title": titulos.get(mid),
+            "questions": int(total),
+            "redirected": int(redir),
+            "redirect_rate": round(int(redir) / int(total), 2) if total else 0,
+        }
+        for mid, total, redir in filas
+    ]
+    salida.sort(key=lambda r: r["questions"], reverse=True)
+    return salida
 
 
 async def student_activity(

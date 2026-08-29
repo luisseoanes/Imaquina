@@ -100,6 +100,54 @@ export const useAssessmentAnalytics = () =>
     queryFn: () => get<AssessmentAnalyticsRow[]>("/studio/analytics/assessments"),
   });
 
+export const useItemAnalysis = () =>
+  useQuery({
+    queryKey: ["studio", "analytics", "items"],
+    queryFn: () =>
+      get<
+        {
+          question_id: string;
+          prompt: string | null;
+          kind: string;
+          n: number;
+          difficulty: number;
+          discrimination: number | null;
+        }[]
+      >("/studio/analytics/items"),
+  });
+
+export const useMomentDropoff = () =>
+  useQuery({
+    queryKey: ["studio", "analytics", "dropoff"],
+    queryFn: () =>
+      get<
+        {
+          moment_id: string;
+          project_id: string;
+          type: string;
+          title: string | null;
+          entered: number;
+          completed: number;
+          dropoff: number;
+        }[]
+      >("/studio/analytics/dropoff"),
+  });
+
+export const useChatbotConfusion = () =>
+  useQuery({
+    queryKey: ["studio", "analytics", "chatbot"],
+    queryFn: () =>
+      get<
+        {
+          moment_id: string;
+          title: string | null;
+          questions: number;
+          redirected: number;
+          redirect_rate: number;
+        }[]
+      >("/studio/analytics/chatbot"),
+  });
+
 export const useStudents = () =>
   useQuery({
     queryKey: keys.students,

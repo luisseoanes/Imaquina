@@ -341,7 +341,20 @@
     },
     "analytics": {
       "subtitle": "Aggregated performance of published content.",
-      "attempts": "Attempts"
+      "attempts": "Attempts",
+      "itemAnalysis": "Item analysis",
+      "itemAnalysisHint": "Difficulty = proportion correct. Low discrimination (<0.15) = the question doesn't separate those who know from those who don't.",
+      "n": "Answers",
+      "difficulty": "Difficulty",
+      "discrimination": "Discrimination",
+      "dropoff": "Drop-off by moment",
+      "entered": "Entered",
+      "completed": "Completed",
+      "dropoffCol": "Drop-off",
+      "chatbot": "Chatbot questions",
+      "chatbotHint": "A moment that triggers many questions usually points to confusing content.",
+      "questions": "Questions",
+      "redirected": "Redirected"
     },
     "students": {
       "subtitle": "Activity of your institution's students.",

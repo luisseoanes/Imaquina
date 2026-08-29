@@ -36,6 +36,9 @@ export const handlers = [
 
   http.get(`${API}/studio/dashboard`, () => HttpResponse.json(emptyDashboard)),
   http.get(`${API}/studio/analytics/assessments`, () => HttpResponse.json([])),
+  http.get(`${API}/studio/analytics/items`, () => HttpResponse.json([])),
+  http.get(`${API}/studio/analytics/dropoff`, () => HttpResponse.json([])),
+  http.get(`${API}/studio/analytics/chatbot`, () => HttpResponse.json([])),
   http.get(`${API}/studio/students`, () => HttpResponse.json([])),
   http.get(`${API}/studio/catalog/projects`, () => HttpResponse.json([])),
   http.get(`${API}/studio/lessons`, () => HttpResponse.json([])),

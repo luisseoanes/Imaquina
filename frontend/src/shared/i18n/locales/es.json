@@ -341,7 +341,20 @@
     },
     "analytics": {
       "subtitle": "Rendimiento agregado del contenido publicado.",
-      "attempts": "Intentos"
+      "attempts": "Intentos",
+      "itemAnalysis": "Análisis por pregunta",
+      "itemAnalysisHint": "Dificultad = proporción de acierto. Discriminación baja (<0,15) = la pregunta no separa a quien sabe de quien no.",
+      "n": "Respuestas",
+      "difficulty": "Dificultad",
+      "discrimination": "Discriminación",
+      "dropoff": "Abandono por momento",
+      "entered": "Entraron",
+      "completed": "Completaron",
+      "dropoffCol": "Abandono",
+      "chatbot": "Preguntas al chatbot",
+      "chatbotHint": "Un momento que dispara muchas preguntas suele señalar contenido confuso.",
+      "questions": "Preguntas",
+      "redirected": "Redirigidas"
     },
     "students": {
       "subtitle": "Actividad de los estudiantes de tu institución.",
