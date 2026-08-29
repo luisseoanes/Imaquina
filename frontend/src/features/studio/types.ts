@@ -223,6 +223,8 @@ export interface MediaAsset {
   original_filename: string;
   duration_seconds: number | null;
   alt_text: string | null;
+  folder_id?: string | null;
+  has_captions?: boolean;
   created_at: string;
   used_in: number;
 }

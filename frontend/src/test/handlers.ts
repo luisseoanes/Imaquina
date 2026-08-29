@@ -50,6 +50,7 @@ export const handlers = [
   http.get(`${API}/studio/media/assets`, () =>
     HttpResponse.json({ total: 0, items: [] }),
   ),
+  http.get(`${API}/studio/media/folders`, () => HttpResponse.json([])),
 
   // Panel del docente
   http.get(`${API}/courses`, () => HttpResponse.json([])),

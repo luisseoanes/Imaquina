@@ -106,6 +106,7 @@ async def resolver_media(db: AsyncSession, moments: list[dict[str, Any]]) -> Non
         b["url"] = datos["url"] if datos else None
         b["mime_type"] = datos["mime_type"] if datos else None
         b["duration_seconds"] = datos["duration_seconds"] if datos else None
+        b["captions_vtt"] = datos["captions_vtt"] if datos else None
 
 
 def serialize_moment_for(moment: dict[str, Any], tenant: TenantContext) -> dict[str, Any]:

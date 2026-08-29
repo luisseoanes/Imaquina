@@ -80,6 +80,7 @@ class RegisterIn(BaseModel):
     size_bytes: int
     original_filename: str
     alt_text: str | None = None
+    folder_id: uuid.UUID | None = None
 
 
 @router.post("/register")
@@ -102,6 +103,7 @@ async def list_assets(
     db: Db,
     familia: str | None = None,
     buscar: str | None = None,
+    folder_id: uuid.UUID | None = None,
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ):
@@ -111,8 +113,62 @@ async def list_assets(
             f"Familia no válida: {familia}. Opciones: {', '.join(service.FAMILIAS)}"
         )
     return await service.listar(
-        db, familia=familia, buscar=buscar, limit=limit, offset=offset
+        db,
+        familia=familia,
+        buscar=buscar,
+        folder_id=folder_id,
+        limit=limit,
+        offset=offset,
     )
+
+
+class AssetPatch(BaseModel):
+    alt_text: str | None = None
+    captions_vtt: str | None = None
+    folder_id: uuid.UUID | None = None
+
+
+@router.patch("/assets/{asset_id}")
+async def update_asset(
+    asset_id: uuid.UUID, payload: AssetPatch, author: Author, db: Db
+):
+    return await service.actualizar_asset(
+        db, asset_id, **payload.model_dump(exclude_unset=True)
+    )
+
+
+@router.post("/assets/{asset_id}/suggest-alt")
+async def suggest_alt(
+    asset_id: uuid.UUID, author: Author, db: Db, lang: str = "es"
+):
+    """Sugerencia de texto alternativo por IA (detrás del puerto). El editor
+    decide si la usa; nunca se guarda sola."""
+    return await service.sugerir_alt(db, asset_id, lang)
+
+
+# --- Carpetas -------------------------------------------------------------
+
+
+@router.get("/folders")
+async def list_folders(author: Author, db: Db):
+    return await service.listar_carpetas(db)
+
+
+class FolderIn(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    parent_id: uuid.UUID | None = None
+
+
+@router.post("/folders", status_code=201)
+async def create_folder(payload: FolderIn, author: Author, db: Db):
+    return await service.crear_carpeta(
+        db, name=payload.name, parent_id=payload.parent_id
+    )
+
+
+@router.delete("/folders/{folder_id}", status_code=204)
+async def delete_folder(folder_id: uuid.UUID, author: Author, db: Db) -> None:
+    await service.borrar_carpeta(db, folder_id)
 
 
 @router.delete("/assets/{asset_id}", status_code=204)

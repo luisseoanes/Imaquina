@@ -52,6 +52,13 @@ class AssistantProvider(Protocol):
         """Respuesta en streaming, token a token."""
         ...
 
+    async def suggest_alt_text(self, image_url: str, lang: str) -> str:
+        """Propone un texto alternativo para una imagen (accesibilidad).
+
+        Es una SUGERENCIA: el editor la revisa y decide, nunca se guarda sola.
+        Trabajo de modelo, por eso vive detrás del puerto."""
+        ...
+
     def last_usage(self) -> Usage:
         ...
 
@@ -144,6 +151,30 @@ class ClaudeProvider:
                 ) or 0,
             )
 
+    async def suggest_alt_text(self, image_url: str, lang: str) -> str:
+        idioma = "inglés" if lang == "en" else "español"
+        resp = await self._client.messages.create(
+            model=settings.GUARDRAIL_MODEL,
+            max_tokens=80,
+            system=(
+                f"Describe la imagen en {idioma} en una sola frase breve, apta "
+                "como texto alternativo de accesibilidad. Sin 'imagen de' ni "
+                "comillas."
+            ),
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {"type": "url", "url": image_url},
+                        }
+                    ],
+                }
+            ],
+        )
+        return next((b.text for b in resp.content if b.type == "text"), "").strip()
+
     def last_usage(self) -> Usage:
         return self._usage
 
@@ -163,6 +194,9 @@ class StubProvider:
     async def stream_answer(self, ctx: ChatContext) -> AsyncIterator[str]:
         for word in self._reply.split():
             yield word + " "
+
+    async def suggest_alt_text(self, image_url: str, lang: str) -> str:
+        return ""
 
     def last_usage(self) -> Usage:
         return Usage()

@@ -315,7 +315,12 @@
       "doUpload": "Subir",
       "empty": "La biblioteca está vacía.",
       "usedIn": "en {{count}} bloque(s)",
-      "searchPlaceholder": "Buscar por nombre o alt…"
+      "searchPlaceholder": "Buscar por nombre o alt…",
+      "allFolders": "Todas",
+      "noFolder": "Sin carpeta",
+      "newFolder": "Nueva carpeta",
+      "addCaptions": "Añadir subtítulos",
+      "editCaptions": "Editar subtítulos"
     },
     "templates": {
       "subtitle": "Estructuras reutilizables para arrancar proyectos con el mismo molde.",

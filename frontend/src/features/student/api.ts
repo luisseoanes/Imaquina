@@ -93,6 +93,7 @@ export interface Block {
   url?: string | null;
   mime_type?: string | null;
   duration_seconds?: number | null;
+  captions_vtt?: string | null;
 }
 
 export interface Moment {

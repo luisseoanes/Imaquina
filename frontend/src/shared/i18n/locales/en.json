@@ -315,7 +315,12 @@
       "doUpload": "Upload",
       "empty": "The library is empty.",
       "usedIn": "in {{count}} block(s)",
-      "searchPlaceholder": "Search by name or alt…"
+      "searchPlaceholder": "Search by name or alt…",
+      "allFolders": "All",
+      "noFolder": "No folder",
+      "newFolder": "New folder",
+      "addCaptions": "Add captions",
+      "editCaptions": "Edit captions"
     },
     "templates": {
       "subtitle": "Reusable structures to start projects from the same mold.",

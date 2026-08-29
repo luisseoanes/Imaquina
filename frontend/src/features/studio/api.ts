@@ -724,12 +724,26 @@ export function useCollectionMutations(lang: Lang) {
 
 // --- Biblioteca de medios --------------------------------------------
 
-export const useMedia = (familia: string, buscar: string) =>
+export const useMedia = (familia: string, buscar: string, folderId?: string | null) =>
   useQuery({
-    queryKey: keys.media(familia, buscar),
+    queryKey: [...keys.media(familia, buscar), folderId ?? null],
     queryFn: () =>
       get<MediaList>(
-        `/studio/media/assets${qs({ familia, buscar, limit: 100 })}`,
+        `/studio/media/assets${qs({
+          familia,
+          buscar,
+          folder_id: folderId ?? undefined,
+          limit: 100,
+        })}`,
+      ),
+  });
+
+export const useMediaFolders = () =>
+  useQuery({
+    queryKey: ["studio", "media", "folders"],
+    queryFn: () =>
+      get<{ id: string; name: string; parent_id: string | null }[]>(
+        "/studio/media/folders",
       ),
   });
 
@@ -740,7 +754,15 @@ export function useMediaMutations() {
     /** Sube directo al bucket con URL prefirmada y registra la clave. El
      *  binario NO pasa por el backend (arquitectura.md §7). */
     upload: useMutation({
-      mutationFn: async ({ file, alt }: { file: File; alt: string }) => {
+      mutationFn: async ({
+        file,
+        alt,
+        folderId,
+      }: {
+        file: File;
+        alt: string;
+        folderId?: string | null;
+      }) => {
         const presign = await send<{
           upload_url: string;
           s3_key: string;
@@ -764,6 +786,7 @@ export function useMediaMutations() {
             size_bytes: file.size,
             original_filename: file.name,
             alt_text: alt,
+            folder_id: folderId ?? undefined,
           },
         );
       },
@@ -772,6 +795,28 @@ export function useMediaMutations() {
     remove: useMutation({
       mutationFn: (id: string) =>
         send<void>(`/studio/media/assets/${id}`, "DELETE"),
+      onSuccess: invalidate,
+    }),
+    patch: useMutation({
+      mutationFn: ({ id, ...b }: { id: string } & Record<string, unknown>) =>
+        send<unknown>(`/studio/media/assets/${id}`, "PATCH", b),
+      onSuccess: invalidate,
+    }),
+    suggestAlt: useMutation({
+      mutationFn: (v: { id: string; lang: string }) =>
+        send<{ alt_text: string }>(
+          `/studio/media/assets/${v.id}/suggest-alt${qs({ lang: v.lang })}`,
+          "POST",
+        ),
+    }),
+    createFolder: useMutation({
+      mutationFn: (b: { name: string; parent_id?: string | null }) =>
+        send<unknown>("/studio/media/folders", "POST", b),
+      onSuccess: invalidate,
+    }),
+    deleteFolder: useMutation({
+      mutationFn: (id: string) =>
+        send<void>(`/studio/media/folders/${id}`, "DELETE"),
       onSuccess: invalidate,
     }),
   };

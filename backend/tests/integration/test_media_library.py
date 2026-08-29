@@ -189,3 +189,53 @@ async def test_la_libreria_es_de_editores(client, db, role):
     h = _h(await _token(db, role))
 
     assert (await client.get(f"{MEDIA}/assets", headers=h)).status_code == 403
+
+
+# --- Carpetas, edición de metadatos y alt sugerido (fase 6) -------------
+
+
+async def test_carpetas_y_mover_un_asset(client, db):
+    h = _h(await _token(db))
+    carpeta = (
+        await client.post(f"{MEDIA}/folders", headers=h, json={"name": "Sensores"})
+    ).json()
+    aid = await _registrar(client, h)
+
+    movido = await client.patch(
+        f"{MEDIA}/assets/{aid}", headers=h, json={"folder_id": carpeta["id"]}
+    )
+    assert movido.status_code == 200
+    assert movido.json()["folder_id"] == carpeta["id"]
+
+    en_carpeta = (
+        await client.get(f"{MEDIA}/assets?folder_id={carpeta['id']}", headers=h)
+    ).json()
+    assert [a["id"] for a in en_carpeta["items"]] == [aid]
+
+
+async def test_editar_alt_y_subtitulos(client, db):
+    h = _h(await _token(db))
+    aid = await _registrar(client, h, nombre="clip.mp4", mime="video/mp4")
+
+    resp = await client.patch(
+        f"{MEDIA}/assets/{aid}",
+        headers=h,
+        json={
+            "alt_text": "Un montaje",
+            "captions_vtt": "WEBVTT\n\n00:00.000 --> 00:01.000\nHola",
+        },
+    )
+    assert resp.status_code == 200
+    assert resp.json()["alt_text"] == "Un montaje"
+    assert resp.json()["has_captions"] is True
+
+
+async def test_sugerir_alt_usa_el_puerto_de_modelo(client, db):
+    """Con StubProvider (sin API key) devuelve cadena vacía, pero el endpoint
+    responde 200 y no toca el asset."""
+    h = _h(await _token(db))
+    aid = await _registrar(client, h)
+
+    resp = await client.post(f"{MEDIA}/assets/{aid}/suggest-alt", headers=h)
+    assert resp.status_code == 200
+    assert resp.json() == {"alt_text": ""}

@@ -50,6 +50,7 @@ export interface Block {
   url?: string | null;
   mime_type?: string | null;
   duration_seconds?: number | null;
+  captions_vtt?: string | null;
 }
 
 const KINDS_INTERACTIVOS = new Set([
@@ -192,6 +193,15 @@ function BlockView({
           preload="metadata"
           className="w-full rounded-2xl border border-line/60 bg-content"
         >
+          {block.captions_vtt ? (
+            <track
+              kind="captions"
+              default
+              src={`data:text/vtt;charset=utf-8,${encodeURIComponent(
+                block.captions_vtt,
+              )}`}
+            />
+          ) : null}
           {block.alt_text}
         </video>
       </Figura>

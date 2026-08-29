@@ -12,8 +12,8 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.errors import Conflict, NotFound
-from app.modules.media.models import MediaAsset
+from app.core.errors import Conflict, NotFound, ValidationFailed
+from app.modules.media.models import MediaAsset, MediaFolder
 
 # Prefijo MIME por familia: el editor filtra por "imagenes", no por
 # "image/webp".
@@ -36,6 +36,8 @@ def _serializar(asset: MediaAsset, usos: int) -> dict[str, Any]:
         "original_filename": asset.original_filename,
         "duration_seconds": asset.duration_seconds,
         "alt_text": asset.alt_text,
+        "folder_id": str(asset.folder_id) if asset.folder_id else None,
+        "has_captions": bool(asset.captions_vtt),
         "created_at": asset.created_at.isoformat(),
         # Cuantos bloques lo usan: el editor necesita saberlo ANTES de intentar
         # borrar, no despues de recibir un 409.
@@ -73,6 +75,7 @@ async def urls_por_id(
             "url": settings.media_url(a.s3_key),
             "mime_type": a.mime_type,
             "duration_seconds": a.duration_seconds,
+            "captions_vtt": a.captions_vtt,
         }
         for a in assets
     }
@@ -83,6 +86,7 @@ async def listar(
     *,
     familia: str | None = None,
     buscar: str | None = None,
+    folder_id: uuid.UUID | None = None,
     limit: int = 50,
     offset: int = 0,
 ) -> dict[str, Any]:
@@ -90,6 +94,8 @@ async def listar(
     filtros = []
     if familia:
         filtros.append(MediaAsset.mime_type.startswith(f"{familia}/"))
+    if folder_id is not None:
+        filtros.append(MediaAsset.folder_id == folder_id)
     if buscar:
         patron = f"%{buscar}%"
         filtros.append(
@@ -130,6 +136,97 @@ async def _usos(db: AsyncSession, asset_ids: list[uuid.UUID]) -> dict[uuid.UUID,
     from app.modules.catalog import service as catalog
 
     return await catalog.uso_de_assets(db, asset_ids)
+
+
+# --- Carpetas y edición del asset (fase 6) -----------------------------
+
+
+async def listar_carpetas(db: AsyncSession) -> list[dict[str, Any]]:
+    filas = (
+        (await db.execute(select(MediaFolder).order_by(MediaFolder.name)))
+        .scalars()
+        .all()
+    )
+    return [
+        {
+            "id": str(f.id),
+            "name": f.name,
+            "parent_id": str(f.parent_id) if f.parent_id else None,
+        }
+        for f in filas
+    ]
+
+
+async def crear_carpeta(
+    db: AsyncSession, *, name: str, parent_id: uuid.UUID | None
+) -> dict[str, Any]:
+    if parent_id is not None:
+        existe = (
+            await db.execute(select(MediaFolder.id).where(MediaFolder.id == parent_id))
+        ).scalar_one_or_none()
+        if existe is None:
+            raise NotFound("Carpeta padre no encontrada")
+    carpeta = MediaFolder(name=name, parent_id=parent_id)
+    db.add(carpeta)
+    await db.flush()
+    return {"id": str(carpeta.id), "name": carpeta.name,
+            "parent_id": str(parent_id) if parent_id else None}
+
+
+async def borrar_carpeta(db: AsyncSession, folder_id: uuid.UUID) -> None:
+    """Los assets dentro NO se borran: su `folder_id` queda a NULL (raíz)."""
+    carpeta = (
+        await db.execute(select(MediaFolder).where(MediaFolder.id == folder_id))
+    ).scalar_one_or_none()
+    if carpeta is None:
+        raise NotFound("Carpeta no encontrada")
+    await db.delete(carpeta)
+    await db.flush()
+
+
+async def _get_asset(db: AsyncSession, asset_id: uuid.UUID) -> MediaAsset:
+    asset = (
+        await db.execute(select(MediaAsset).where(MediaAsset.id == asset_id))
+    ).scalar_one_or_none()
+    if asset is None:
+        raise NotFound("Asset no encontrado")
+    return asset
+
+
+async def actualizar_asset(
+    db: AsyncSession, asset_id: uuid.UUID, **campos: Any
+) -> dict[str, Any]:
+    """Editar metadatos: alt, carpeta, subtítulos VTT. No toca el binario."""
+    asset = await _get_asset(db, asset_id)
+    if "folder_id" in campos and campos["folder_id"] is not None:
+        existe = (
+            await db.execute(
+                select(MediaFolder.id).where(MediaFolder.id == campos["folder_id"])
+            )
+        ).scalar_one_or_none()
+        if existe is None:
+            raise NotFound("Carpeta no encontrada")
+    for campo in ("alt_text", "captions_vtt", "folder_id"):
+        if campo in campos:
+            setattr(asset, campo, campos[campo])
+    await db.flush()
+    usos = await _usos(db, [asset_id])
+    return _serializar(asset, usos.get(asset_id, 0))
+
+
+async def sugerir_alt(db: AsyncSession, asset_id: uuid.UUID, lang: str) -> dict[str, Any]:
+    """Pide al puerto de modelo un texto alternativo. Es una sugerencia: no se
+    guarda, la devuelve para que el editor decida."""
+    from app.modules.assistant.provider import get_assistant_provider
+
+    asset = await _get_asset(db, asset_id)
+    if not asset.mime_type.startswith("image/"):
+        raise ValidationFailed("Sólo se sugiere alt-text para imágenes")
+    provider = get_assistant_provider()
+    sugerido = await provider.suggest_alt_text(
+        settings.media_url(asset.s3_key), lang
+    )
+    return {"alt_text": sugerido}
 
 
 async def borrar(db: AsyncSession, asset_id: uuid.UUID) -> str:

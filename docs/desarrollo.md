@@ -218,6 +218,17 @@ código es `None`, y `botocore` acepta `None` pero no una cadena vacía. Comenta
 esa línea del `.env`. En el pipeline no ocurre porque allí la variable no
 existe.
 
+### Media y CDN
+
+Las URLs de los assets nunca se guardan: el snapshot y las tablas guardan
+`media_asset_id` / `s3_key`, y `settings.media_url()` compone la URL al servir.
+En producción, `S3_PUBLIC_URL` apunta al CDN (no al endpoint del bucket): así
+mover el bucket o poner un CDN delante no toca nada del contenido ya publicado.
+La transcodificación de vídeo y la generación automática de subtítulos son
+trabajo de background pendiente (ARQ + ffmpeg); hoy los subtítulos WebVTT se
+pegan a mano en la biblioteca y el alt-text lo sugiere el puerto de modelo
+(`AssistantProvider.suggest_alt_text`, vacío con `StubProvider`).
+
 ### `make seed` falla con `MultipleResultsFound`
 
 Ya no debería: las semillas buscan cada fila por su identificador propio. Si
