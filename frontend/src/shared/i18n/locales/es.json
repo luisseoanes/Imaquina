@@ -70,7 +70,13 @@
       "collections": "Colecciones",
       "analytics": "Analítica de Rendimiento",
       "students": "Estudiantes y Actividad",
-      "settings": "Configuración"
+      "settings": "Configuración",
+      "translation": "Traducción",
+      "glossary": "Glosario",
+      "project": "Proyecto",
+      "lesson": "Lección",
+      "resource": "Recurso",
+      "projects2": ""
     },
     "status": {
       "draft": "Borrador",
@@ -444,6 +450,18 @@
       "noComments": "Sin comentarios todavía.",
       "commentPlaceholder": "Escribe un comentario y pulsa Enter",
       "publishNeedsApproval": "El proyecto tiene que estar aprobado para publicarse"
+    },
+    "translation": {
+      "subtitle": "Cobertura de traducción de todo el contenido.",
+      "missingN": "faltan {{count}}"
+    },
+    "glossary": {
+      "subtitle": "Vocabulario acordado ES↔EN para traducciones coherentes.",
+      "source": "Término origen",
+      "target": "Traducción",
+      "note": "Nota",
+      "add": "Añadir",
+      "empty": "El glosario está vacío."
     }
   },
   "teacher": {

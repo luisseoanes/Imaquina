@@ -32,7 +32,9 @@ from app.modules.studio.models import (
     ContentStatus,
     LearningPath,
     Lesson,
+    LessonTranslation,
     Resource,
+    ResourceTranslation,
 )
 
 
@@ -370,6 +372,118 @@ async def chatbot_confusion(
         for mid, total, redir in filas
     ]
     salida.sort(key=lambda r: r["questions"], reverse=True)
+    return salida
+
+
+async def translation_dashboard(
+    db: AsyncSession, *, kind: str | None = None, grade: str | None = None
+) -> list[dict[str, Any]]:
+    """Estado de traducción de TODO el contenido, por idioma.
+
+    Para proyectos usa el mismo criterio que decide si un idioma entra al
+    snapshot (`publishing.problemas_de_idioma`); para lecciones y recursos, que
+    exista traducción con título (y cuerpo en la lección). El catálogo es
+    global, así que no hay filtro de institución."""
+    from app.modules.publishing import service as publishing
+
+    filas: list[dict[str, Any]] = []
+
+    if kind in (None, "project"):
+        stmt = select(Project)
+        if grade:
+            stmt = stmt.where(Project.grade == grade)
+        for pid in (await db.execute(stmt.with_only_columns(Project.id))).scalars():
+            proyecto = await publishing.cargar_para_validar(db, pid)
+            estados = {
+                lang: publishing.problemas_de_idioma(proyecto, lang)
+                for lang in publishing.LANGS
+            }
+            filas.append(
+                {
+                    "id": str(pid),
+                    "type": "project",
+                    "slug": proyecto.slug,
+                    "grade": proyecto.grade,
+                    "langs": {
+                        lang: {"complete": not faltan, "missing": len(faltan)}
+                        for lang, faltan in estados.items()
+                    },
+                }
+            )
+
+    if kind in (None, "lesson"):
+        lecciones = (await db.execute(select(Lesson))).scalars().all()
+        trs = _agrupar_tr(
+            await db.execute(
+                select(
+                    LessonTranslation.lesson_id,
+                    LessonTranslation.lang,
+                    LessonTranslation.title,
+                    LessonTranslation.body,
+                )
+            )
+        )
+        for x in lecciones:
+            if grade and x.grade != grade:
+                continue
+            filas.append(
+                {
+                    "id": str(x.id),
+                    "type": "lesson",
+                    "slug": x.slug,
+                    "grade": x.grade,
+                    "langs": {
+                        lang: {
+                            "complete": bool(
+                                trs.get((x.id, lang, "title"))
+                                and trs.get((x.id, lang, "body"))
+                            ),
+                            "missing": 0,
+                        }
+                        for lang in ("es", "en")
+                    },
+                }
+            )
+
+    if kind in (None, "resource"):
+        recursos = (await db.execute(select(Resource))).scalars().all()
+        trs = _agrupar_tr(
+            await db.execute(
+                select(
+                    ResourceTranslation.resource_id,
+                    ResourceTranslation.lang,
+                    ResourceTranslation.title,
+                    ResourceTranslation.title,
+                )
+            )
+        )
+        for x in recursos:
+            filas.append(
+                {
+                    "id": str(x.id),
+                    "type": "resource",
+                    "slug": x.slug,
+                    "grade": None,
+                    "langs": {
+                        lang: {
+                            "complete": bool(trs.get((x.id, lang, "title"))),
+                            "missing": 0,
+                        }
+                        for lang in ("es", "en")
+                    },
+                }
+            )
+
+    return filas
+
+
+def _agrupar_tr(result) -> dict[tuple, str]:
+    salida: dict[tuple, str] = {}
+    for rid, lang, title, body in result.all():
+        if title:
+            salida[(rid, lang, "title")] = title
+        if body:
+            salida[(rid, lang, "body")] = body
     return salida
 
 

@@ -33,6 +33,7 @@ __all__ = [
     "Collection",
     "CollectionTranslation",
     "CollectionItem",
+    "GlossaryTerm",
 ]
 
 
@@ -280,3 +281,26 @@ class CollectionItem(Base, UUIDMixin):
     order: Mapped[int] = mapped_column(Integer, default=0)
     target_type: Mapped[str] = mapped_column(String(20))
     target_id: Mapped[uuid.UUID] = mapped_column(index=True)
+
+
+# --- Glosario / termbase ------------------------------------------------
+#
+# Vocabulario acordado ES↔EN para que las traducciones sean coherentes entre
+# proyectos ("placa controladora" siempre "controller board", no "control
+# board"). Global, como el resto del catálogo.
+
+
+class GlossaryTerm(Base, UUIDMixin, TimestampMixin):
+    __tablename__ = "glossary_terms"
+    __table_args__ = (
+        UniqueConstraint(
+            "source_lang", "target_lang", "term_source", name="uq_glossary_term"
+        ),
+    )
+
+    source_lang: Mapped[str] = mapped_column(String(2))
+    target_lang: Mapped[str] = mapped_column(String(2))
+    term_source: Mapped[str] = mapped_column(String(200), index=True)
+    term_target: Mapped[str] = mapped_column(String(200))
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    domain: Mapped[str | None] = mapped_column(String(80), nullable=True)

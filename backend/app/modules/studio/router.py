@@ -420,3 +420,55 @@ async def set_collection_items(
 @router.delete("/collections/{collection_id}", status_code=204)
 async def delete_collection(collection_id: UUID, author: Author, db: Db) -> None:
     await service.delete_collection(db, collection_id)
+
+
+# --- Traducción: dashboard y glosario (fase 7) ------------------------
+
+
+@router.get("/translation/dashboard")
+async def translation_dashboard(
+    author: Author,
+    db: Db,
+    kind: str | None = None,
+    grade: str | None = None,
+):
+    """Estado de traducción por idioma de todo el contenido. Mismo criterio
+    que decide si un idioma entra al snapshot publicado."""
+    return await analytics.translation_dashboard(db, kind=kind, grade=grade)
+
+
+@router.get("/glossary")
+async def list_glossary(author: Author, db: Db):
+    return await service.list_glossary(db)
+
+
+class TermIn(BaseModel):
+    source_lang: str = Field(pattern="^(es|en)$")
+    target_lang: str = Field(pattern="^(es|en)$")
+    term_source: str = Field(min_length=1, max_length=200)
+    term_target: str = Field(min_length=1, max_length=200)
+    note: str | None = None
+    domain: str | None = Field(default=None, max_length=80)
+
+
+class TermPatch(BaseModel):
+    term_target: str | None = Field(default=None, max_length=200)
+    note: str | None = None
+    domain: str | None = Field(default=None, max_length=80)
+
+
+@router.post("/glossary", status_code=201)
+async def create_term(payload: TermIn, author: Author, db: Db):
+    return await service.create_term(db, **payload.model_dump())
+
+
+@router.patch("/glossary/{term_id}")
+async def update_term(term_id: UUID, payload: TermPatch, author: Author, db: Db):
+    return await service.update_term(
+        db, term_id, **payload.model_dump(exclude_unset=True)
+    )
+
+
+@router.delete("/glossary/{term_id}", status_code=204)
+async def delete_term(term_id: UUID, author: Author, db: Db) -> None:
+    await service.delete_term(db, term_id)

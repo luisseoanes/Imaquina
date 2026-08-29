@@ -28,6 +28,8 @@ import { TemplatesView } from "./views/TemplatesView";
 import { TagsView } from "./views/TagsView";
 import { CollectionsView } from "./views/CollectionsView";
 import { AnalyticsView } from "./views/AnalyticsView";
+import { TranslationDashboardView } from "./views/TranslationDashboardView";
+import { GlossaryView } from "./views/GlossaryView";
 import { StudentsView } from "./views/StudentsView";
 import { SettingsView } from "./views/SettingsView";
 
@@ -63,6 +65,8 @@ export function StudioPage() {
             <Route path="collections" element={<CollectionsView />} />
             <Route path="collections/:collectionId" element={<CollectionsView />} />
             <Route path="analytics" element={<AnalyticsView />} />
+            <Route path="translation" element={<TranslationDashboardView />} />
+            <Route path="glossary" element={<GlossaryView />} />
             <Route path="students" element={<StudentsView />} />
             <Route path="settings" element={<SettingsView />} />
             <Route path="*" element={<Navigate to="/studio" replace />} />

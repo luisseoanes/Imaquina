@@ -37,8 +37,10 @@ export const NAV: NavItem[] = [
   { key: "templates", to: routes.studioTemplates, icon: "template", group: "manage" },
   { key: "tags", to: routes.studioTags, icon: "tag", group: "manage" },
   { key: "collections", to: routes.studioCollections, icon: "folder", group: "manage" },
+  { key: "glossary", to: routes.studioGlossary, icon: "book", group: "manage" },
 
   { key: "analytics", to: routes.studioAnalytics, icon: "bar-chart", group: "insight" },
+  { key: "translation", to: routes.studioTranslation, icon: "layers", group: "insight" },
   { key: "students", to: routes.studioStudents, icon: "users", group: "insight" },
 
   { key: "settings", to: routes.studioSettings, icon: "settings", group: "system" },

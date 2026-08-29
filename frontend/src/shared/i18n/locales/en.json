@@ -70,7 +70,13 @@
       "collections": "Collections",
       "analytics": "Performance Analytics",
       "students": "Students & Activity",
-      "settings": "Settings"
+      "settings": "Settings",
+      "translation": "Translation",
+      "glossary": "Glossary",
+      "project": "Project",
+      "lesson": "Lesson",
+      "resource": "Resource",
+      "projects2": ""
     },
     "status": {
       "draft": "Draft",
@@ -444,6 +450,18 @@
       "noComments": "No comments yet.",
       "commentPlaceholder": "Type a comment and press Enter",
       "publishNeedsApproval": "The project must be approved before publishing"
+    },
+    "translation": {
+      "subtitle": "Translation coverage across all content.",
+      "missingN": "{{count}} missing"
+    },
+    "glossary": {
+      "subtitle": "Agreed ES↔EN vocabulary for consistent translations.",
+      "source": "Source term",
+      "target": "Translation",
+      "note": "Note",
+      "add": "Add",
+      "empty": "The glossary is empty."
     }
   },
   "teacher": {

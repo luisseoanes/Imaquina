@@ -722,6 +722,62 @@ export function useCollectionMutations(lang: Lang) {
   };
 }
 
+// --- Traducción: dashboard y glosario (fase 7) ----------------------
+
+export interface TranslationRow {
+  id: string;
+  type: "project" | "lesson" | "resource";
+  slug: string;
+  grade: string | null;
+  langs: Record<string, { complete: boolean; missing: number }>;
+}
+
+export const useTranslationDashboard = (kind?: string, grade?: string) =>
+  useQuery({
+    queryKey: ["studio", "translation", "dashboard", kind ?? null, grade ?? null],
+    queryFn: () =>
+      get<TranslationRow[]>(
+        `/studio/translation/dashboard${qs({ kind, grade })}`,
+      ),
+  });
+
+export interface GlossaryTerm {
+  id: string;
+  source_lang: string;
+  target_lang: string;
+  term_source: string;
+  term_target: string;
+  note: string | null;
+  domain: string | null;
+}
+
+export const useGlossary = () =>
+  useQuery({
+    queryKey: ["studio", "glossary"],
+    queryFn: () => get<GlossaryTerm[]>("/studio/glossary"),
+  });
+
+export function useGlossaryMutations() {
+  const qc = useQueryClient();
+  const done = () => qc.invalidateQueries({ queryKey: ["studio", "glossary"] });
+  return {
+    create: useMutation({
+      mutationFn: (b: Record<string, unknown>) =>
+        send<GlossaryTerm>("/studio/glossary", "POST", b),
+      onSuccess: done,
+    }),
+    update: useMutation({
+      mutationFn: ({ id, ...b }: { id: string } & Record<string, unknown>) =>
+        send<GlossaryTerm>(`/studio/glossary/${id}`, "PATCH", b),
+      onSuccess: done,
+    }),
+    remove: useMutation({
+      mutationFn: (id: string) => send<void>(`/studio/glossary/${id}`, "DELETE"),
+      onSuccess: done,
+    }),
+  };
+}
+
 // --- Biblioteca de medios --------------------------------------------
 
 export const useMedia = (familia: string, buscar: string, folderId?: string | null) =>

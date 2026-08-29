@@ -63,6 +63,8 @@ export const routes = {
   studioCollections: "/studio/collections",
   studioCollection: (id: string) => `/studio/collections/${id}`,
   studioAnalytics: "/studio/analytics",
+  studioTranslation: "/studio/translation",
+  studioGlossary: "/studio/glossary",
   studioStudents: "/studio/students",
   studioSettings: "/studio/settings",
 } as const;

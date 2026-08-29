@@ -21,6 +21,7 @@ from app.modules.studio.models import (
     ContentStatus,
     ContentTag,
     ContentTemplate,
+    GlossaryTerm,
     LearningPath,
     LearningPathItem,
     LearningPathTranslation,
@@ -791,3 +792,69 @@ async def set_collection_items(
         )
     await db.flush()
     return _ser_collection(await _get_collection(db, collection_id), "es")
+
+
+# --- Glosario / termbase (fase 7) -------------------------------------
+
+
+def _ser_term(x: GlossaryTerm) -> dict[str, Any]:
+    return {
+        "id": str(x.id),
+        "source_lang": x.source_lang,
+        "target_lang": x.target_lang,
+        "term_source": x.term_source,
+        "term_target": x.term_target,
+        "note": x.note,
+        "domain": x.domain,
+    }
+
+
+async def list_glossary(db: AsyncSession) -> list[dict[str, Any]]:
+    filas = (
+        (await db.execute(select(GlossaryTerm).order_by(GlossaryTerm.term_source)))
+        .scalars()
+        .all()
+    )
+    return [_ser_term(x) for x in filas]
+
+
+async def create_term(db: AsyncSession, **campos: Any) -> dict[str, Any]:
+    duplicado = (
+        await db.execute(
+            select(GlossaryTerm.id).where(
+                GlossaryTerm.source_lang == campos["source_lang"],
+                GlossaryTerm.target_lang == campos["target_lang"],
+                GlossaryTerm.term_source == campos["term_source"],
+            )
+        )
+    ).scalar_one_or_none()
+    if duplicado:
+        raise Conflict(f"Ya existe el término '{campos['term_source']}'")
+    term = GlossaryTerm(**campos)
+    db.add(term)
+    await db.flush()
+    return _ser_term(term)
+
+
+async def update_term(
+    db: AsyncSession, term_id: uuid.UUID, **campos: Any
+) -> dict[str, Any]:
+    term = (
+        await db.execute(select(GlossaryTerm).where(GlossaryTerm.id == term_id))
+    ).scalar_one_or_none()
+    if term is None:
+        raise NotFound("Término no encontrado")
+    for k, v in campos.items():
+        setattr(term, k, v)
+    await db.flush()
+    return _ser_term(term)
+
+
+async def delete_term(db: AsyncSession, term_id: uuid.UUID) -> None:
+    term = (
+        await db.execute(select(GlossaryTerm).where(GlossaryTerm.id == term_id))
+    ).scalar_one_or_none()
+    if term is None:
+        raise NotFound("Término no encontrado")
+    await db.delete(term)
+    await db.flush()
